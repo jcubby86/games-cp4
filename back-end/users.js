@@ -51,7 +51,7 @@ router.post('/', validUser, async (req, res) => {
       !gameExists(game) ||
       !(game.phase === 'join' || req.user.game === game)
     ) {
-      console.log(
+      console.warn(
         `Game with code ${req.body.code} does not exist or can no longer be joined.`
       );
       return res
@@ -67,7 +67,7 @@ router.post('/', validUser, async (req, res) => {
       req.user?._id
     );
     if (!isUniqueUsername) {
-      console.log(`The nickname ${req.body.nickname} is already taken`);
+      console.warn(`The nickname ${req.body.nickname} is already taken`);
       return res
         .status(400)
         .send(`The nickname ${req.body.nickname} is already taken`);
@@ -79,7 +79,7 @@ router.post('/', validUser, async (req, res) => {
         game: game,
         nickname: req.body.nickname,
       });
-      console.log('User created:', JSON.stringify(req.user));
+      console.info('User created:', JSON.stringify(req.user));
     } else {
       req.user.nickname = req.body.nickname;
       req.user.game = game;
@@ -91,7 +91,7 @@ router.post('/', validUser, async (req, res) => {
 
     res.status(statusCode).send(req.user);
   } catch (err) {
-    console.log(err);
+    console.error(err);
     return res.sendStatus(500);
   }
 });

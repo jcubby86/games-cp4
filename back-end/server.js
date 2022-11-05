@@ -15,7 +15,7 @@ connect(process.env.MONGO_DB_CONN_STR, {
 });
 
 if (process.env.NODE_ENV === 'development') {
-  console.log(`Connected to mongodb server ${process.env.MONGO_DB_CONN_STR}`);
+  console.info(`Connected to mongodb server ${process.env.MONGO_DB_CONN_STR}`);
 }
 
 const app = express();
@@ -36,4 +36,4 @@ app.use('/api/games', gameRoutes);
 app.use('/api/users', userRoutes);
 
 const runPort = process.env.NODE_PORT || 3000;
-app.listen(runPort, () => console.log(`Server listening on port ${runPort}!`));
+app.listen(runPort, () => console.info(`Server listening on port ${runPort}!`));

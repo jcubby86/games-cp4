@@ -4,12 +4,13 @@ module.exports = {
     es2021: true,
     'jest/globals': true,
   },
-  extends: ['eslint:recommended', 'prettier'],
+  extends: ['eslint:recommended'],
   overrides: [],
   parserOptions: {
     ecmaVersion: 'latest',
     sourceType: 'module',
   },
+  plugins: ['jest', 'prettier'],
   rules: {
     'no-unused-vars': [
       'warn',
@@ -17,5 +18,4 @@ module.exports = {
     ],
     'no-constant-condition': ['error', { checkLoops: false }],
   },
-  plugins: ['jest'],
 };

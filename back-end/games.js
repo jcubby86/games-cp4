@@ -29,7 +29,7 @@ const getCode = async () => {
 router.post('/:type', async (req, res) => {
   try {
     if (!validGameTypes.includes(req.params.type)) {
-      console.log(`Invalid game type: ${req.params.type}`);
+      console.warn(`Invalid game type: ${req.params.type}`);
       return res.status(400).send(`Invalid game type: ${req.params.type}`);
     }
 
@@ -41,10 +41,10 @@ router.post('/:type', async (req, res) => {
     });
 
     await game.save();
-    console.log('Game created:', JSON.stringify(game));
+    console.info('Game created:', JSON.stringify(game));
     return res.status(201).send(game);
   } catch (err) {
-    console.log(err);
+    console.error(err);
     return res.sendStatus(500);
   }
 });
@@ -58,7 +58,7 @@ router.get('/:code', async (req, res) => {
 
     res.send(game);
   } catch (err) {
-    console.log(err);
+    console.error(err);
     return res.sendStatus(500);
   }
 });
