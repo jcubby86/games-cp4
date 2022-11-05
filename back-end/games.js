@@ -29,7 +29,8 @@ const getCode = async () => {
 router.post('/:type', async (req, res) => {
   try {
     if (!validGameTypes.includes(req.params.type)) {
-      return res.status(400).send('Invalid game type');
+      console.log(`Invalid game type: ${req.params.type}`);
+      return res.status(400).send(`Invalid game type: ${req.params.type}`);
     }
 
     const newCode = await getCode();
@@ -40,6 +41,7 @@ router.post('/:type', async (req, res) => {
     });
 
     await game.save();
+    console.log('Game created:', JSON.stringify(game));
     return res.status(201).send(game);
   } catch (err) {
     console.log(err);

@@ -11,12 +11,11 @@ describe('creating games', () => {
     expect(response.status).toBe(201);
     expect(response.data.type).toBe('story');
     expect(response.data.phase).toBe('join');
+  });
 
-    //TODO: don't rely on api
-    const response2 = await axios.get(
-      `${baseURL}/api/games/${response.data.code}`
-    );
-    expect(response2.status).toBe(200);
-    expect(response2.data).not.toBeNull();
+  test('creating game fails (wrong type)', async () => {
+    expect(axios.post(`${baseURL}/api/games/bad`)).rejects.toMatchObject({
+      response: { data: `Invalid game type: bad`, status: 400 },
+    });
   });
 });

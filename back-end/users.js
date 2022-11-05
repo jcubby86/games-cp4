@@ -14,7 +14,7 @@ const userSchema = new Schema({
 
 export const UserModel = model('User', userSchema);
 
-const gameExists = (game) => game || game.phase !== 'end';
+const gameExists = (game) => game !== null && game.phase !== 'end';
 
 const validUser = async (req, res, next) => {
   try {
@@ -51,9 +51,14 @@ router.post('/', validUser, async (req, res) => {
       !gameExists(game) ||
       !(game.phase === 'join' || req.user.game === game)
     ) {
+      console.log(
+        `Game with code ${req.body.code} does not exist or can no longer be joined.`
+      );
       return res
         .status(400)
-        .send('Game does not exist or can no longer be joined.');
+        .send(
+          `Game with code ${req.body.code} does not exist or can no longer be joined.`
+        );
     }
 
     const isUniqueUsername = await uniqueUsername(
@@ -62,7 +67,10 @@ router.post('/', validUser, async (req, res) => {
       req.user?._id
     );
     if (!isUniqueUsername) {
-      return res.status(400).send('Nickname is already taken.');
+      console.log(`The nickname ${req.body.nickname} is already taken`);
+      return res
+        .status(400)
+        .send(`The nickname ${req.body.nickname} is already taken`);
     }
 
     let statusCode = 201;
@@ -71,6 +79,7 @@ router.post('/', validUser, async (req, res) => {
         game: game,
         nickname: req.body.nickname,
       });
+      console.log('User created:', JSON.stringify(req.user));
     } else {
       req.user.nickname = req.body.nickname;
       req.user.game = game;
