@@ -7,15 +7,13 @@ import { connect } from 'mongoose';
 
 dotenv.config();
 
-connect(process.env.MONGO_DB_CONN_STRING, {
+connect(process.env.MONGO_DB_CONN_STR, {
   useUnifiedTopology: true,
   useNewUrlParser: true,
 });
 
 if (process.env.NODE_ENV === 'development') {
-  console.log(
-    `Connected to mongodb server ${process.env.MONGO_DB_CONN_STRING}`
-  );
+  console.log(`Connected to mongodb server ${process.env.MONGO_DB_CONN_STR}`);
 }
 
 const app = express();
@@ -38,6 +36,5 @@ app.use('/api/games', gameRoutes);
 import { router as userRoutes } from './users.js';
 app.use('/api/users', userRoutes);
 
-app.listen(process.env.NODE_PORT || 3000, () =>
-  console.log(`Server listening on port ${process.env.NODE_PORT || 3000}!`)
-);
+const runPort = process.env.NODE_PORT || 3000;
+app.listen(runPort, () => console.log(`Server listening on port ${runPort}!`));
