@@ -175,3 +175,36 @@ describe('trying to join game that has already started', () => {
     });
   });
 });
+
+describe('read list of users from game', () => {
+  let gameCode = '';
+  beforeAll(async () => {
+    const response = await axios.post(`${baseURL}/api/games`, {
+      type: 'story',
+    });
+    gameCode = response.data.code;
+
+    await axios.post(`${baseURL}/api/users`, {
+      code: gameCode,
+      nickname: 'testUser',
+    });
+    await axios.post(`${baseURL}/api/users`, {
+      code: gameCode,
+      nickname: 'testUser2',
+    });
+    await axios.post(`${baseURL}/api/users`, {
+      code: gameCode,
+      nickname: 'testUser3',
+    });
+    await axios.post(`${baseURL}/api/users`, {
+      code: gameCode,
+      nickname: 'testUser4',
+    });
+  });
+
+  test('get user count', async () => {
+    const response = await axios.get(`${baseURL}/api/users/${gameCode}`);
+    expect(response.status).toBe(200);
+    expect(response.data.length).toBe(4);
+  });
+});

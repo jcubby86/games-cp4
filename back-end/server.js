@@ -6,6 +6,7 @@ import express from 'express';
 import { connect } from 'mongoose';
 import { router as gameRoutes } from './games.js';
 import { router as userRoutes } from './users.js';
+import { router as storyRoutes } from './story.js';
 
 dotenv.config();
 
@@ -13,10 +14,7 @@ connect(process.env.MONGO_DB_CONN_STR, {
   useUnifiedTopology: true,
   useNewUrlParser: true,
 });
-
-if (process.env.NODE_ENV === 'development') {
-  console.info(`Connected to mongodb server ${process.env.MONGO_DB_CONN_STR}`);
-}
+console.info(`Connected to mongodb server ${process.env.MONGO_DB_CONN_STR}`);
 
 const app = express();
 app.use(bodyParser.json());
@@ -34,6 +32,7 @@ app.use(
 
 app.use('/api/games', gameRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/stories', storyRoutes);
 
 const runPort = process.env.NODE_PORT || 3000;
 app.listen(runPort, () => console.info(`Server listening on port ${runPort}!`));

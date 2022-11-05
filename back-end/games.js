@@ -1,17 +1,18 @@
 import { Router } from 'express';
 import { Schema, model } from 'mongoose';
+import { createStory } from './story.js';
 
 export const router = Router();
 
 const gameSchema = new Schema({
-  type: String,
-  code: String,
-  phase: String,
+  type: { type: String, required: true },
+  code: { type: String, required: true },
+  phase: { type: String, required: true },
 });
 
 export const GameModel = model('Game', gameSchema);
 
-const validGameTypes = ['story'];
+const validGameTypes = { story: createStory };
 
 const getCode = async () => {
   while (true) {
@@ -28,7 +29,9 @@ const getCode = async () => {
 
 router.post('/', async (req, res) => {
   try {
-    if (!validGameTypes.includes(req.body.type)) {
+    let createType = validGameTypes[req.body.type];
+
+    if (!createType) {
       console.warn(`Invalid game type: ${req.body.type}`);
       return res.status(400).send(`Invalid game type: ${req.body.type}`);
     }
@@ -41,6 +44,7 @@ router.post('/', async (req, res) => {
     });
 
     await game.save();
+    createType(game);
     console.info('Game created:', JSON.stringify(game));
     return res.status(201).send(game);
   } catch (err) {

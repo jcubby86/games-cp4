@@ -5,7 +5,7 @@ import { GameModel } from './games.js';
 export const router = Router();
 
 const userSchema = new Schema({
-  nickname: String,
+  nickname: { type: String, required: true },
   game: {
     type: Schema.ObjectId,
     ref: 'Game',
@@ -36,6 +36,11 @@ export const validUser = async (req, res, next) => {
     return res.sendStatus(500);
   }
 };
+export const getUsersInGame = async (id) => {
+  const users = await UserModel.find({ game: id });
+  return users;
+};
+
 const uniqueUsername = async (name, game, id = null) => {
   let user = await UserModel.findOne({
     nickname: name,
@@ -101,4 +106,15 @@ router.get('/', validUser, async (req, res) => {
     return res.sendStatus(404);
   }
   res.send(req.user);
+});
+
+router.get('/:code', async (req, res) => {
+  try {
+    let game = await GameModel.findOne({ code: req.params.code });
+    const users = await getUsersInGame(game._id);
+    res.send(users);
+  } catch (err) {
+    console.error(err);
+    return res.sendStatus(500);
+  }
 });
