@@ -8,29 +8,36 @@ import { connect } from 'mongoose';
 dotenv.config();
 
 connect(process.env.MONGO_DB_CONN_STRING, {
-    useUnifiedTopology: true,
-    useNewUrlParser: true
+  useUnifiedTopology: true,
+  useNewUrlParser: true,
 });
+
+if (process.env.NODE_ENV === 'development') {
+  console.log(
+    `Connected to mongodb server ${process.env.MONGO_DB_CONN_STRING}`
+  );
+}
 
 const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(cookieSession({
-  name: 'session',
-  keys: [
-    'secretValue'
-  ],
-  cookie: {
-    maxAge: 24 * 60 * 60 * 1000 // 24 hours
-  }
-}));
+app.use(
+  cookieSession({
+    name: 'session',
+    keys: ['secretValue'],
+    cookie: {
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    },
+  })
+);
 
+import { router as gameRoutes } from './games.js';
+app.use('/api/games', gameRoutes);
 
-import { router as gameRoutes } from "./games.js";
-app.use("/api/games", gameRoutes);
+import { router as userRoutes } from './users.js';
+app.use('/api/users', userRoutes);
 
-import { router as userRoutes } from "./users.js";
-app.use("/api/users", userRoutes);
-
-app.listen(process.env.NODE_PORT || 3000, () => console.log(`Server listening on port ${process.env.NODE_PORT || 3000}!`));
+app.listen(process.env.NODE_PORT || 3000, () =>
+  console.log(`Server listening on port ${process.env.NODE_PORT || 3000}!`)
+);

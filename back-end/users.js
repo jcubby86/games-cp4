@@ -1,6 +1,6 @@
-import { Router } from "express";
+import { Router } from 'express';
 import { Schema, model } from 'mongoose';
-import { GameModel } from "./games.js";
+// import { GameModel } from './games.js';
 
 export const router = Router();
 
@@ -9,7 +9,7 @@ const userSchema = new Schema({
   creator: Boolean,
   game: {
     type: Schema.ObjectId,
-    ref: 'Game'
+    ref: 'Game',
   },
 });
 
