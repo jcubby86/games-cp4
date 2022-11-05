@@ -26,16 +26,16 @@ const getCode = async () => {
   }
 };
 
-router.post('/:type', async (req, res) => {
+router.post('/', async (req, res) => {
   try {
-    if (!validGameTypes.includes(req.params.type)) {
-      console.warn(`Invalid game type: ${req.params.type}`);
-      return res.status(400).send(`Invalid game type: ${req.params.type}`);
+    if (!validGameTypes.includes(req.body.type)) {
+      console.warn(`Invalid game type: ${req.body.type}`);
+      return res.status(400).send(`Invalid game type: ${req.body.type}`);
     }
 
     const newCode = await getCode();
     const game = new GameModel({
-      type: req.params.type,
+      type: req.body.type,
       code: newCode,
       phase: 'join',
     });
@@ -56,6 +56,24 @@ router.get('/:code', async (req, res) => {
       return res.sendStatus(404);
     }
 
+    res.send(game);
+  } catch (err) {
+    console.error(err);
+    return res.sendStatus(500);
+  }
+});
+
+router.put('/:code', async (req, res) => {
+  try {
+    const game = await GameModel.findOne({ code: req.params.code });
+    if (!game) {
+      return res.sendStatus(404);
+    }
+
+    game.phase = req.body.phase;
+    await game.save();
+
+    console.info('Game updated:', JSON.stringify(game));
     res.send(game);
   } catch (err) {
     console.error(err);

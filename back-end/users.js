@@ -16,7 +16,7 @@ export const UserModel = model('User', userSchema);
 
 const gameExists = (game) => game !== null && game.phase !== 'end';
 
-const validUser = async (req, res, next) => {
+export const validUser = async (req, res, next) => {
   try {
     if (!req.session.userID) return next();
 
@@ -41,7 +41,7 @@ const uniqueUsername = async (name, game, id = null) => {
     nickname: name,
     game: game,
   });
-  return !user || user._id === id;
+  return !user || user._id.equals(id);
 };
 
 router.post('/', validUser, async (req, res) => {
@@ -49,7 +49,7 @@ router.post('/', validUser, async (req, res) => {
     let game = await GameModel.findOne({ code: req.body.code });
     if (
       !gameExists(game) ||
-      !(game.phase === 'join' || req.user.game === game)
+      !(game.phase === 'join' || req.user?.game.equals(game))
     ) {
       console.warn(
         `Game with code ${req.body.code} does not exist or can no longer be joined.`
@@ -94,4 +94,11 @@ router.post('/', validUser, async (req, res) => {
     console.error(err);
     return res.sendStatus(500);
   }
+});
+
+router.get('/', validUser, async (req, res) => {
+  if (!req.user) {
+    return res.sendStatus(404);
+  }
+  res.send(req.user);
 });
