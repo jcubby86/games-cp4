@@ -1,0 +1,20 @@
+{
+  "name": "webgames-backend",
+  "version": "1.0.0",
+  "description": "Back end for a website to play some simple games",
+  "main": "server.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.20.1",
+    "cookie-parser": "^1.4.6",
+    "cookie-session": "^2.0.0",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "mongoose": "^6.7.1"
+  },
+  "type":"module"
+}
