@@ -4,6 +4,8 @@ import cookieParser from 'cookie-parser';
 import cookieSession from 'cookie-session';
 import express from 'express';
 import { connect } from 'mongoose';
+import { router as gameRoutes } from './games.js';
+import { router as userRoutes } from './users.js';
 
 dotenv.config();
 
@@ -30,10 +32,7 @@ app.use(
   })
 );
 
-import { router as gameRoutes } from './games.js';
 app.use('/api/games', gameRoutes);
-
-import { router as userRoutes } from './users.js';
 app.use('/api/users', userRoutes);
 
 const runPort = process.env.NODE_PORT || 3000;
