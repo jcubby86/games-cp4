@@ -1,7 +1,6 @@
 import { Router } from 'express';
 import { Schema, model } from 'mongoose';
-import { GameModel } from './games.js';
-import { UserModel, loadUser, getUsersInGame } from './users.js';
+import { loadUser, getUsersInGame } from './users.js';
 
 export const router = Router();
 
@@ -20,6 +19,15 @@ const storySchema = new Schema({
       parts: [String],
     },
   ],
+  finalStories: [
+    {
+      user: {
+        type: Schema.ObjectId,
+        ref: 'User',
+      },
+      text: String,
+    },
+  ],
   round: { type: Number, required: true, default: 0 },
 });
 const StoryModel = model('Story', storySchema);
@@ -27,7 +35,7 @@ const StoryModel = model('Story', storySchema);
 const prompts = ["Man's name", "Woman's name", 'Activity', '', '', 'Activity'];
 const placeholder = ['', '(Man) ', '(Man) and (Woman) ', '', '', ''];
 const prefixes = ['', 'and ', 'were ', 'He said, "', 'She said, "', 'So they '];
-const suffixes = ['', '', '. ', '." ', '." ', '.'];
+const suffixes = [' ', ' ', '. ', '." ', '." ', '.'];
 
 export const createStory = async (game) => {
   const story = new StoryModel({
@@ -41,44 +49,67 @@ const loadStory = async (req, res, next) => {
   if (!req.user || !req.game) return res.sendStatus(401);
   if (req.game.type !== 'story') return res.sendStatus(400);
 
-  req.story = await StoryModel.findOne({ game: req.game._id });
-  if (!req.story) return res.sendStatus(400);
+  req.storyType = await StoryModel.findOne({ game: req.game._id });
+  if (!req.storyType) return res.sendStatus(400);
   next();
 };
 
-const checkRoundCompletion = async (game, story) => {
+const checkRoundCompletion = async (game, storyType) => {
   const users = await getUsersInGame(game._id);
   const userSet = new Set(users.map((user) => user._id.valueOf()));
 
-  story.stories = story.stories.filter((elem) =>
+  //remove users who may have left the game
+  storyType.stories = storyType.stories.filter((elem) =>
     userSet.has(elem.user._id.valueOf())
   );
   if (
-    story.stories.length < users.length ||
-    story.stories.findIndex((elem) => elem.parts.length <= story.round) !== -1
+    storyType.stories.length < users.length ||
+    storyType.stories.findIndex(
+      (elem) => elem.parts.length <= storyType.round
+    ) !== -1
   )
     return;
 
-  story.round += 1;
-  if (story.round >= prompts.length) {
-    game.phase = 'read';
-    await game.save();
+  storyType.round += 1;
+  if (storyType.round >= prompts.length) await finishGame(game, storyType);
+
+  await storyType.save();
+};
+const finishGame = async (game, storyType) => {
+  game.phase = 'read';
+  await game.save();
+
+  const stories = storyType.stories;
+  for (let i = 0; i < stories.length; i++) {
+    const s = [];
+    for (let j = 0; j < 6; j++) {
+      s.push(prefixes[j]);
+      s.push(stories[(i + j) % stories.length].parts[j]);
+      s.push(suffixes[j]);
+    }
+    storyType.finalStories.push({
+      user: stories[i].user._id,
+      text: s.join(''),
+    });
   }
 };
 
 router.get('/', loadUser, loadStory, async (req, res) => {
   try {
-    const story = req.story;
-    const round = story.round;
-
     if (req.game.phase === 'join') {
       const users = await getUsersInGame(req.game._id);
       return res.send({
         phase: 'join',
         playerCount: users.length,
       });
-    } else if (req.game.phase === 'play') {
-      const userElem = story.stories.find((element) =>
+    }
+
+    const storyType = req.storyType;
+    await checkRoundCompletion(req.game, storyType);
+    const round = storyType.round;
+
+    if (req.game.phase === 'play') {
+      const userElem = storyType.stories.find((element) =>
         element.user._id.equals(req.user._id)
       );
 
@@ -91,7 +122,12 @@ router.get('/', loadUser, loadStory, async (req, res) => {
         suffix: suffixes[round],
       });
     } else {
-      return res.send({ phase: 'read' });
+      return res.send({
+        phase: 'read',
+        story: storyType.finalStories.find((element) =>
+          element.user._id.equals(req.user._id)
+        ).text,
+      });
     }
   } catch (error) {
     console.error(error);
@@ -103,22 +139,21 @@ router.put('/', loadUser, loadStory, async (req, res) => {
   try {
     if (req.game.phase !== 'play') return res.sendStatus(403);
 
-    const story = req.story;
+    const storyType = req.storyType;
 
-    let userIndex = story.stories.findIndex((element) =>
+    let userIndex = storyType.stories.findIndex((element) =>
       element.user._id.equals(req.user._id)
     );
     if (userIndex === -1) {
-      story.stories.push({ user: req.user._id, parts: [] });
-      userIndex = story.stories.length - 1;
+      storyType.stories.push({ user: req.user._id, parts: [] });
+      userIndex = storyType.stories.length - 1;
     }
-    if (story.stories[userIndex].parts.length > story.round)
+    if (storyType.stories[userIndex].parts.length > storyType.round)
       return res.sendStatus(403);
 
-    story.stories[userIndex].parts.push(req.body.part);
-    await checkRoundCompletion(req.game, story);
+    storyType.stories[userIndex].parts.push(req.body.part);
 
-    await story.save();
+    await storyType.save();
     return res.sendStatus(201);
   } catch (err) {
     console.error(err);

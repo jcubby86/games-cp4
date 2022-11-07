@@ -119,3 +119,17 @@ router.get('/:code', async (req, res) => {
     return res.sendStatus(500);
   }
 });
+
+router.delete('/', loadUser, async (req, res) => {
+  try {
+    if (req.user) {
+      req.user.game = null;
+      await req.user.save();
+    }
+
+    res.sendStatus(200);
+  } catch (err) {
+    console.error(err);
+    return res.sendStatus(500);
+  }
+});
