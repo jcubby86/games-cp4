@@ -1,8 +1,6 @@
 const axios = require('axios');
 const dotenv = require('dotenv');
-
 dotenv.config();
-
 const baseURL = `http://localhost:${process.env.NODE_PORT}`;
 
 describe('joining valid game', () => {

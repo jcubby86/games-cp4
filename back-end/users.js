@@ -16,7 +16,7 @@ export const UserModel = model('User', userSchema);
 
 const gameExists = (game) => game !== null && game.phase !== 'end';
 
-export const validUser = async (req, res, next) => {
+export const loadUser = async (req, res, next) => {
   try {
     if (!req.session.userID) return next();
 
@@ -31,6 +31,7 @@ export const validUser = async (req, res, next) => {
     }
 
     req.user = user;
+    req.game = user.game;
     next();
   } catch (error) {
     return res.sendStatus(500);
@@ -49,7 +50,7 @@ const uniqueUsername = async (name, game, id = null) => {
   return !user || user._id.equals(id);
 };
 
-router.post('/', validUser, async (req, res) => {
+router.post('/', loadUser, async (req, res) => {
   try {
     let game = await GameModel.findOne({ code: req.body.code });
     if (
@@ -81,13 +82,13 @@ router.post('/', validUser, async (req, res) => {
     let statusCode = 201;
     if (!req.user) {
       req.user = new UserModel({
-        game: game,
+        game: game._id,
         nickname: req.body.nickname,
       });
       console.info('User created:', JSON.stringify(req.user));
     } else {
       req.user.nickname = req.body.nickname;
-      req.user.game = game;
+      req.user.game = game._id;
       statusCode = 200;
     }
 
@@ -101,7 +102,7 @@ router.post('/', validUser, async (req, res) => {
   }
 });
 
-router.get('/', validUser, async (req, res) => {
+router.get('/', loadUser, async (req, res) => {
   if (!req.user) {
     return res.sendStatus(404);
   }
