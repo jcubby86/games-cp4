@@ -101,6 +101,8 @@ router.get('/', loadUser, loadStory, async (req, res) => {
       return res.send({
         phase: 'join',
         playerCount: users.length,
+        code: req.game.code,
+        nickname: req.user.nickname,
       });
     }
 
