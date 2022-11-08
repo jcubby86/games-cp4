@@ -82,13 +82,13 @@ router.post('/', loadUser, async (req, res) => {
     let statusCode = 201;
     if (!req.user) {
       req.user = new UserModel({
-        game: game._id,
+        game: game,
         nickname: req.body.nickname,
       });
       console.info('User created:', JSON.stringify(req.user));
     } else {
       req.user.nickname = req.body.nickname;
-      req.user.game = game._id;
+      req.user.game = game;
       statusCode = 200;
     }
 
