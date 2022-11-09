@@ -1,25 +1,22 @@
 import { useState, useEffect } from 'react';
-import { Navigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-const Story = () => {
-  const [nickname, setNickname] = useState('');
+const Story = (props) => {
   const [phase, setPhase] = useState('');
-  const [code, setCode] = useState('');
   const [playerCount, setPlayerCount] = useState(0);
   const [prompt, setPrompt] = useState('');
   const [placeholder, setPlaceholder] = useState('');
   const [prefix, setPrefix] = useState('');
   const [suffix, setSuffix] = useState('');
-  const [redirect, setRedirect] = useState('');
   const [story, setStory] = useState('');
   const [part, setPart] = useState('');
+
+  const navigate = useNavigate();
 
   const pollStatus = async () => {
     try {
       const response = await axios.get('/api/stories');
-      setNickname(response.data.nickname || nickname);
-      setCode(response.data.code || code);
       setPhase(response.data.phase);
       setPlayerCount(response.data.playerCount || playerCount);
       setPrompt(response.data.prompt);
@@ -28,13 +25,13 @@ const Story = () => {
       setSuffix(response.data.suffix);
       setStory(response.data.story);
     } catch (error) {
-      setRedirect('/');
+      navigate('/');
     }
   };
 
   const startGame = async (e) => {
     e.preventDefault();
-    await axios.put(`/api/games/${code}`, { phase: 'play' });
+    await axios.put(`/api/games/${props.code}`, { phase: 'play' });
   };
 
   const sendPart = async (e) => {
@@ -53,11 +50,10 @@ const Story = () => {
     return () => clearInterval(timer);
   });
 
-  if (redirect !== '') return <Navigate to={redirect} />;
-
   if (phase === 'join') {
     return (
       <form onSubmit={startGame}>
+        <div>Game Code: {props.code}</div>
         <div>Player Count: {playerCount}</div>
         <input type="submit" value="Start Game" />
       </form>

@@ -1,21 +1,11 @@
-import { useState, useEffect } from 'react';
-import { Navigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-const Join = () => {
-  const [nickname, setNickname] = useState('');
-  const [code, setCode] = useState('');
-  const [redirect, setRedirect] = useState('');
-
-  const fetchUser = async () => {
-    try {
-      const response = await axios.get('/api/users');
-      setNickname(response.data.nickname);
-      setCode(response.data.game.code);
-    } catch (err) {
-      return;
-    }
-  };
+const Join = (props) => {
+  const [nickname, setNickname] = useState(props.nickname);
+  const [code, setCode] = useState(props.code);
+  const navigate = useNavigate();
 
   const joinGame = async (e) => {
     try {
@@ -30,19 +20,19 @@ const Join = () => {
         code: code.toLowerCase(),
       });
 
-      setRedirect('/' + response.data.game.type);
+      props.setNickname(response.data.nickname);
+      props.setCode(response.data.game.code);
+      props.setGameType(response.data.game.type);
+      navigate('/' + response.data.game.type);
     } catch (err) {
       alert('Please enter a valid game code');
     }
   };
 
   useEffect(() => {
-    fetchUser();
-  }, []);
-
-  if (redirect !== '') {
-    return <Navigate to={redirect} />;
-  }
+    setNickname(props.nickname);
+    setCode(props.code);
+  }, [props]);
 
   return (
     <div>
@@ -66,7 +56,10 @@ const Join = () => {
           value={code}
           onChange={(e) => setCode(e.target.value)}
         />
-        <input type="submit" value="Submit" />
+        <input
+          type="submit"
+          value={props.code && props.code === code ? 'Return to Game' : 'Join'}
+        />
       </form>
     </div>
   );

@@ -1,13 +1,44 @@
-import { Outlet, Link } from 'react-router-dom';
+import { Outlet, Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
-const Layout = () => {
+const Layout = (props) => {
+  const navigate = useNavigate();
+
+  const leaveGame = async (e) => {
+    try {
+      e.preventDefault();
+
+      await axios.delete('/api/users');
+      props.setCode('');
+      props.setGameType('');
+      navigate('/');
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   return (
     <>
       <header>
         <nav className="navbar navbar-dark bg-dark">
-          <Link className="navbar-brand text-light px-3" to=".">
-            <i className="fa fa-home px-3"></i>Games
-          </Link>
+          <div className="container-fluid">
+            <Link className="navbar-brand text-light px-3" to=".">
+              <i className="fa fa-home px-3"></i>Games
+            </Link>
+
+            {props.code && (
+              <>
+                <form
+                  onSubmit={leaveGame}
+                  className="d-flex justify-content-start"
+                >
+                  <button className="btn btn-outline-danger" type="submit">
+                    Leave Game
+                  </button>
+                </form>
+              </>
+            )}
+          </div>
         </nav>
       </header>
 

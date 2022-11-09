@@ -1,20 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Navigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-const Create = () => {
-  const [nickname, setNickname] = useState('');
-  const [selected, setSelected] = useState('');
-  const [redirect, setRedirect] = useState('');
-
-  const fetchUser = async () => {
-    try {
-      const response = await axios.get('/api/users');
-      setNickname(response.data.nickname);
-    } catch (err) {
-      return;
-    }
-  };
+const Create = (props) => {
+  const [nickname, setNickname] = useState(props.nickname);
+  const [selected, setSelected] = useState('story');
+  const navigate = useNavigate();
 
   const createGame = async (e) => {
     e.preventDefault();
@@ -32,19 +23,18 @@ const Create = () => {
         nickname: nickname.toLowerCase(),
         code: gameResponse.data.code,
       });
-      setRedirect('/' + userResponse.data.game.type);
+      props.setCode(gameResponse.data.code);
+      props.setNickname(userResponse.data.nickname);
+      props.setGameType(gameResponse.data.type);
+      navigate('/' + gameResponse.data.type);
     } catch (err) {
       alert('Please enter a valid game code');
     }
   };
 
   useEffect(() => {
-    fetchUser();
-  }, []);
-
-  if (redirect !== '') {
-    return <Navigate to={redirect} />;
-  }
+    setNickname(props.nickname);
+  }, [props]);
 
   return (
     <div>
