@@ -43,7 +43,7 @@ function App() {
             />
           }
         >
-          <Route index element={<Home gameType={gameType} />} />
+          <Route index element={<Home gameType={gameType} code={code} />} />
           <Route
             path="join"
             element={
@@ -67,8 +67,11 @@ function App() {
               />
             }
           />
-          <Route path="story" element={<Story code={code} />} />
-          <Route path="*" element={<Home gameType={gameType} />} />
+          <Route
+            path="story"
+            element={<Story code={code} setCode={setCode} />}
+          />
+          <Route path="*" element={<Home gameType={gameType} code={code} />} />
         </Route>
       </Routes>
     </BrowserRouter>

@@ -1,6 +1,5 @@
 import dotenv from 'dotenv';
 import bodyParser from 'body-parser';
-import cookieParser from 'cookie-parser';
 import cookieSession from 'cookie-session';
 import express from 'express';
 import { connect } from 'mongoose';
@@ -19,14 +18,11 @@ console.info(`Connected to mongodb server ${process.env.MONGO_DB_CONN_STR}`);
 const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(cookieParser());
 app.use(
   cookieSession({
     name: 'session',
     keys: ['secretValue'],
-    cookie: {
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours
-    },
+    maxAge: 2 * 60 * 60 * 1000, // 2 hours
   })
 );
 

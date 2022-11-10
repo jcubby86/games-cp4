@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
@@ -10,7 +10,7 @@ const Story = (props) => {
   const [prefix, setPrefix] = useState('');
   const [suffix, setSuffix] = useState('');
   const [story, setStory] = useState('');
-  const [part, setPart] = useState('');
+  const partRef = useRef();
 
   const navigate = useNavigate();
 
@@ -25,6 +25,7 @@ const Story = (props) => {
       setSuffix(response.data.suffix);
       setStory(response.data.story);
     } catch (error) {
+      props.setCode('');
       navigate('/');
     }
   };
@@ -36,9 +37,9 @@ const Story = (props) => {
 
   const sendPart = async (e) => {
     e.preventDefault();
-    await axios.put('/api/stories', { part: part });
+    await axios.put('/api/stories', { part: partRef.current.value });
     setPhase('wait');
-    setPart('');
+    partRef.current = '';
   };
 
   useEffect(() => {
@@ -64,11 +65,7 @@ const Story = (props) => {
         <p>
           {placeholder} {prefix}
         </p>
-        <textarea
-          placeholder={prompt}
-          value={part}
-          onChange={(e) => setPart(e.target.value)}
-        />
+        <textarea placeholder={prompt} ref={partRef} />
         <p style={{ marginTop: 0 }}>{suffix}</p>
         <input type="submit" value="Send" />
       </form>

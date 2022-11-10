@@ -14,7 +14,8 @@ const userSchema = new Schema({
 
 export const UserModel = model('User', userSchema);
 
-const gameExists = (game) => game !== null && game.phase !== 'end';
+const gameExists = (game) =>
+  game !== null && new Date() - 2 * 60 * 60 * 1000 < game.createdAt;
 
 export const loadUser = async (req, res, next) => {
   try {
@@ -55,7 +56,7 @@ router.post('/', loadUser, async (req, res) => {
     let game = await GameModel.findOne({ code: req.body.code });
     if (
       !gameExists(game) ||
-      !(game.phase === 'join' || req.user?.game.equals(game))
+      !(game?.phase === 'join' || req.user?.game?.equals(game))
     ) {
       console.warn(
         `Game with code ${req.body.code} does not exist or can no longer be joined.`
@@ -94,6 +95,7 @@ router.post('/', loadUser, async (req, res) => {
 
     await req.user.save();
     req.session.userID = req.user._id;
+    req.session.nowInMinutes = Math.floor(Date.now() / 60e3); //refresh cookie so it won't expire for another 2 hours
 
     res.status(statusCode).send(req.user);
   } catch (err) {

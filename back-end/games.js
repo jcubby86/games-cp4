@@ -4,11 +4,14 @@ import { createStory } from './story.js';
 
 export const router = Router();
 
-const gameSchema = new Schema({
-  type: { type: String, required: true },
-  code: { type: String, required: true },
-  phase: { type: String, required: true },
-});
+const gameSchema = new Schema(
+  {
+    type: { type: String, required: true },
+    code: { type: String, required: true },
+    phase: { type: String, required: true },
+  },
+  { timestamps: true }
+);
 
 export const GameModel = model('Game', gameSchema);
 
