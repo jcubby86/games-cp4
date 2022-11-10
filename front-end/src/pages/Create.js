@@ -38,27 +38,82 @@ const Create = (props) => {
 
   return (
     <div>
+      <h1 className="text-center text-decoration-underline mb-3">
+        Create a Game
+      </h1>
       <form onSubmit={createGame}>
+        <div className="mb-3">
+          <label htmlFor="nicknameInput" className="form-label">
+            Nickname:
+          </label>
+          <input
+            id="nicknameInput"
+            className="form-control"
+            type="text"
+            autoComplete="off"
+            spellCheck="false"
+            autoCorrect="off"
+            placeholder="enter a nickname"
+            value={nickname}
+            onChange={(e) => setNickname(e.target.value)}
+          />
+        </div>
+        <div className="mb-3">
+          <label className="form-label">Game Type:</label>
+          <div
+            className="btn-group d-block text-center"
+            role="group"
+            aria-label="Game Type"
+          >
+            <button
+              className={
+                'btn ' +
+                (selected === 'story'
+                  ? 'btn-secondary'
+                  : 'btn-outline-secondary')
+              }
+              onClick={(e) => {
+                e.preventDefault();
+                setSelected('story');
+              }}
+            >
+              He Said She Said
+            </button>
+            <button
+              disabled
+              className={
+                'btn ' +
+                (selected === 'names'
+                  ? 'btn-secondary'
+                  : 'btn-outline-secondary')
+              }
+              onClick={(e) => {
+                e.preventDefault();
+                setSelected('names');
+              }}
+            >
+              Name Game
+            </button>
+          </div>
+        </div>
         <input
-          type="text"
-          autoComplete="off"
-          spellCheck="false"
-          autoCorrect="off"
-          placeholder="enter a nickname"
-          value={nickname}
-          onChange={(e) => setNickname(e.target.value)}
+          type="submit"
+          value="Create Game"
+          className="form-control btn btn-success"
         />
-        <button
-          className="btn btn-primary"
-          onClick={(e) => {
-            e.preventDefault();
-            setSelected('story');
-          }}
-        >
-          He Said She Said
-        </button>
-        <input type="submit" value="Submit" />
       </form>
+      {selected === 'story' && (
+        <p className="p-3">
+          Create a fun story reminiscent of mad libs together!
+        </p>
+      )}
+      {selected === 'names' && (
+        <p className="p-3">
+          Everyone secretly enters the name of a person (real or fictional) that
+          others would know. Players then take turns guessing each other's names
+          until only one remains!
+        </p>
+      )}
     </div>
   );
 };

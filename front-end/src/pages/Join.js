@@ -36,29 +36,51 @@ const Join = (props) => {
 
   return (
     <div>
+      <h1 className="text-center text-decoration-underline mb-3">
+        Join a Game
+      </h1>
       <form onSubmit={joinGame}>
-        <input
-          type="text"
-          autoComplete="off"
-          spellCheck="false"
-          autoCorrect="off"
-          placeholder="enter a nickname"
-          value={nickname}
-          onChange={(e) => setNickname(e.target.value)}
-        />
-        <input
-          type="text"
-          autoComplete="off"
-          spellCheck="false"
-          autoCorrect="off"
-          placeholder="enter 4-letter code"
-          maxLength="4"
-          value={code}
-          onChange={(e) => setCode(e.target.value)}
-        />
+        <div className="mb-3">
+          <label htmlFor="nicknameInput" className="form-label">
+            Nickname:
+          </label>
+          <input
+            id="nicknameInput"
+            className="form-control"
+            type="text"
+            autoComplete="off"
+            spellCheck="false"
+            autoCorrect="off"
+            placeholder="enter a nickname"
+            value={nickname}
+            onChange={(e) => setNickname(e.target.value)}
+          />
+        </div>
+
+        <div className="mb-3">
+          <label htmlFor="codeInput" className="form-label">
+            Code:
+          </label>
+          <input
+            id="codeInput"
+            className="form-control"
+            type="text"
+            autoComplete="off"
+            spellCheck="false"
+            autoCorrect="off"
+            placeholder="enter 4-letter code"
+            maxLength="4"
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+          />
+        </div>
+
         <input
           type="submit"
-          value={props.code && props.code === code ? 'Return to Game' : 'Join'}
+          className="form-control btn btn-success"
+          value={
+            props.code && props.code === code ? 'Return to Game' : 'Join Game'
+          }
         />
       </form>
     </div>

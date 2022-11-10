@@ -53,28 +53,70 @@ const Story = (props) => {
 
   if (phase === 'join') {
     return (
-      <form onSubmit={startGame}>
-        <div>Game Code: {props.code}</div>
-        <div>Player Count: {playerCount}</div>
-        <input type="submit" value="Start Game" />
-      </form>
+      <>
+        <h1 className="text-center text-decoration-underline mb-3">
+          He Said She Said
+        </h1>
+        <form onSubmit={startGame}>
+          <div className="mb-3">
+            <label htmlFor="gameCode" className="form-label">
+              Game Code:
+            </label>
+            <input
+              className="form-control"
+              type="text"
+              value={props.code}
+              aria-label="game code"
+              readOnly
+              id="gameCode"
+            />
+          </div>
+          <div className="mb-3">
+            <label htmlFor="playerCount" className="form-label">
+              Player Count:
+            </label>
+            <input
+              className="form-control"
+              type="text"
+              value={playerCount}
+              aria-label="player count"
+              readOnly
+              id="playerCount"
+            />
+          </div>
+          <input
+            type="submit"
+            value="Start Game"
+            className="form-control btn btn-success"
+          />
+        </form>
+      </>
     );
   } else if (phase === 'play') {
     return (
       <form onSubmit={sendPart}>
-        <p>
+        <p className="form-label">
           {placeholder} {prefix}
         </p>
-        <textarea placeholder={prompt} ref={partRef} />
-        <p style={{ marginTop: 0 }}>{suffix}</p>
-        <input type="submit" value="Send" />
+        <textarea
+          placeholder={prompt}
+          ref={partRef}
+          className="form-control"
+          rows={3}
+        />
+        <p className="form-label">{suffix}</p>
+        <input
+          type="submit"
+          value="Send"
+          className="form-control btn btn-success"
+        />
       </form>
     );
   } else if (phase === 'read') {
-    return <div>{story}</div>;
+    return <p className="lh-lg fs-5 px-2">{story}</p>;
   } else {
     // phase === 'wait'
-    return <div>waiting...</div>;
+    return <h3 className="text-center">Waiting for other players...</h3>;
   }
 };
 
