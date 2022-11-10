@@ -108,7 +108,7 @@ const Story = (props) => {
         <input
           type="submit"
           value="Send"
-          className="form-control btn btn-success"
+          className="form-control btn btn-success mt-3"
         />
       </form>
     );

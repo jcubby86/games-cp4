@@ -10,10 +10,22 @@ const Layout = (props) => {
         </Link>
       )}
       <div>
-        <Link role="button" to="/join" className="btn btn-secondary m-2">
+        <Link
+          role="button"
+          to="/join"
+          className={
+            'btn m-2 ' + (props.code ? 'btn-secondary' : 'btn-primary')
+          }
+        >
           Join a Game
         </Link>
-        <Link role="button" to="/create" className="btn btn-secondary m-2">
+        <Link
+          role="button"
+          to="/create"
+          className={
+            'btn m-2 ' + (props.code ? 'btn-secondary' : 'btn-primary')
+          }
+        >
           Create a Game
         </Link>
       </div>
