@@ -1,0 +1,12 @@
+* {
+  transition: all 0.15s ease-in-out;
+}
+
+span.icon {
+  aspect-ratio: initial;
+  font-size: 1.2em;
+}
+
+.btn-lg span.icon {
+  font-size: 3em;
+}

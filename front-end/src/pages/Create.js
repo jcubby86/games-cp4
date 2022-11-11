@@ -37,10 +37,7 @@ const Create = (props) => {
   }, [props]);
 
   return (
-    <div>
-      <h1 className="text-center text-decoration-underline mb-3">
-        Create a Game
-      </h1>
+    <div className="w-100">
       <form onSubmit={createGame}>
         <div className="mb-3">
           <label htmlFor="nicknameInput" className="form-label">
@@ -53,24 +50,21 @@ const Create = (props) => {
             autoComplete="off"
             spellCheck="false"
             autoCorrect="off"
-            placeholder="enter a nickname"
+            placeholder="bezos-lover-97"
             value={nickname}
             onChange={(e) => setNickname(e.target.value)}
           />
         </div>
         <div className="mb-3">
-          <label className="form-label">Game Type:</label>
           <div
-            className="btn-group d-block text-center"
+            className="btn-group d-block text-center m-4"
             role="group"
             aria-label="Game Type"
           >
             <button
               className={
-                'btn ' +
-                (selected === 'story'
-                  ? 'btn-secondary'
-                  : 'btn-outline-secondary')
+                'btn opacity-75 ' +
+                (selected === 'story' ? 'btn-primary' : 'btn-outline-primary')
               }
               onClick={(e) => {
                 e.preventDefault();
@@ -82,10 +76,8 @@ const Create = (props) => {
             <button
               disabled
               className={
-                'btn ' +
-                (selected === 'names'
-                  ? 'btn-secondary'
-                  : 'btn-outline-secondary')
+                'btn opacity-75 ' +
+                (selected === 'names' ? 'btn-primary' : 'btn-outline-secondary')
               }
               onClick={(e) => {
                 e.preventDefault();
@@ -103,12 +95,12 @@ const Create = (props) => {
         />
       </form>
       {selected === 'story' && (
-        <p className="p-3">
+        <p className="p-3 text-wrap">
           Create a fun story reminiscent of mad libs together!
         </p>
       )}
       {selected === 'names' && (
-        <p className="p-3">
+        <p className="p-3 text-wrap">
           Everyone secretly enters the name of a person (real or fictional) that
           others would know. Players then take turns guessing each other's names
           until only one remains!

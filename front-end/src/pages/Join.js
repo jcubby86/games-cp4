@@ -36,11 +36,8 @@ const Join = (props) => {
 
   return (
     <div>
-      <h1 className="text-center text-decoration-underline mb-3">
-        Join a Game
-      </h1>
-      <form onSubmit={joinGame}>
-        <div className="mb-3">
+      <form className="row gap-3" onSubmit={joinGame}>
+        <div className="col p-0">
           <label htmlFor="nicknameInput" className="form-label">
             Nickname:
           </label>
@@ -57,7 +54,7 @@ const Join = (props) => {
           />
         </div>
 
-        <div className="mb-3">
+        <div className="col p-0">
           <label htmlFor="codeInput" className="form-label">
             Code:
           </label>
@@ -77,7 +74,7 @@ const Join = (props) => {
 
         <input
           type="submit"
-          className="form-control btn btn-success"
+          className="form-control btn btn-success col-12 mt-4"
           value={
             props.code && props.code === code ? 'Return to Game' : 'Join Game'
           }

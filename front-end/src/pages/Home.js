@@ -2,34 +2,48 @@ import { Link } from 'react-router-dom';
 
 const Layout = (props) => {
   return (
-    <div className="text-center">
-      <h1 className="text-decoration-underline mb-3">Welcome</h1>
-      {props.code && (
-        <Link role="button" to={props.gameType} className="btn btn-success m-2">
-          Return to Game
-        </Link>
-      )}
-      <div>
+    <>
+      <div className="row justify-content-center gap-4 w-100">
+        {props.code && (
+          <Link
+            role="button"
+            to={props.gameType}
+            className="btn btn-lg btn-success d-flex flex-column fw-bold px-5 col-12"
+          >
+            <span className="icon py-1">
+              <i className="nf-mdi-account_convert" />
+            </span>
+            Return to Game
+          </Link>
+        )}
         <Link
           role="button"
           to="/join"
           className={
-            'btn m-2 ' + (props.code ? 'btn-secondary' : 'btn-primary')
+            'btn btn-lg d-flex flex-column fw-bold col ' +
+            (props.code ? 'btn-outline-success' : 'btn-success')
           }
         >
+          <span className="icon flex-grow-1">
+            <i className="nf-mdi-account_check" />{' '}
+          </span>
           Join a Game
         </Link>
         <Link
           role="button"
           to="/create"
           className={
-            'btn m-2 ' + (props.code ? 'btn-secondary' : 'btn-primary')
+            'btn btn-lg d-flex flex-column fw-bold col ' +
+            (props.code ? 'btn-outline-success' : 'btn-success')
           }
         >
+          <span className="icon flex-grow-1">
+            <i className="nf-mdi-account_multiple_plus" />
+          </span>
           Create a Game
         </Link>
       </div>
-    </div>
+    </>
   );
 };
 

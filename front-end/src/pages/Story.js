@@ -53,12 +53,12 @@ const Story = (props) => {
 
   if (phase === 'join') {
     return (
-      <>
-        <h1 className="text-center text-decoration-underline mb-3">
-          He Said She Said
-        </h1>
-        <form onSubmit={startGame}>
-          <div className="mb-3">
+      <div className="w-100">
+        <div className="text-center mb-4">
+          <h1 className="text-nowrap">He Said She Said</h1>
+        </div>
+        <form className="row gap-3" onSubmit={startGame}>
+          <div className="mb-3 col p-0">
             <label htmlFor="gameCode" className="form-label">
               Game Code:
             </label>
@@ -69,9 +69,10 @@ const Story = (props) => {
               aria-label="game code"
               readOnly
               id="gameCode"
+              style={{ 'min-width': '100px' }}
             />
           </div>
-          <div className="mb-3">
+          <div className="mb-3 col p-0">
             <label htmlFor="playerCount" className="form-label">
               Player Count:
             </label>
@@ -87,14 +88,14 @@ const Story = (props) => {
           <input
             type="submit"
             value="Start Game"
-            className="form-control btn btn-success"
+            className="form-control btn btn-success mt-4 col-12"
           />
         </form>
-      </>
+      </div>
     );
   } else if (phase === 'play') {
     return (
-      <form onSubmit={sendPart}>
+      <form className="w-100" onSubmit={sendPart}>
         <p className="form-label">
           {placeholder} {prefix}
         </p>
@@ -113,10 +114,10 @@ const Story = (props) => {
       </form>
     );
   } else if (phase === 'read') {
-    return <p className="lh-lg fs-5 px-2">{story}</p>;
+    return <p className="lh-lg fs-5 px-2 w-100">{story}</p>;
   } else {
     // phase === 'wait'
-    return <h3 className="text-center">Waiting for other players...</h3>;
+    return <h3 className="text-center w-100">Waiting for other players...</h3>;
   }
 };
 
