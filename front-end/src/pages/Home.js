@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 const Layout = (props) => {
   return (
     <>
-      <div className="row justify-content-center gap-4 w-100">
+      <div className="row justify-content-center gap-4 w-100 m-0">
         {props.code && (
           <Link
             role="button"
