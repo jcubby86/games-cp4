@@ -9,6 +9,11 @@ import { router as storyRoutes } from './story.js';
 
 dotenv.config();
 
+if (!process.env.MONGO_DB_CONN_STR) {
+  console.error('Connection string for MongoDB not found');
+  process.exit(1);
+}
+
 connect(process.env.MONGO_DB_CONN_STR, {
   useUnifiedTopology: true,
   useNewUrlParser: true,
