@@ -2,7 +2,11 @@ version: '3'
 services:
   app:
     container_name: games-app
-    image: games-app:0.0.0
+    build:
+      context: ./front-end
+      tags:
+      - 'games-app:1.0.0'
+    image: games-app:1.0.0
     ports:
     - '3020:80'
     environment:
@@ -10,7 +14,11 @@ services:
 
   backend: 
     container_name: games-backend
-    image: games-backend:0.0.0
+    build:
+      context: ./back-end
+      tags:
+      - 'games-backend:1.0.0'
+    image: games-backend:1.0.0
     ports:
     - '3000'
     environment:
