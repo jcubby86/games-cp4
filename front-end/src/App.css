@@ -10,3 +10,11 @@ span.icon {
 .btn-lg span.icon {
   font-size: 3em;
 }
+
+footer * {
+  transition: initial;
+}
+footer i {
+  font-size: 1.5em;
+  transition: all 0.15s ease-in-out !important;
+}

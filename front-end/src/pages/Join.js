@@ -48,7 +48,7 @@ const Join = (props) => {
             autoComplete="off"
             spellCheck="false"
             autoCorrect="off"
-            placeholder="enter a nickname"
+            placeholder="linux-rules-33"
             value={nickname}
             onChange={(e) => setNickname(e.target.value)}
           />
@@ -65,7 +65,7 @@ const Join = (props) => {
             autoComplete="off"
             spellCheck="false"
             autoCorrect="off"
-            placeholder="enter 4-letter code"
+            placeholder="abxy"
             maxLength="4"
             value={code}
             onChange={(e) => setCode(e.target.value)}
