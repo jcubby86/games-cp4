@@ -1,6 +1,6 @@
 {
   "name": "games-front-end",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "private": true,
   "proxy": "http://localhost:3000",
   "homepage": ".",

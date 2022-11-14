@@ -5,22 +5,24 @@ services:
     build:
       context: ./front-end
       tags:
-      - 'games-app:1.0.0'
-    image: games-app:1.0.0
+        - 'games-app:1.0.2'
+        - 'games-app:latest'
+    image: games-app:latest
     ports:
-    - '3020:80'
+      - '3020:80'
     environment:
-    - NGINX_BACKEND_ADDRESS=http://games-backend:3000
+      - NGINX_BACKEND_ADDRESS=http://games-backend:3000
 
-  backend: 
+  backend:
     container_name: games-backend
     build:
       context: ./back-end
       tags:
-      - 'games-backend:1.0.0'
-    image: games-backend:1.0.0
+        - 'games-backend:1.0.2'
+        - 'games-backend:latest'
+    image: games-backend:latest
     ports:
-    - '3000'
+      - '3000'
     environment:
-    - MONGO_DB_CONN_STR=mongodb://192.168.86.81:27017/games-cp4
-    - NODE_PORT=3000
+      - MONGO_DB_CONN_STR=mongodb://192.168.86.81:27017/games-cp4
+      - NODE_PORT=3000

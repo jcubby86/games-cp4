@@ -11,10 +11,17 @@ span.icon {
   font-size: 3em;
 }
 
+.btn span.icon, .btn span.icon i {
+  transition: initial;
+}
+.nf-mdi-account_check{
+  translate: 10% 0;
+}
+
 footer * {
   transition: initial;
 }
 footer i {
-  font-size: 1.5em;
+  font-size: 1.7em;
   transition: all 0.15s ease-in-out !important;
 }
