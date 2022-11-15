@@ -100,7 +100,7 @@ router.get('/', loadUser, loadStory, async (req, res) => {
       const users = await getUsersInGame(req.game._id);
       return res.send({
         phase: 'join',
-        playerCount: users.length,
+        users: users,
         code: req.game.code,
         nickname: req.user.nickname,
       });

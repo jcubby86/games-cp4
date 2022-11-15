@@ -1,6 +1,6 @@
 {
   "name": "webgames-backend",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Back end for a website to play some simple games",
   "main": "server.js",
   "scripts": {
