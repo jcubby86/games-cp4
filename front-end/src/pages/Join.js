@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import generateNickname from '../helpers/nicknameGeneration';
 
 const Join = (props) => {
+  const suggestion = useRef(generateNickname());
   const [nickname, setNickname] = useState(props.nickname);
   const [code, setCode] = useState(props.code);
   const navigate = useNavigate();
@@ -10,13 +12,13 @@ const Join = (props) => {
   const joinGame = async (e) => {
     try {
       e.preventDefault();
-      if (nickname === '' || code?.length !== 4) {
-        alert('Please enter a nickname and a code.');
+      if (code?.length !== 4) {
+        alert('Please enter a code.');
         return;
       }
 
       const response = await axios.post('/api/users', {
-        nickname: nickname.toLowerCase(),
+        nickname: nickname.toLowerCase() || suggestion.current,
         code: code.toLowerCase(),
       });
 
@@ -48,7 +50,7 @@ const Join = (props) => {
             autoComplete="off"
             spellCheck="false"
             autoCorrect="off"
-            placeholder="linux-rules-33"
+            placeholder={suggestion.current}
             value={nickname}
             onChange={(e) => setNickname(e.target.value)}
           />
