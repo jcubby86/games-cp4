@@ -1,9 +1,9 @@
 const Users = (props) => {
   return (
     <ul className="list-group mt-3">
-      {props.users.map((user) => (
-        <li key={user.nickname} className="list-group-item">
-          {user.nickname}
+      {props.users.map((user, index) => (
+        <li key={index} className="list-group-item">
+          {user}
         </li>
       ))}
     </ul>

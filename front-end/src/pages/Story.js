@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import StartGame from '../components/StartGame';
+import Users from '../components/Users';
 import axios from 'axios';
 
 const Story = (props) => {
@@ -34,20 +35,16 @@ const Story = (props) => {
   const sendPart = async (e) => {
     e.preventDefault();
     await axios.put('/api/stories', { part: partRef.current.value });
-    setPhase('wait');
+    setPhase('');
     partRef.current = '';
   };
 
   useEffect(() => {
-    pollStatus();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
+    if (!phase) pollStatus();
     const timer = setInterval(() => {
       if (phase === 'join' || phase === 'wait') pollStatus();
     }, 3000);
-    // clearing interval
+
     return () => clearInterval(timer);
   });
 
@@ -57,6 +54,7 @@ const Story = (props) => {
         code={props.code}
         users={users}
         title={'He Said She Said'}
+        setPhase={setPhase}
       ></StartGame>
     );
   } else if (phase === 'play') {
@@ -83,7 +81,12 @@ const Story = (props) => {
     return <p className="lh-lg fs-5 px-2 w-100">{story}</p>;
   } else {
     // phase === 'wait'
-    return <h3 className="text-center w-100">Waiting for other players...</h3>;
+    return (
+      <div className="w-100">
+        <h3 className="text-center w-100">Waiting for other players...</h3>
+        {phase === 'wait' && <Users users={users}></Users>}
+      </div>
+    );
   }
 };
 

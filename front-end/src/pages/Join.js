@@ -40,23 +40,6 @@ const Join = (props) => {
     <div>
       <form className="row gap-3" onSubmit={joinGame}>
         <div className="col p-0">
-          <label htmlFor="nicknameInput" className="form-label">
-            Nickname:
-          </label>
-          <input
-            id="nicknameInput"
-            className="form-control"
-            type="text"
-            autoComplete="off"
-            spellCheck="false"
-            autoCorrect="off"
-            placeholder={suggestion.current}
-            value={nickname}
-            onChange={(e) => setNickname(e.target.value)}
-          />
-        </div>
-
-        <div className="col p-0">
           <label htmlFor="codeInput" className="form-label">
             Code:
           </label>
@@ -71,6 +54,23 @@ const Join = (props) => {
             maxLength="4"
             value={code}
             onChange={(e) => setCode(e.target.value)}
+          />
+        </div>
+
+        <div className="col p-0">
+          <label htmlFor="nicknameInput" className="form-label">
+            Nickname:
+          </label>
+          <input
+            id="nicknameInput"
+            className="form-control"
+            type="text"
+            autoComplete="off"
+            spellCheck="false"
+            autoCorrect="off"
+            placeholder={suggestion.current}
+            value={nickname}
+            onChange={(e) => setNickname(e.target.value)}
           />
         </div>
 

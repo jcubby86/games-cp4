@@ -5,6 +5,7 @@ const StartGame = (props) => {
   const startGame = async (e) => {
     e.preventDefault();
     await axios.put(`/api/games/${props.code}`, { phase: 'play' });
+    props.setPhase('');
   };
 
   return (
