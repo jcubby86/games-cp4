@@ -80,7 +80,6 @@ const Story = (props) => {
   } else if (phase === 'read') {
     return <p className="lh-lg fs-5 px-2 w-100">{story}</p>;
   } else {
-    // phase === 'wait'
     return (
       <div className="w-100">
         <h3 className="text-center w-100">Waiting for other players...</h3>

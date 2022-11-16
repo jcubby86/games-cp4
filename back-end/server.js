@@ -35,5 +35,5 @@ app.use('/api/games', gameRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/stories', storyRoutes);
 
-const runPort = process.env.NODE_PORT || 3000;
+const runPort = process.env.NODE_PORT || 3001;
 app.listen(runPort, () => console.info(`Server listening on port ${runPort}!`));
