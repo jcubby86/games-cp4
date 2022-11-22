@@ -27,16 +27,23 @@ const Story = (props) => {
       setSuffix(response.data.suffix);
       setStory(response.data.story);
     } catch (error) {
-      props.setCode('');
+      alert('An error has occurred');
+      // props.setCode('');
       navigate('/');
     }
   };
 
   const sendPart = async (e) => {
-    e.preventDefault();
-    await axios.put('/api/stories', { part: partRef.current.value });
-    setPhase('');
-    partRef.current = '';
+    try {
+      e.preventDefault();
+      await axios.put('/api/stories', { part: partRef.current.value });
+      setPhase('');
+      partRef.current = '';
+    } catch (error) {
+      alert('An error has occurred');
+      // props.setCode('');
+      navigate('/');
+    }
   };
 
   useEffect(() => {

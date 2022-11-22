@@ -27,7 +27,11 @@ const Join = (props) => {
       props.setGameType(response.data.game.type);
       navigate('/' + response.data.game.type);
     } catch (err) {
-      alert('Please enter a valid game code');
+      if (err.response.status === 400) {
+        alert(err.response.data);
+      } else {
+        alert('Error joining game');
+      }
     }
   };
 

@@ -13,7 +13,7 @@ const Create = (props) => {
     e.preventDefault();
     try {
       if (selected === '') {
-        alert('Please select a game type');
+        alert('Please select a valid game type');
         return;
       }
 
@@ -30,7 +30,7 @@ const Create = (props) => {
       props.setGameType(gameResponse.data.type);
       navigate('/' + gameResponse.data.type);
     } catch (err) {
-      alert('Please select a valid game type');
+      alert('Unable to create game. Please try again in a little bit.');
     }
   };
 
