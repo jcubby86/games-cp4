@@ -1,36 +1,8 @@
 import { Router } from 'express';
-import { Schema, model } from 'mongoose';
+import { StoryModel } from './models.js';
 import { loadUser, getUsersInGame } from './users.js';
 
 export const router = Router();
-
-const storySchema = new Schema({
-  game: {
-    type: Schema.ObjectId,
-    ref: 'Game',
-    required: true,
-  },
-  stories: [
-    {
-      user: {
-        type: Schema.ObjectId,
-        ref: 'User',
-      },
-      parts: [String],
-    },
-  ],
-  finalStories: [
-    {
-      user: {
-        type: Schema.ObjectId,
-        ref: 'User',
-      },
-      text: String,
-    },
-  ],
-  round: { type: Number, required: true, default: 0 },
-});
-const StoryModel = model('Story', storySchema);
 
 const prompts = ["Man's name", "Woman's name", 'Activity', '', '', 'Activity'];
 const placeholder = ['', '(Man) ', '(Man) and (Woman) ', '', '', ''];

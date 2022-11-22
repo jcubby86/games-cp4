@@ -1,18 +1,7 @@
 import { Router } from 'express';
-import { Schema, model } from 'mongoose';
-import { GameModel } from './games.js';
+import { GameModel, UserModel } from './models.js';
 
 export const router = Router();
-
-const userSchema = new Schema({
-  nickname: { type: String, required: true },
-  game: {
-    type: Schema.ObjectId,
-    ref: 'Game',
-  },
-});
-
-export const UserModel = model('User', userSchema);
 
 const gameExists = (game) =>
   game !== null && new Date() - 2 * 60 * 60 * 1000 < game.createdAt;

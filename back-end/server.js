@@ -31,6 +31,11 @@ app.use(
   })
 );
 
+// app.use((req, res, next) => {
+//   console.log(req.originalUrl);
+//   next();
+// });
+
 app.use('/api/games', gameRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/stories', storyRoutes);

@@ -3,6 +3,8 @@ const dotenv = require('dotenv');
 dotenv.config();
 const baseURL = `http://localhost:${process.env.NODE_PORT}`;
 
+jest.setTimeout(30000);
+
 describe('play game with one user', () => {
   let gameCode = '';
   beforeAll(async () => {
@@ -24,10 +26,9 @@ describe('play game with one user', () => {
     let response = await axios.get(`${baseURL}/api/stories`, {
       headers: { Cookie: cookie },
     });
-    expect(response).toMatchObject({
-      status: 200,
-      data: { phase: 'join', playerCount: 1 },
-    });
+    expect(response.status).toBe(200);
+    expect(response.data.phase).toBe('join');
+    expect(response.data.users.length).toBe(1);
 
     //start game
     await axios.put(`${baseURL}/api/games/${gameCode}`, { phase: 'play' });
@@ -75,7 +76,6 @@ describe('play game with multiple users', () => {
       { nickname: 'testUser1' },
       { nickname: 'testUser2' },
       { nickname: 'testUser3' },
-      { nickname: 'testUser4' },
     ];
     //join game
     for (let i = 0; i < users.length; i++) {
@@ -90,10 +90,9 @@ describe('play game with multiple users', () => {
     let response = await axios.get(`${baseURL}/api/stories`, {
       headers: { Cookie: users[0].cookie },
     });
-    expect(response).toMatchObject({
-      status: 200,
-      data: { phase: 'join', playerCount: users.length },
-    });
+    expect(response.status).toBe(200);
+    expect(response.data.phase).toBe('join');
+    expect(response.data.users.length).toBe(users.length);
 
     //start game
     await axios.put(`${baseURL}/api/games/${gameCode}`, { phase: 'play' });
@@ -179,10 +178,9 @@ describe('play game with one user leaving partway through', () => {
     let response = await axios.get(`${baseURL}/api/stories`, {
       headers: { Cookie: users[0].cookie },
     });
-    expect(response).toMatchObject({
-      status: 200,
-      data: { phase: 'join', playerCount: users.length },
-    });
+    expect(response.status).toBe(200);
+    expect(response.data.phase).toBe('join');
+    expect(response.data.users.length).toBe(users.length);
 
     //start game
     await axios.put(`${baseURL}/api/games/${gameCode}`, { phase: 'play' });

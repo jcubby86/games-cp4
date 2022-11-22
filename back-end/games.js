@@ -1,21 +1,11 @@
 import { Router } from 'express';
-import { Schema, model } from 'mongoose';
+import { GameModel } from './models.js';
 import { createStory } from './story.js';
+import { createNames } from './names.js';
 
 export const router = Router();
 
-const gameSchema = new Schema(
-  {
-    type: { type: String, required: true },
-    code: { type: String, required: true },
-    phase: { type: String, required: true },
-  },
-  { timestamps: true }
-);
-
-export const GameModel = model('Game', gameSchema);
-
-const validGameTypes = { story: createStory };
+const validGameTypes = { story: createStory, names: createNames };
 
 const getCode = async () => {
   while (true) {
