@@ -5,7 +5,7 @@ services:
     build:
       context: ./front-end
       tags:
-        - 'games-app:1.1.0'
+        - 'games-app:2.0.0'
         - 'games-app:latest'
     image: games-app:latest
     ports:
@@ -18,7 +18,7 @@ services:
     build:
       context: ./back-end
       tags:
-        - 'games-backend:1.1.0'
+        - 'games-backend:2.0.0'
         - 'games-backend:latest'
     image: games-backend:latest
     ports:
