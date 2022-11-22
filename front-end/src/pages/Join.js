@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import generateNickname from '../helpers/nicknameGeneration';
 
 const Join = (props) => {
+  const suggestion = useRef(generateNickname());
   const [nickname, setNickname] = useState(props.nickname);
   const [code, setCode] = useState(props.code);
   const navigate = useNavigate();
@@ -10,13 +12,13 @@ const Join = (props) => {
   const joinGame = async (e) => {
     try {
       e.preventDefault();
-      if (nickname === '' || code?.length !== 4) {
-        alert('Please enter a nickname and a code.');
+      if (code?.length !== 4) {
+        alert('Please enter a code.');
         return;
       }
 
       const response = await axios.post('/api/users', {
-        nickname: nickname.toLowerCase(),
+        nickname: nickname.toLowerCase() || suggestion.current,
         code: code.toLowerCase(),
       });
 
@@ -25,7 +27,11 @@ const Join = (props) => {
       props.setGameType(response.data.game.type);
       navigate('/' + response.data.game.type);
     } catch (err) {
-      alert('Please enter a valid game code');
+      if (err.response.status === 400) {
+        alert(err.response.data);
+      } else {
+        alert('Error joining game');
+      }
     }
   };
 
@@ -37,23 +43,6 @@ const Join = (props) => {
   return (
     <div>
       <form className="row gap-3" onSubmit={joinGame}>
-        <div className="col p-0">
-          <label htmlFor="nicknameInput" className="form-label">
-            Nickname:
-          </label>
-          <input
-            id="nicknameInput"
-            className="form-control"
-            type="text"
-            autoComplete="off"
-            spellCheck="false"
-            autoCorrect="off"
-            placeholder="linux-rules-33"
-            value={nickname}
-            onChange={(e) => setNickname(e.target.value)}
-          />
-        </div>
-
         <div className="col p-0">
           <label htmlFor="codeInput" className="form-label">
             Code:
@@ -69,6 +58,23 @@ const Join = (props) => {
             maxLength="4"
             value={code}
             onChange={(e) => setCode(e.target.value)}
+          />
+        </div>
+
+        <div className="col p-0">
+          <label htmlFor="nicknameInput" className="form-label">
+            Nickname:
+          </label>
+          <input
+            id="nicknameInput"
+            className="form-control"
+            type="text"
+            autoComplete="off"
+            spellCheck="false"
+            autoCorrect="off"
+            placeholder={suggestion.current}
+            value={nickname}
+            onChange={(e) => setNickname(e.target.value)}
           />
         </div>
 

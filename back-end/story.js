@@ -49,32 +49,46 @@ const loadStory = async (req, res, next) => {
   if (!req.user || !req.game) return res.sendStatus(401);
   if (req.game.type !== 'story') return res.sendStatus(400);
 
-  req.storyType = await StoryModel.findOne({ game: req.game._id });
+  req.storyType = await StoryModel.findOne({ game: req.game._id }).populate(
+    'stories.user'
+  );
   if (!req.storyType) return res.sendStatus(400);
   next();
 };
 
 const checkRoundCompletion = async (game, storyType) => {
-  const users = await getUsersInGame(game._id);
-  const userSet = new Set(users.map((user) => user._id.valueOf()));
-
-  //remove users who may have left the game
-  storyType.stories = storyType.stories.filter((elem) =>
-    userSet.has(elem.user._id.valueOf())
+  const allUsers = await getUsersInGame(game._id);
+  const allUserSet = new Set(allUsers.map((user) => user._id.valueOf()));
+  const submittedUserSet = new Set(
+    storyType.stories.map((item) => item.user._id.valueOf())
   );
-  if (
-    storyType.stories.length < users.length ||
-    storyType.stories.findIndex(
-      (elem) => elem.parts.length <= storyType.round
-    ) !== -1
-  )
-    return;
+
+  storyType.stories = storyType.stories.filter((elem) =>
+    allUserSet.has(elem.user._id.valueOf())
+  );
+
+  const allStories = [
+    ...storyType.stories,
+    ...allUsers
+      .filter((user) => !submittedUserSet.has(user._id.valueOf()))
+      .map((user) => ({ user: user, parts: [] })),
+  ];
+
+  const waitingUsers = allStories
+    .filter((elem) => elem.parts.length <= storyType.round)
+    .map((elem) => elem.user);
+
+  if (waitingUsers.length > 0) {
+    return waitingUsers.map((user) => user.nickname);
+  }
 
   storyType.round += 1;
   if (storyType.round >= prompts.length) await finishGame(game, storyType);
 
   await storyType.save();
+  return [];
 };
+
 const finishGame = async (game, storyType) => {
   game.phase = 'read';
   await game.save();
@@ -100,14 +114,14 @@ router.get('/', loadUser, loadStory, async (req, res) => {
       const users = await getUsersInGame(req.game._id);
       return res.send({
         phase: 'join',
-        playerCount: users.length,
+        users: users.map((user) => user.nickname),
         code: req.game.code,
         nickname: req.user.nickname,
       });
     }
 
     const storyType = req.storyType;
-    await checkRoundCompletion(req.game, storyType);
+    const waitingUsers = await checkRoundCompletion(req.game, storyType);
     const round = storyType.round;
 
     if (req.game.phase === 'play') {
@@ -122,6 +136,7 @@ router.get('/', loadUser, loadStory, async (req, res) => {
         placeholder: placeholder[round],
         prefix: prefixes[round],
         suffix: suffixes[round],
+        users: waitingUsers,
       });
     } else {
       return res.send({
@@ -147,7 +162,7 @@ router.put('/', loadUser, loadStory, async (req, res) => {
       element.user._id.equals(req.user._id)
     );
     if (userIndex === -1) {
-      storyType.stories.push({ user: req.user._id, parts: [] });
+      storyType.stories.push({ user: req.user, parts: [] });
       userIndex = storyType.stories.length - 1;
     }
     if (storyType.stories[userIndex].parts.length > storyType.round)

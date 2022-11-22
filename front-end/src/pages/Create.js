@@ -1,8 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import generateNickname from '../helpers/nicknameGeneration';
 
 const Create = (props) => {
+  const suggestion = useRef(generateNickname());
   const [nickname, setNickname] = useState(props.nickname);
   const [selected, setSelected] = useState('story');
   const navigate = useNavigate();
@@ -10,8 +12,8 @@ const Create = (props) => {
   const createGame = async (e) => {
     e.preventDefault();
     try {
-      if (nickname === '' || selected === '') {
-        alert('Please enter a nickname and select a game type');
+      if (selected === '') {
+        alert('Please select a valid game type');
         return;
       }
 
@@ -20,7 +22,7 @@ const Create = (props) => {
         type: selected,
       });
       const userResponse = await axios.post('/api/users', {
-        nickname: nickname.toLowerCase(),
+        nickname: nickname.toLowerCase() || suggestion.current,
         code: gameResponse.data.code,
       });
       props.setCode(gameResponse.data.code);
@@ -28,7 +30,7 @@ const Create = (props) => {
       props.setGameType(gameResponse.data.type);
       navigate('/' + gameResponse.data.type);
     } catch (err) {
-      alert('Please enter a valid game code');
+      alert('Unable to create game. Please try again in a little bit.');
     }
   };
 
@@ -50,7 +52,7 @@ const Create = (props) => {
             autoComplete="off"
             spellCheck="false"
             autoCorrect="off"
-            placeholder="bezos-lover-97"
+            placeholder={suggestion.current}
             value={nickname}
             onChange={(e) => setNickname(e.target.value)}
           />

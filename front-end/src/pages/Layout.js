@@ -43,7 +43,7 @@ const Layout = (props) => {
         </nav>
       </header>
 
-      <main className="flex-grow-1 py-5 mb-5">
+      <main className="flex-grow-1 my-2">
         <div className="container d-flex p-4" style={{ maxWidth: '30rem' }}>
           <Outlet />
         </div>
@@ -71,7 +71,7 @@ const Layout = (props) => {
           </span>
         </a>
         <a
-          href="mailto:jacob.m.bastian@outlook.com?&subject=Hello!&body=I'm reaching out about"
+          href="mailto:games@jmbastian.com?&subject=Hello!&body=I'm reaching out about"
           className="text-dark text-decoration-none link-warning"
           target="_blank"
           rel="noreferrer"
