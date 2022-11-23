@@ -42,7 +42,7 @@ export const upperFirst = (part) => {
   return part.slice(0, 1).toUpperCase() + part.slice(1);
 };
 
-export const getAllSubs = async (game, subs, createSub) => {
+export const getAllSubmissions = async (game, subs, createSub) => {
   if (game.phase !== 'play') return [];
 
   const users = await getUsersInGame(game._id);

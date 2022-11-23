@@ -1,7 +1,8 @@
 import { Router } from 'express';
 import { StoryModel } from './models.js';
 import { loadUser } from './users.js';
-import { joinPhase, upperFirst, lowerFirst, getAllSubs } from './utils.js';
+import { joinPhase, getAllSubmissions } from './utils.js';
+import { upperFirst, lowerFirst } from './utils.js';
 
 const punctRegex = /.*([.!?])$/;
 const quoteRegex = /["“”]/g;
@@ -49,7 +50,11 @@ const checkRoundCompletion = async (game, storyType) => {
   if (game.phase !== 'play') return [];
 
   const userToStory = (user) => ({ user: user, parts: [] });
-  storyType.stories = await getAllSubs(game, storyType.stories, userToStory);
+  storyType.stories = await getAllSubmissions(
+    game,
+    storyType.stories,
+    userToStory
+  );
 
   const waitingOnUsers = storyType.stories
     .filter((elem) => elem.parts.length <= storyType.round)
@@ -92,7 +97,7 @@ router.use(loadUser, loadStory);
 router.get('/', joinPhase, async (req, res) => {
   try {
     const storyType = req.storyType;
-    const waitingUsers = await checkRoundCompletion(req.game, storyType);
+    const waitingOnUsers = await checkRoundCompletion(req.game, storyType);
 
     if (req.game.phase === 'play') {
       const round = storyType.round;
@@ -108,7 +113,7 @@ router.get('/', joinPhase, async (req, res) => {
         prefix: prefixes[round],
         suffix: suffixes[round],
         placeholder: placeholders[round],
-        users: waitingUsers,
+        users: waitingOnUsers,
       });
     } else {
       return res.send({
