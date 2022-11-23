@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { StoryModel } from './models.js';
-import { loadUser, getUsersInGame } from './users.js';
-import { joinPhase } from './utils.js';
+import { loadUser } from './users.js';
+import { joinPhase, upperFirst, lowerFirst, getAllSubs } from './utils.js';
 
 const punctRegex = /.*([.!?])$/;
 const quoteRegex = /["“”]/g;
@@ -48,29 +48,15 @@ const loadStory = async (req, res, next) => {
 const checkRoundCompletion = async (game, storyType) => {
   if (game.phase !== 'play') return [];
 
-  const allUsers = await getUsersInGame(game._id);
-  const allUserSet = new Set(allUsers.map((user) => user._id.valueOf()));
-  const submittedUserSet = new Set(
-    storyType.stories.map((item) => item.user._id.valueOf())
-  );
+  const userToStory = (user) => ({ user: user, parts: [] });
+  storyType.stories = await getAllSubs(game, storyType.stories, userToStory);
 
-  storyType.stories = storyType.stories.filter((elem) =>
-    allUserSet.has(elem.user._id.valueOf())
-  );
-
-  const allStories = [
-    ...storyType.stories,
-    ...allUsers
-      .filter((user) => !submittedUserSet.has(user._id.valueOf()))
-      .map((user) => ({ user: user, parts: [] })),
-  ];
-
-  const waitingUsers = allStories
+  const waitingOnUsers = storyType.stories
     .filter((elem) => elem.parts.length <= storyType.round)
     .map((elem) => elem.user);
 
-  if (waitingUsers.length > 0) {
-    return waitingUsers.map((user) => user.nickname);
+  if (waitingOnUsers.length > 0) {
+    return waitingOnUsers.map((user) => user?.nickname);
   }
 
   storyType.round += 1;
@@ -157,9 +143,9 @@ router.put('/', async (req, res) => {
     let part = req.body.part.replaceAll(quoteRegex, '').trim();
     if (storyType.round > 1 && !punctRegex.test(part)) part += '.';
     if (storyType.round === 2 || storyType.round === 5) {
-      part = part.slice(0, 1).toLowerCase() + part.slice(1);
+      part = lowerFirst(part);
     } else {
-      part = part.slice(0, 1).toUpperCase() + part.slice(1);
+      part = upperFirst(part);
     }
 
     storyType.stories[userIndex].parts.push(part);

@@ -33,3 +33,29 @@ export const joinPhase = async (req, res, next) => {
     res.sendStatus(500);
   }
 };
+
+export const lowerFirst = (part) => {
+  return part.slice(0, 1).toLowerCase() + part.slice(1);
+};
+
+export const upperFirst = (part) => {
+  return part.slice(0, 1).toUpperCase() + part.slice(1);
+};
+
+export const getAllSubs = async (game, subs, createSub) => {
+  if (game.phase !== 'play') return [];
+
+  const users = await getUsersInGame(game._id);
+
+  const allUserSet = new Set(users.map((user) => user._id.valueOf()));
+  const subUserSet = new Set(subs.map((item) => item.user._id.valueOf()));
+
+  const filteredSubs = subs.filter((elem) =>
+    allUserSet.has(elem.user._id.valueOf())
+  );
+  const newSubs = users
+    .filter((user) => !subUserSet.has(user._id.valueOf()))
+    .map(createSub);
+
+  return [...filteredSubs, ...newSubs];
+};
