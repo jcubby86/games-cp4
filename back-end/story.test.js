@@ -18,7 +18,7 @@ describe('play game with one user', () => {
     //join game
     const userResponse = await axios.post(`${baseURL}/api/users`, {
       code: gameCode,
-      nickname: 'testUser',
+      nickname: 'TestUser',
     });
     const cookie = userResponse.headers['set-cookie'];
 
@@ -73,9 +73,9 @@ describe('play game with multiple users', () => {
 
   test('play game', async () => {
     const users = [
-      { nickname: 'testUser1' },
-      { nickname: 'testUser2' },
-      { nickname: 'testUser3' },
+      { nickname: 'TestUser1' },
+      { nickname: 'TestUser2' },
+      { nickname: 'TestUser3' },
     ];
     //join game
     for (let i = 0; i < users.length; i++) {
@@ -161,9 +161,9 @@ describe('play game with one user leaving partway through', () => {
 
   test('play game', async () => {
     const users = [
-      { nickname: 'testUser1' },
-      { nickname: 'testUser2' },
-      { nickname: 'testUser3' },
+      { nickname: 'TestUser1' },
+      { nickname: 'TestUser2' },
+      { nickname: 'TestUser3' },
     ];
     //join game
     for (let i = 0; i < users.length; i++) {

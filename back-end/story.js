@@ -1,13 +1,30 @@
 import { Router } from 'express';
 import { StoryModel } from './models.js';
 import { loadUser, getUsersInGame } from './users.js';
+import { joinPhase } from './utils.js';
 
-export const router = Router();
+const punctRegex = /.*([.!?])$/;
+const quoteRegex = /["“”]/g;
 
-const prompts = ["Man's name", "Woman's name", 'Activity', '', '', 'Activity'];
-const placeholder = ['', '(Man) ', '(Man) and (Woman) ', '', '', ''];
+const prompts = [
+  "Man's name:",
+  "Woman's name:",
+  'Activity:',
+  'Statement:',
+  'Statement:',
+  'Activity:',
+];
+const fillers = ['', '(Man) ', '(Man) and (Woman) ', '', '', ''];
+const placeholders = [
+  'Peter Pan',
+  'Elsa',
+  'dancing in the rain.',
+  'I like cheese.',
+  'What did you call me?',
+  'went skydiving with the dog.',
+];
 const prefixes = ['', 'and ', 'were ', 'He said, "', 'She said, "', 'So they '];
-const suffixes = [' ', ' ', '. ', '." ', '." ', '.'];
+const suffixes = [' ', ' ', ' ', '" ', '" ', ' '];
 
 export const createStory = async (game) => {
   const story = new StoryModel({
@@ -29,6 +46,8 @@ const loadStory = async (req, res, next) => {
 };
 
 const checkRoundCompletion = async (game, storyType) => {
+  if (game.phase !== 'play') return [];
+
   const allUsers = await getUsersInGame(game._id);
   const allUserSet = new Set(allUsers.map((user) => user._id.valueOf()));
   const submittedUserSet = new Set(
@@ -55,13 +74,14 @@ const checkRoundCompletion = async (game, storyType) => {
   }
 
   storyType.round += 1;
-  if (storyType.round >= prompts.length) await finishGame(game, storyType);
+  if (storyType.round >= fillers.length) await finishGame(game, storyType);
 
   await storyType.save();
   return [];
 };
 
 const finishGame = async (game, storyType) => {
+  if (game.phase === 'read') return;
   game.phase = 'read';
   await game.save();
 
@@ -80,23 +100,16 @@ const finishGame = async (game, storyType) => {
   }
 };
 
-router.get('/', loadUser, loadStory, async (req, res) => {
-  try {
-    if (req.game.phase === 'join') {
-      const users = await getUsersInGame(req.game._id);
-      return res.send({
-        phase: 'join',
-        users: users.map((user) => user.nickname),
-        code: req.game.code,
-        nickname: req.user.nickname,
-      });
-    }
+export const router = Router();
+router.use(loadUser, loadStory);
 
+router.get('/', joinPhase, async (req, res) => {
+  try {
     const storyType = req.storyType;
     const waitingUsers = await checkRoundCompletion(req.game, storyType);
-    const round = storyType.round;
 
     if (req.game.phase === 'play') {
+      const round = storyType.round;
       const userElem = storyType.stories.find((element) =>
         element.user._id.equals(req.user._id)
       );
@@ -104,10 +117,11 @@ router.get('/', loadUser, loadStory, async (req, res) => {
       return res.send({
         phase: userElem?.parts.length > round ? 'wait' : 'play',
         round: round,
+        filler: fillers[round],
         prompt: prompts[round],
-        placeholder: placeholder[round],
         prefix: prefixes[round],
         suffix: suffixes[round],
+        placeholder: placeholders[round],
         users: waitingUsers,
       });
     } else {
@@ -124,7 +138,7 @@ router.get('/', loadUser, loadStory, async (req, res) => {
   }
 });
 
-router.put('/', loadUser, loadStory, async (req, res) => {
+router.put('/', async (req, res) => {
   try {
     if (req.game.phase !== 'play') return res.sendStatus(403);
 
@@ -140,7 +154,15 @@ router.put('/', loadUser, loadStory, async (req, res) => {
     if (storyType.stories[userIndex].parts.length > storyType.round)
       return res.sendStatus(403);
 
-    storyType.stories[userIndex].parts.push(req.body.part);
+    let part = req.body.part.replaceAll(quoteRegex, '').trim();
+    if (storyType.round > 1 && !punctRegex.test(part)) part += '.';
+    if (storyType.round === 2 || storyType.round === 5) {
+      part = part.slice(0, 1).toLowerCase() + part.slice(1);
+    } else {
+      part = part.slice(0, 1).toUpperCase() + part.slice(1);
+    }
+
+    storyType.stories[userIndex].parts.push(part);
 
     await storyType.save();
     return res.sendStatus(201);

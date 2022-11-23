@@ -12,6 +12,7 @@ const Story = (props) => {
   const [prefix, setPrefix] = useState('');
   const [suffix, setSuffix] = useState('');
   const [story, setStory] = useState('');
+  const [filler, setFiller] = useState('');
   const partRef = useRef();
 
   const navigate = useNavigate();
@@ -25,6 +26,7 @@ const Story = (props) => {
       setPlaceholder(response.data.placeholder);
       setPrefix(response.data.prefix);
       setSuffix(response.data.suffix);
+      setFiller(response.data.filler);
       setStory(response.data.story);
     } catch (error) {
       alert('An error has occurred');
@@ -36,9 +38,20 @@ const Story = (props) => {
   const sendPart = async (e) => {
     try {
       e.preventDefault();
-      await axios.put('/api/stories', { part: partRef.current.value });
+      if (!partRef.current.value) {
+        if (
+          !window.confirm(
+            "You haven't typed anything in! Do you want to use the placeholder text?"
+          )
+        )
+          return;
+      }
+
+      await axios.put('/api/stories', {
+        part: partRef.current.value || placeholder,
+      });
       setPhase('');
-      partRef.current = '';
+      partRef.current.value = '';
     } catch (error) {
       alert('An error has occurred');
       // props.setCode('');
@@ -67,11 +80,12 @@ const Story = (props) => {
   } else if (phase === 'play') {
     return (
       <form className="w-100" onSubmit={sendPart}>
+        <h3 className="text-center w-100">{prompt}</h3>
         <p className="form-label">
-          {placeholder} {prefix}
+          {filler} {prefix}
         </p>
         <textarea
-          placeholder={prompt}
+          placeholder={placeholder}
           ref={partRef}
           className="form-control"
           rows={3}
@@ -90,7 +104,9 @@ const Story = (props) => {
     return (
       <div className="w-100">
         <h3 className="text-center w-100">Waiting for other players...</h3>
-        {phase === 'wait' && <Users users={users}></Users>}
+        {phase === 'wait' && users && users.length && (
+          <Users users={users}></Users>
+        )}
       </div>
     );
   }
