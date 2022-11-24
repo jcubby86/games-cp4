@@ -23,7 +23,7 @@ const Story = (props) => {
       setPhase(response.data.phase);
       setUsers(response.data.users);
       setPrompt(response.data.prompt);
-      setPlaceholder(response.data.placeholder);
+      setPlaceholder((old) => old || response.data.placeholder);
       setPrefix(response.data.prefix);
       setSuffix(response.data.suffix);
       setFiller(response.data.filler);
@@ -51,6 +51,7 @@ const Story = (props) => {
         part: partRef.current.value || placeholder,
       });
       setPhase('');
+      setPlaceholder('');
       partRef.current.value = '';
     } catch (error) {
       alert('An error has occurred');

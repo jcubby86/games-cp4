@@ -1,0 +1,18 @@
+export default [
+  'Wynona Ryder',
+  'The Queen of England',
+  'Fiona',
+  'Mary',
+  'Elsa',
+  'Beyonce',
+  'Grandma',
+  'Mom',
+  'Honey Boo Boo',
+  'Princess Zelda',
+  'Rashida Jones',
+  'Leslie Knope',
+  'Mariah Carey',
+  'Queen Victoria',
+  'Anastasia',
+  'Dolores Umbridge',
+];

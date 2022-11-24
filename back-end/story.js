@@ -4,6 +4,13 @@ import { loadUser } from './users.js';
 import { joinPhase, getAllSubmissions } from './utils.js';
 import { upperFirst, lowerFirst } from './utils.js';
 
+import male_names from './generation/male_names.js';
+import female_names from './generation/female_names.js';
+import actions_past from './generation/actions_past.js';
+import actions_present from './generation/actions_present.js';
+import statements from './generation/statements.js';
+import { randomElement } from './generation/generationUtils.js';
+
 const punctRegex = /.*([.!?])$/;
 const quoteRegex = /["“”]/g;
 
@@ -17,12 +24,12 @@ const prompts = [
 ];
 const fillers = ['', '(Man) ', '(Man) and (Woman) ', '', '', ''];
 const placeholders = [
-  'Peter Pan',
-  'Elsa',
-  'dancing in the rain.',
-  'I like cheese.',
-  'What did you call me?',
-  'went skydiving with the dog.',
+  male_names,
+  female_names,
+  actions_present,
+  statements,
+  statements,
+  actions_past,
 ];
 const prefixes = ['', 'and ', 'were ', 'He said, "', 'She said, "', 'So they '];
 const suffixes = [' ', ' ', ' ', '" ', '" ', ' '];
@@ -110,7 +117,7 @@ router.get('/', joinPhase, async (req, res) => {
         prompt: prompts[round],
         prefix: prefixes[round],
         suffix: suffixes[round],
-        placeholder: placeholders[round],
+        placeholder: randomElement(placeholders[round]),
         users: waitingOnUsers,
       });
     } else {

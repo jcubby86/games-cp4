@@ -19,7 +19,7 @@ const Names = (props) => {
       setPhase(response.data.phase);
       setUsers(response.data.users);
       setNames(response.data.names);
-      setPlaceholder(response.data.placeholder);
+      setPlaceholder((old) => old || response.data.placeholder);
     } catch (error) {
       alert('An error has occurred');
       // props.setCode('');
@@ -39,6 +39,7 @@ const Names = (props) => {
         text: entryRef.current.value,
       });
       setPhase('');
+      setPlaceholder('');
     } catch (error) {
       if (error.response.status === 400) {
         alert(error.response.data);

@@ -4,6 +4,10 @@ import { loadUser } from './users.js';
 import { joinPhase, getAllSubmissions } from './utils.js';
 import { shuffleArray, upperFirst } from './utils.js';
 
+import male_names from './generation/male_names.js';
+import female_names from './generation/female_names.js';
+import { randomElement } from './generation/generationUtils.js';
+
 export const createNames = async (game) => {
   const names = new NamesModel({
     game: game._id,
@@ -59,6 +63,7 @@ router.get('/', joinPhase, async (req, res) => {
       return res.send({
         phase: userElem?.text === '' ? 'play' : 'wait',
         users: waitingOnUsers,
+        placeholder: randomElement(randomElement([male_names, female_names])),
       });
     } else if (req.game.phase === 'read') {
       return res.send({

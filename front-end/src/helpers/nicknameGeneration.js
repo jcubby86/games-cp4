@@ -74,11 +74,9 @@ const generateNickname = () => {
   let myArr;
 
   if (index === 0) {
-    myArr = [adjectives, verbs, getSubjectArr()];
-  } else if (index === 1) {
-    myArr = [getSubjectArr(), verbs, getSubjectArr()];
-  } else {
     myArr = [verbs, adjectives, getSubjectArr()];
+  } else {
+    myArr = [getSubjectArr(), verbs, getSubjectArr()];
   }
 
   return myArr.map((x) => randomElement(x)).join('-');
