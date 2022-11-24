@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import StartGame from '../components/StartGame';
-import Users from '../components/Users';
+import List from '../components/List';
 import axios from 'axios';
 
 const Story = (props) => {
@@ -104,9 +104,7 @@ const Story = (props) => {
     return (
       <div className="w-100">
         <h3 className="text-center w-100">Waiting for other players...</h3>
-        {phase === 'wait' && users && users.length && (
-          <Users users={users}></Users>
-        )}
+        {phase === 'wait' && <List items={users}></List>}
       </div>
     );
   }

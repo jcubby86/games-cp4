@@ -76,10 +76,9 @@ const Create = (props) => {
               He Said She Said
             </button>
             <button
-              disabled
               className={
                 'btn opacity-75 ' +
-                (selected === 'names' ? 'btn-primary' : 'btn-outline-secondary')
+                (selected === 'names' ? 'btn-primary' : 'btn-outline-primary')
               }
               onClick={(e) => {
                 e.preventDefault();

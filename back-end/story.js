@@ -58,11 +58,9 @@ const checkRoundCompletion = async (game, storyType) => {
 
   const waitingOnUsers = storyType.stories
     .filter((elem) => elem.parts.length <= storyType.round)
-    .map((elem) => elem.user);
+    .map((elem) => elem.user?.nickname);
 
-  if (waitingOnUsers.length > 0) {
-    return waitingOnUsers.map((user) => user?.nickname);
-  }
+  if (waitingOnUsers.length > 0) return waitingOnUsers;
 
   storyType.round += 1;
   if (storyType.round >= fillers.length) await finishGame(game, storyType);
@@ -139,8 +137,8 @@ router.put('/', async (req, res) => {
       element.user._id.equals(req.user._id)
     );
     if (userIndex === -1) {
+      userIndex = storyType.stories.length;
       storyType.stories.push({ user: req.user, parts: [] });
-      userIndex = storyType.stories.length - 1;
     }
     if (storyType.stories[userIndex].parts.length > storyType.round)
       return res.sendStatus(403);
