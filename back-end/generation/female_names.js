@@ -15,4 +15,13 @@ export default [
   'Queen Victoria',
   'Anastasia',
   'Dolores Umbridge',
+  'Thumbelina',
+  'Miss Piggy',
+  'Hildegard von Bingen',
+  'Ursula',
+  'Melania Trump',
+  'Xena warrior princess',
+  'Leia',
+  'Michelle Obama',
+  'She-hulk',
 ];

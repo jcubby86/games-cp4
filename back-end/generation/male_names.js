@@ -16,4 +16,10 @@ export default [
   'Grandpa',
   'Dad',
   'Mario',
+  'Christian Bale',
+  'Judas',
+  'Humphrey Higgins',
+  'Frankinstein',
+  'Snape',
+  'Jafar',
 ];
