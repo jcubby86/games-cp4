@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+// import { useNavigate } from 'react-router-dom';
 import StartGame from '../components/StartGame';
 import List from '../components/List';
 import axios from 'axios';
@@ -15,7 +15,7 @@ const Story = (props) => {
   const [filler, setFiller] = useState('');
   const partRef = useRef();
 
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   const pollStatus = async () => {
     try {
@@ -31,7 +31,7 @@ const Story = (props) => {
     } catch (error) {
       alert('An error has occurred');
       // props.setCode('');
-      navigate('/');
+      // navigate('/');
     }
   };
 
@@ -56,7 +56,7 @@ const Story = (props) => {
     } catch (error) {
       alert('An error has occurred');
       // props.setCode('');
-      navigate('/');
+      // navigate('/');
     }
   };
 

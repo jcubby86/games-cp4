@@ -110,14 +110,15 @@ router.get('/', joinPhase, async (req, res) => {
         element.user._id.equals(req.user._id)
       );
 
+      const waiting = userElem?.parts.length > round;
       return res.send({
-        phase: userElem?.parts.length > round ? 'wait' : 'play',
+        phase: waiting ? 'wait' : 'play',
         round: round,
         filler: fillers[round],
         prompt: prompts[round],
         prefix: prefixes[round],
         suffix: suffixes[round],
-        placeholder: randomElement(placeholders[round]),
+        placeholder: waiting ? '' : randomElement(placeholders[round]),
         users: waitingOnUsers,
       });
     } else {

@@ -60,9 +60,11 @@ router.get('/', joinPhase, async (req, res) => {
         elem.user._id.equals(req.user._id)
       );
 
+      const waiting = userElem?.text !== '';
       return res.send({
-        phase: userElem?.text === '' ? 'play' : 'wait',
+        phase: waiting ? 'wait' : 'play',
         users: waitingOnUsers,
+        text: userElem?.text,
         placeholder: randomElement(randomElement([male_names, female_names])),
       });
     } else if (req.game.phase === 'read') {
