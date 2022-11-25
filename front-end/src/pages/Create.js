@@ -48,7 +48,7 @@ const Create = (props) => {
           <input
             id="nicknameInput"
             className="form-control"
-            type="text"
+            type="search"
             autoComplete="off"
             spellCheck="false"
             autoCorrect="off"

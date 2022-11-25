@@ -50,7 +50,7 @@ const Join = (props) => {
           <input
             id="codeInput"
             className="form-control"
-            type="text"
+            type="search"
             autoComplete="off"
             spellCheck="false"
             autoCorrect="off"
@@ -68,7 +68,7 @@ const Join = (props) => {
           <input
             id="nicknameInput"
             className="form-control"
-            type="text"
+            type="search"
             autoComplete="off"
             spellCheck="false"
             autoCorrect="off"
