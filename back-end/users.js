@@ -103,6 +103,7 @@ router.get('/', loadUser, async (req, res) => {
 router.get('/:code', async (req, res) => {
   try {
     let game = await GameModel.findOne({ code: req.params.code });
+    if (!game) return res.sendStatus(404);
     const users = await getUsersInGame(game._id);
     res.send(users);
   } catch (err) {

@@ -6,6 +6,7 @@ import { createNames } from './names.js';
 export const router = Router();
 
 const validGameTypes = { story: createStory, names: createNames };
+const gameTitles = { story: 'He Said She Said', names: 'The Name Game' };
 
 const getCode = async () => {
   while (true) {
@@ -53,7 +54,7 @@ router.get('/:code', async (req, res) => {
       return res.sendStatus(404);
     }
 
-    res.send(game);
+    res.send({ ...game, title: gameTitles[game.type] });
   } catch (err) {
     console.error(err);
     return res.sendStatus(500);
