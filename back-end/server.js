@@ -6,6 +6,7 @@ import { connect } from 'mongoose';
 import { router as gameRoutes } from './games.js';
 import { router as userRoutes } from './users.js';
 import { router as storyRoutes } from './story.js';
+import { router as namesRoutes } from './names.js';
 
 dotenv.config();
 
@@ -31,9 +32,15 @@ app.use(
   })
 );
 
+// app.use((req, res, next) => {
+//   console.log(req.originalUrl);
+//   next();
+// });
+
 app.use('/api/games', gameRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/stories', storyRoutes);
+app.use('/api/names', namesRoutes);
 
 const runPort = process.env.NODE_PORT || 3001;
 app.listen(runPort, () => console.info(`Server listening on port ${runPort}!`));

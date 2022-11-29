@@ -4,30 +4,22 @@ import StartGame from '../components/StartGame';
 import List from '../components/List';
 import axios from 'axios';
 
-const Story = (props) => {
+const Names = (props) => {
   const [phase, setPhase] = useState('');
   const [users, setUsers] = useState([]);
-  const [prompt, setPrompt] = useState('');
+  const [names, setNames] = useState([]);
   const [placeholder, setPlaceholder] = useState('');
-  const [prefix, setPrefix] = useState('');
-  const [suffix, setSuffix] = useState('');
-  const [story, setStory] = useState('');
-  const [filler, setFiller] = useState('');
-  const partRef = useRef();
+  const entryRef = useRef();
 
   // const navigate = useNavigate();
 
   const pollStatus = async () => {
     try {
-      const response = await axios.get('/api/stories');
+      const response = await axios.get('/api/names');
       setPhase(response.data.phase);
       setUsers(response.data.users);
-      setPrompt(response.data.prompt);
+      setNames(response.data.names);
       setPlaceholder((old) => old || response.data.placeholder);
-      setPrefix(response.data.prefix);
-      setSuffix(response.data.suffix);
-      setFiller(response.data.filler);
-      setStory(response.data.story);
     } catch (error) {
       alert('An error has occurred');
       // props.setCode('');
@@ -35,35 +27,41 @@ const Story = (props) => {
     }
   };
 
-  const sendPart = async (e) => {
+  const sendEntry = async (e) => {
     try {
       e.preventDefault();
-      if (!partRef.current.value) {
-        if (
-          !window.confirm(
-            "You haven't typed anything in! Do you want to use the placeholder text?"
-          )
-        )
-          return;
+      if (!entryRef.current.value) {
+        alert('Please enter a name');
+        return;
       }
 
-      await axios.put('/api/stories', {
-        part: partRef.current.value || placeholder,
+      await axios.put('/api/names', {
+        text: entryRef.current.value,
       });
       setPhase('');
       setPlaceholder('');
-      partRef.current.value = '';
     } catch (error) {
-      alert('An error has occurred');
-      // props.setCode('');
-      // navigate('/');
+      if (error.response.status === 400) {
+        alert(error.response.data);
+      } else {
+        alert('An error has occurred');
+        // props.setCode('');
+        // navigate('/');
+      }
     }
+  };
+
+  const endGame = async (e) => {
+    e.preventDefault();
+    await axios.put(`/api/games/${props.code}`, { phase: 'end' });
+    setPhase('end');
   };
 
   useEffect(() => {
     if (!phase) pollStatus();
     const timer = setInterval(() => {
-      if (phase === 'join' || phase === 'wait') pollStatus();
+      if (phase === 'join' || phase === 'wait' || phase === 'read')
+        pollStatus();
     }, 3000);
 
     return () => clearInterval(timer);
@@ -74,24 +72,19 @@ const Story = (props) => {
       <StartGame
         code={props.code}
         users={users}
-        title={'He Said She Said'}
+        title={'The Name Game'}
         setPhase={setPhase}
       ></StartGame>
     );
   } else if (phase === 'play') {
     return (
-      <form className="w-100" onSubmit={sendPart}>
-        <h3 className="text-center w-100">{prompt}</h3>
-        <p className="form-label">
-          {filler} {prefix}
-        </p>
-        <textarea
+      <form className="w-100" onSubmit={sendEntry}>
+        <h3 className="text-center w-100">Enter a name:</h3>
+        <input
           placeholder={placeholder}
-          ref={partRef}
+          ref={entryRef}
           className="form-control"
-          rows={3}
         />
-        <p className="form-label">{suffix}</p>
         <input
           type="submit"
           value="Send"
@@ -100,7 +93,20 @@ const Story = (props) => {
       </form>
     );
   } else if (phase === 'read') {
-    return <p className="lh-lg fs-5 px-2 w-100">{story}</p>;
+    return (
+      <div className="w-100 d-flex flex-column">
+        <div className="w-100">
+          <h3 className="text-center w-100">Names:</h3>
+          <List items={names}></List>
+        </div>
+
+        <button className={'btn btn-danger mt-4'} onClick={endGame}>
+          Hide Names
+        </button>
+      </div>
+    );
+  } else if (phase === 'end') {
+    return <h3 className="w-100 text-center">Enjoy the game!</h3>;
   } else {
     return (
       <div className="w-100">
@@ -111,4 +117,4 @@ const Story = (props) => {
   }
 };
 
-export default Story;
+export default Names;

@@ -7,6 +7,7 @@ const Join = (props) => {
   const suggestion = useRef(generateNickname());
   const [nickname, setNickname] = useState(props.nickname);
   const [code, setCode] = useState(props.code);
+  const [gameType, setGameType] = useState({});
   const navigate = useNavigate();
 
   const joinGame = async (e) => {
@@ -35,9 +36,26 @@ const Join = (props) => {
     }
   };
 
+  const checkGameType = async (gameCode) => {
+    try {
+      setCode(gameCode);
+      if (gameCode.length === 4) {
+        const result = await axios.get('/api/games/' + gameCode);
+        setGameType({
+          title: result.data.title,
+          valid: true,
+        });
+      } else {
+        setGameType({});
+      }
+    } catch (error) {
+      setGameType({ title: 'Game not found', valid: false });
+    }
+  };
+
   useEffect(() => {
     setNickname(props.nickname);
-    setCode(props.code);
+    checkGameType(props.code);
   }, [props]);
 
   return (
@@ -50,14 +68,14 @@ const Join = (props) => {
           <input
             id="codeInput"
             className="form-control"
-            type="text"
+            type="search"
             autoComplete="off"
             spellCheck="false"
             autoCorrect="off"
             placeholder="abxy"
             maxLength="4"
             value={code}
-            onChange={(e) => setCode(e.target.value)}
+            onChange={(e) => checkGameType(e.target.value.toLowerCase())}
           />
         </div>
 
@@ -68,7 +86,7 @@ const Join = (props) => {
           <input
             id="nicknameInput"
             className="form-control"
-            type="text"
+            type="search"
             autoComplete="off"
             spellCheck="false"
             autoCorrect="off"
@@ -79,12 +97,18 @@ const Join = (props) => {
         </div>
 
         <input
+          disabled={!gameType.valid}
           type="submit"
-          className="form-control btn btn-success col-12 mt-4"
+          className="form-control btn btn-success col-12 mt-3"
           value={
-            props.code && props.code === code ? 'Return to Game' : 'Join Game'
+            gameType.valid && props.code && props.code === code
+              ? 'Return to Game'
+              : 'Join Game'
           }
         />
+        <div className={gameType.valid ? 'text-muted' : 'text-danger'}>
+          {gameType.title}
+        </div>
       </form>
     </div>
   );

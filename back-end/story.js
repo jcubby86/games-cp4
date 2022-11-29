@@ -1,41 +1,38 @@
 import { Router } from 'express';
-import { Schema, model } from 'mongoose';
-import { loadUser, getUsersInGame } from './users.js';
+import { StoryModel } from './models.js';
+import { loadUser } from './users.js';
+import { joinPhase, getAllSubmissions } from './utils.js';
+import { upperFirst, lowerFirst } from './utils.js';
 
-export const router = Router();
+import male_names from './generation/male_names.js';
+import female_names from './generation/female_names.js';
+import actions_past from './generation/actions_past.js';
+import actions_present from './generation/actions_present.js';
+import statements from './generation/statements.js';
+import { randomElement } from './generation/generationUtils.js';
 
-const storySchema = new Schema({
-  game: {
-    type: Schema.ObjectId,
-    ref: 'Game',
-    required: true,
-  },
-  stories: [
-    {
-      user: {
-        type: Schema.ObjectId,
-        ref: 'User',
-      },
-      parts: [String],
-    },
-  ],
-  finalStories: [
-    {
-      user: {
-        type: Schema.ObjectId,
-        ref: 'User',
-      },
-      text: String,
-    },
-  ],
-  round: { type: Number, required: true, default: 0 },
-});
-const StoryModel = model('Story', storySchema);
+const punctRegex = /.*([.!?])$/;
+const quoteRegex = /["“”]/g;
 
-const prompts = ["Man's name", "Woman's name", 'Activity', '', '', 'Activity'];
-const placeholder = ['', '(Man) ', '(Man) and (Woman) ', '', '', ''];
+const prompts = [
+  "Man's name:",
+  "Woman's name:",
+  'Activity:',
+  'Statement:',
+  'Statement:',
+  'Activity:',
+];
+const fillers = ['', '(Man) ', '(Man) and (Woman) ', '', '', ''];
+const placeholders = [
+  male_names,
+  female_names,
+  actions_present,
+  statements,
+  statements,
+  actions_past,
+];
 const prefixes = ['', 'and ', 'were ', 'He said, "', 'She said, "', 'So they '];
-const suffixes = [' ', ' ', '. ', '." ', '." ', '.'];
+const suffixes = [' ', ' ', ' ', '" ', '" ', ' '];
 
 export const createStory = async (game) => {
   const story = new StoryModel({
@@ -57,39 +54,30 @@ const loadStory = async (req, res, next) => {
 };
 
 const checkRoundCompletion = async (game, storyType) => {
-  const allUsers = await getUsersInGame(game._id);
-  const allUserSet = new Set(allUsers.map((user) => user._id.valueOf()));
-  const submittedUserSet = new Set(
-    storyType.stories.map((item) => item.user._id.valueOf())
+  if (game.phase !== 'play') return [];
+
+  const userToStory = (user) => ({ user: user, parts: [] });
+  storyType.stories = await getAllSubmissions(
+    game,
+    storyType.stories,
+    userToStory
   );
 
-  storyType.stories = storyType.stories.filter((elem) =>
-    allUserSet.has(elem.user._id.valueOf())
-  );
-
-  const allStories = [
-    ...storyType.stories,
-    ...allUsers
-      .filter((user) => !submittedUserSet.has(user._id.valueOf()))
-      .map((user) => ({ user: user, parts: [] })),
-  ];
-
-  const waitingUsers = allStories
+  const waitingOnUsers = storyType.stories
     .filter((elem) => elem.parts.length <= storyType.round)
-    .map((elem) => elem.user);
+    .map((elem) => elem.user?.nickname);
 
-  if (waitingUsers.length > 0) {
-    return waitingUsers.map((user) => user.nickname);
-  }
+  if (waitingOnUsers.length > 0) return waitingOnUsers;
 
   storyType.round += 1;
-  if (storyType.round >= prompts.length) await finishGame(game, storyType);
+  if (storyType.round >= fillers.length) await finishGame(game, storyType);
 
   await storyType.save();
   return [];
 };
 
 const finishGame = async (game, storyType) => {
+  if (game.phase === 'read') return;
   game.phase = 'read';
   await game.save();
 
@@ -108,35 +96,30 @@ const finishGame = async (game, storyType) => {
   }
 };
 
-router.get('/', loadUser, loadStory, async (req, res) => {
-  try {
-    if (req.game.phase === 'join') {
-      const users = await getUsersInGame(req.game._id);
-      return res.send({
-        phase: 'join',
-        users: users.map((user) => user.nickname),
-        code: req.game.code,
-        nickname: req.user.nickname,
-      });
-    }
+export const router = Router();
+router.use(loadUser, loadStory);
 
+router.get('/', joinPhase, async (req, res) => {
+  try {
     const storyType = req.storyType;
-    const waitingUsers = await checkRoundCompletion(req.game, storyType);
-    const round = storyType.round;
+    const waitingOnUsers = await checkRoundCompletion(req.game, storyType);
 
     if (req.game.phase === 'play') {
+      const round = storyType.round;
       const userElem = storyType.stories.find((element) =>
         element.user._id.equals(req.user._id)
       );
 
+      const waiting = userElem?.parts.length > round;
       return res.send({
-        phase: userElem?.parts.length > round ? 'wait' : 'play',
+        phase: waiting ? 'wait' : 'play',
         round: round,
+        filler: fillers[round],
         prompt: prompts[round],
-        placeholder: placeholder[round],
         prefix: prefixes[round],
         suffix: suffixes[round],
-        users: waitingUsers,
+        placeholder: waiting ? '' : randomElement(placeholders[round]),
+        users: waitingOnUsers,
       });
     } else {
       return res.send({
@@ -152,7 +135,7 @@ router.get('/', loadUser, loadStory, async (req, res) => {
   }
 });
 
-router.put('/', loadUser, loadStory, async (req, res) => {
+router.put('/', async (req, res) => {
   try {
     if (req.game.phase !== 'play') return res.sendStatus(403);
 
@@ -162,13 +145,21 @@ router.put('/', loadUser, loadStory, async (req, res) => {
       element.user._id.equals(req.user._id)
     );
     if (userIndex === -1) {
+      userIndex = storyType.stories.length;
       storyType.stories.push({ user: req.user, parts: [] });
-      userIndex = storyType.stories.length - 1;
     }
     if (storyType.stories[userIndex].parts.length > storyType.round)
       return res.sendStatus(403);
 
-    storyType.stories[userIndex].parts.push(req.body.part);
+    let part = req.body.part.replaceAll(quoteRegex, '').trim();
+    if (storyType.round > 1 && !punctRegex.test(part)) part += '.';
+    if (storyType.round === 2 || storyType.round === 5) {
+      part = lowerFirst(part);
+    } else {
+      part = upperFirst(part);
+    }
+
+    storyType.stories[userIndex].parts.push(part);
 
     await storyType.save();
     return res.sendStatus(201);

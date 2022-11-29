@@ -7,6 +7,7 @@ import Home from './pages/Home';
 import Story from './pages/Story';
 import Join from './pages/Join';
 import Create from './pages/Create';
+import Names from './pages/Names';
 
 function App() {
   const [nickname, setNickname] = useState('');
@@ -70,6 +71,10 @@ function App() {
           <Route
             path="story"
             element={<Story code={code} setCode={setCode} />}
+          />
+          <Route
+            path="names"
+            element={<Names code={code} setCode={setCode} />}
           />
           <Route path="*" element={<Home gameType={gameType} code={code} />} />
         </Route>

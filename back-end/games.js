@@ -1,21 +1,12 @@
 import { Router } from 'express';
-import { Schema, model } from 'mongoose';
+import { GameModel } from './models.js';
 import { createStory } from './story.js';
+import { createNames } from './names.js';
 
 export const router = Router();
 
-const gameSchema = new Schema(
-  {
-    type: { type: String, required: true },
-    code: { type: String, required: true },
-    phase: { type: String, required: true },
-  },
-  { timestamps: true }
-);
-
-export const GameModel = model('Game', gameSchema);
-
-const validGameTypes = { story: createStory };
+const validGameTypes = { story: createStory, names: createNames };
+const gameTitles = { story: 'He Said She Said', names: 'The Name Game' };
 
 const getCode = async () => {
   while (true) {
@@ -63,7 +54,7 @@ router.get('/:code', async (req, res) => {
       return res.sendStatus(404);
     }
 
-    res.send(game);
+    res.send({ ...game, title: gameTitles[game.type] });
   } catch (err) {
     console.error(err);
     return res.sendStatus(500);

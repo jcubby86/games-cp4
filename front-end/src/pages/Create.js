@@ -48,7 +48,7 @@ const Create = (props) => {
           <input
             id="nicknameInput"
             className="form-control"
-            type="text"
+            type="search"
             autoComplete="off"
             spellCheck="false"
             autoCorrect="off"
@@ -76,10 +76,9 @@ const Create = (props) => {
               He Said She Said
             </button>
             <button
-              disabled
               className={
                 'btn opacity-75 ' +
-                (selected === 'names' ? 'btn-primary' : 'btn-outline-secondary')
+                (selected === 'names' ? 'btn-primary' : 'btn-outline-primary')
               }
               onClick={(e) => {
                 e.preventDefault();

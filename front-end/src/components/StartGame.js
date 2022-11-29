@@ -1,5 +1,5 @@
 import axios from 'axios';
-import Users from './Users';
+import List from './List';
 
 const StartGame = (props) => {
   const startGame = async (e) => {
@@ -50,7 +50,7 @@ const StartGame = (props) => {
           />
         </form>
         <h3 className="text-center mt-5">Players:</h3>
-        <Users users={props.users}></Users>
+        <List items={props.users}></List>
       </div>
     </>
   );
