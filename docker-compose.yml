@@ -7,7 +7,7 @@ services:
       tags:
         - 'ghcr.io/jcubby86/games-app:latest'
         - 'ghcr.io/jcubby86/games-app:v2.0.0'
-    image: games-app:latest
+    image: ghcr.io/jcubby86/games-app:v2.0.0
     ports:
       - '3020:80'
     environment:
@@ -20,7 +20,7 @@ services:
       tags:
         - 'ghcr.io/jcubby86/games-backend:latest'
         - 'ghcr.io/jcubby86/games-backend:v2.0.0'
-    image: games-backend:latest
+    image: ghcr.io/jcubby86/games-backend:v2.0.0
     ports:
       - '3000'
     environment:
