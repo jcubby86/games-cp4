@@ -2,14 +2,18 @@ import { useState, useEffect, useRef } from 'react';
 // import { useNavigate } from 'react-router-dom';
 import StartGame from '../components/StartGame';
 import List from '../components/List';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 
-const Names = (props) => {
+interface NamesProps {
+  code: string;
+  setCode: React.Dispatch<React.SetStateAction<string>>;
+}
+const Names = (props: NamesProps) => {
   const [phase, setPhase] = useState('');
   const [users, setUsers] = useState([]);
   const [names, setNames] = useState([]);
   const [placeholder, setPlaceholder] = useState('');
-  const entryRef = useRef();
+  const entryRef = useRef<HTMLInputElement>(null);
 
   // const navigate = useNavigate();
 
@@ -27,22 +31,23 @@ const Names = (props) => {
     }
   };
 
-  const sendEntry = async (e) => {
+  const sendEntry = async (e: React.FormEvent) => {
     try {
       e.preventDefault();
-      if (!entryRef.current.value) {
+      if (!entryRef.current?.value) {
         alert('Please enter a name');
         return;
       }
 
       await axios.put('/api/names', {
-        text: entryRef.current.value,
+        text: entryRef.current.value
       });
       setPhase('');
       setPlaceholder('');
-    } catch (error) {
-      if (error.response.status === 400) {
-        alert(error.response.data);
+    } catch (e: unknown) {
+      const err = e as AxiosError;
+      if (err?.response?.status === 400) {
+        alert(err.response.data);
       } else {
         alert('An error has occurred');
         // props.setCode('');
@@ -51,7 +56,7 @@ const Names = (props) => {
     }
   };
 
-  const endGame = async (e) => {
+  const endGame = async (e: React.MouseEvent) => {
     e.preventDefault();
     await axios.put(`/api/games/${props.code}`, { phase: 'end' });
     setPhase('end');

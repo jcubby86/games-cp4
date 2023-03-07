@@ -5,7 +5,7 @@ const foods = [
   'danish',
   'eclair',
   'chocolate',
-  'cheese',
+  'cheese'
 ];
 const animals = [
   'aphid',
@@ -14,7 +14,7 @@ const animals = [
   'monkey',
   'shrimp',
   'zebra',
-  'flamingo',
+  'flamingo'
 ];
 const objects = [
   'frost',
@@ -26,7 +26,7 @@ const objects = [
   'ring',
   'tree',
   'oak',
-  'cable',
+  'cable'
 ];
 const places = [
   'saloon',
@@ -36,7 +36,7 @@ const places = [
   'ocean',
   'town',
   'chapel',
-  'beach',
+  'beach'
 ];
 const verbs = [
   'stand',
@@ -49,7 +49,7 @@ const verbs = [
   'think',
   'invent',
   'join',
-  'goto',
+  'goto'
 ];
 const adjectives = [
   'dirty',
@@ -63,11 +63,12 @@ const adjectives = [
   'yellow',
   'purple',
   'limp',
-  'funky',
+  'funky'
 ];
 
-const randomNumber = (limit) => Math.floor(Math.random() * limit);
-const randomElement = (arr) => arr[randomNumber(arr.length)];
+const randomNumber = (limit: number) => Math.floor(Math.random() * limit);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const randomElement = (arr: any[]) => arr[randomNumber(arr.length)];
 const getSubjectArr = () => randomElement([objects, places, animals, foods]);
 const generateNickname = () => {
   const index = randomNumber(3);

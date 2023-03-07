@@ -1,16 +1,28 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import generateNickname from '../helpers/nicknameGeneration';
 
-const Join = (props) => {
+interface GameType {
+  title?: string | null;
+  valid?: boolean | null;
+}
+interface JoinProps {
+  code: string;
+  nickname: string;
+  setNickname: React.Dispatch<React.SetStateAction<string>>;
+  setGameType: React.Dispatch<React.SetStateAction<string>>;
+  setCode: React.Dispatch<React.SetStateAction<string>>;
+}
+
+const Join = (props: JoinProps) => {
   const suggestion = useRef(generateNickname());
   const [nickname, setNickname] = useState(props.nickname);
   const [code, setCode] = useState(props.code);
-  const [gameType, setGameType] = useState({});
+  const [gameType, setGameType] = useState<GameType>({});
   const navigate = useNavigate();
 
-  const joinGame = async (e) => {
+  const joinGame = async (e: React.FormEvent) => {
     try {
       e.preventDefault();
       if (code?.length !== 4) {
@@ -20,15 +32,16 @@ const Join = (props) => {
 
       const response = await axios.post('/api/users', {
         nickname: nickname.toLowerCase() || suggestion.current,
-        code: code.toLowerCase(),
+        code: code.toLowerCase()
       });
 
       props.setNickname(response.data.nickname);
       props.setCode(response.data.game.code);
       props.setGameType(response.data.game.type);
       navigate('/' + response.data.game.type);
-    } catch (err) {
-      if (err.response.status === 400) {
+    } catch (e: unknown) {
+      const err = e as AxiosError;
+      if (err?.response?.status === 400) {
         alert(err.response.data);
       } else {
         alert('Error joining game');
@@ -36,14 +49,14 @@ const Join = (props) => {
     }
   };
 
-  const checkGameType = async (gameCode) => {
+  const checkGameType = async (gameCode: string) => {
     try {
       setCode(gameCode);
       if (gameCode.length === 4) {
         const result = await axios.get('/api/games/' + gameCode);
         setGameType({
           title: result.data.title,
-          valid: true,
+          valid: true
         });
       } else {
         setGameType({});
@@ -73,7 +86,7 @@ const Join = (props) => {
             spellCheck="false"
             autoCorrect="off"
             placeholder="abxy"
-            maxLength="4"
+            maxLength={4}
             value={code}
             onChange={(e) => checkGameType(e.target.value.toLowerCase())}
           />

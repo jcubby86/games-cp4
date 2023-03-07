@@ -4,7 +4,12 @@ import StartGame from '../components/StartGame';
 import List from '../components/List';
 import axios from 'axios';
 
-const Story = (props) => {
+interface StoryProps {
+  code: string;
+  setCode: React.Dispatch<React.SetStateAction<string>>;
+}
+
+const Story = (props: StoryProps): JSX.Element => {
   const [phase, setPhase] = useState('');
   const [users, setUsers] = useState([]);
   const [prompt, setPrompt] = useState('');
@@ -13,7 +18,7 @@ const Story = (props) => {
   const [suffix, setSuffix] = useState('');
   const [story, setStory] = useState('');
   const [filler, setFiller] = useState('');
-  const partRef = useRef();
+  const partRef = useRef<HTMLTextAreaElement>(null);
 
   // const navigate = useNavigate();
 
@@ -35,10 +40,10 @@ const Story = (props) => {
     }
   };
 
-  const sendPart = async (e) => {
+  const sendPart = async (e: React.FormEvent) => {
     try {
       e.preventDefault();
-      if (!partRef.current.value) {
+      if (!partRef.current?.value) {
         if (
           !window.confirm(
             "You haven't typed anything in! Do you want to use the placeholder text?"
@@ -48,11 +53,13 @@ const Story = (props) => {
       }
 
       await axios.put('/api/stories', {
-        part: partRef.current.value || placeholder,
+        part: partRef.current?.value || placeholder
       });
       setPhase('');
       setPlaceholder('');
-      partRef.current.value = '';
+      if (partRef.current) {
+        partRef.current.value = '';
+      }
     } catch (error) {
       alert('An error has occurred');
       // props.setCode('');

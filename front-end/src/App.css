@@ -11,10 +11,11 @@ span.icon {
   font-size: 3em;
 }
 
-.btn span.icon, .btn span.icon i {
+.btn span.icon,
+.btn span.icon i {
   transition: initial;
 }
-.nf-mdi-account_check{
+.nf-mdi-account_check {
   translate: 10% 0;
 }
 

@@ -1,10 +1,18 @@
 import { Outlet, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-const Layout = (props) => {
+interface LayoutProps {
+  setGameType: React.Dispatch<React.SetStateAction<string>>;
+  setCode: React.Dispatch<React.SetStateAction<string>>;
+  nickname: string;
+  code: string;
+  gameType: string;
+}
+
+const Layout = (props: LayoutProps) => {
   const navigate = useNavigate();
 
-  const leaveGame = async (e) => {
+  const leaveGame = async (e: React.FormEvent) => {
     try {
       e.preventDefault();
 

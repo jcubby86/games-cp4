@@ -1,6 +1,10 @@
 import { Link } from 'react-router-dom';
 
-const Layout = (props) => {
+interface HomeProps {
+  code: string;
+  gameType: string;
+}
+const Home = (props: HomeProps) => {
   return (
     <>
       <div className="row justify-content-center gap-4 w-100 m-0">
@@ -47,4 +51,4 @@ const Layout = (props) => {
   );
 };
 
-export default Layout;
+export default Home;

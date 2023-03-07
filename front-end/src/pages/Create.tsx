@@ -3,13 +3,19 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import generateNickname from '../helpers/nicknameGeneration';
 
-const Create = (props) => {
+interface CreateProps {
+  nickname: string;
+  setGameType: React.Dispatch<React.SetStateAction<string>>;
+  setCode: React.Dispatch<React.SetStateAction<string>>;
+  setNickname: React.Dispatch<React.SetStateAction<string>>;
+}
+const Create = (props: CreateProps) => {
   const suggestion = useRef(generateNickname());
   const [nickname, setNickname] = useState(props.nickname);
   const [selected, setSelected] = useState('story');
   const navigate = useNavigate();
 
-  const createGame = async (e) => {
+  const createGame = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       if (selected === '') {
@@ -19,11 +25,11 @@ const Create = (props) => {
 
       const gameResponse = await axios.post('/api/games', {
         creator: nickname.toLowerCase(),
-        type: selected,
+        type: selected
       });
       const userResponse = await axios.post('/api/users', {
         nickname: nickname.toLowerCase() || suggestion.current,
-        code: gameResponse.data.code,
+        code: gameResponse.data.code
       });
       props.setCode(gameResponse.data.code);
       props.setNickname(userResponse.data.nickname);

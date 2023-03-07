@@ -1,8 +1,15 @@
 import axios from 'axios';
 import List from './List';
 
-const StartGame = (props) => {
-  const startGame = async (e) => {
+interface StartGameProps {
+  setPhase: React.Dispatch<React.SetStateAction<string>>;
+  code: string;
+  title: string;
+  users: string[];
+}
+
+const StartGame = (props: StartGameProps) => {
+  const startGame = async (e: React.FormEvent) => {
     e.preventDefault();
     await axios.put(`/api/games/${props.code}`, { phase: 'play' });
     props.setPhase('');
@@ -27,7 +34,8 @@ const StartGame = (props) => {
               readOnly
               id="gameCode"
               style={{ minWidth: '100px' }}
-              onClick={(e) => e.target.select()}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              onClick={(e: any) => e.target.select()}
             />
           </div>
           <div className="mb-3 col p-0">
