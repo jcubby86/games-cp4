@@ -2,11 +2,11 @@ version: '3'
 services:
   app:
     container_name: games-app
-    # build:
-    #   context: ./front-end
-    #   tags:
-    #     - 'ghcr.io/jcubby86/games-app:latest'
-    #     - 'ghcr.io/jcubby86/games-app:v2.0.0'
+    build:
+      context: ./front-end
+      tags:
+        - 'ghcr.io/jcubby86/games-app:latest'
+        # - 'ghcr.io/jcubby86/games-app:v2.0.0'
     image: ghcr.io/jcubby86/games-app:latest
     ports:
       - '3020:80'
@@ -15,14 +15,18 @@ services:
 
   backend:
     container_name: games-backend
-    # build:
-    #   context: ./back-end
-    #   tags:
-    #     - 'ghcr.io/jcubby86/games-backend:latest'
-    #     - 'ghcr.io/jcubby86/games-backend:v2.0.0'
+    build:
+      context: ./back-end
+      tags:
+        - 'ghcr.io/jcubby86/games-backend:latest'
+        # - 'ghcr.io/jcubby86/games-backend:v2.0.0'
     image: ghcr.io/jcubby86/games-backend:latest
-    ports:
-      - '3000'
     environment:
-      - MONGO_DB_CONN_STR=mongodb://192.168.86.81:27017/games-cp4
+      - MONGO_DB_CONN_STR=mongodb://mongo/games-cp4
       - NODE_PORT=3000
+
+  db:
+    container_name: mongo
+    image: mongo
+    volumes:
+      - /data/mongo:/data/db

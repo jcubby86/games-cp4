@@ -49,7 +49,7 @@ const Layout = (props) => {
         </div>
       </main>
 
-      <footer className="footer bg-light p-2 d-flex gap-1">
+      <footer className="footer bg-light py-2 px-4 d-flex gap-3">
         <a
           href="https://github.com/jcubby86/games-cp4"
           className="text-dark text-decoration-none link-danger ms-auto"
