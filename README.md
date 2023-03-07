@@ -31,21 +31,17 @@ services:
   backend:
     container_name: games-backend
     image: ghcr.io/jcubby86/games-backend:latest
-    ports:
-      - '3000'
     environment:
-      - MONGO_DB_CONN_STR=mongodb://mongodb:27017/games-cp4
+      - MONGO_DB_CONN_STR=mongodb://mongo/games-cp4
       - NODE_PORT=3000
     depends_on:
       - 'db'
 
   db:
-    container_name: mongodb
+    container_name: mongo
     image: mongo
     volumes:
-      - mongo:/data/db
-    ports:
-      - '27017'
+      - /data/mongo:/data/db
 ```
 
 Environment variables for each container can be configured for each service to run on different ports
