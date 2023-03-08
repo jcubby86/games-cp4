@@ -1,5 +1,5 @@
 import { Schema, model } from 'mongoose';
-import { IGame, IUser, IStory, IName } from './types';
+import { IGame, IUser, IStory, INames } from './types';
 
 const gameSchema = new Schema<IGame>(
   {
@@ -30,7 +30,7 @@ const storySchema = new Schema<IStory>({
         type: Schema.Types.ObjectId,
         ref: 'User',
       },
-      parts: [String],
+      value: [String],
     },
   ],
   finalEntries: [
@@ -39,13 +39,13 @@ const storySchema = new Schema<IStory>({
         type: Schema.Types.ObjectId,
         ref: 'User',
       },
-      text: String,
+      value: String,
     },
   ],
   round: { type: Number, required: true, default: 0 },
 });
 
-const namesSchema = new Schema<IName>({
+const namesSchema = new Schema<INames>({
   game: {
     type: Schema.Types.ObjectId,
     ref: 'Game',
@@ -57,7 +57,7 @@ const namesSchema = new Schema<IName>({
         type: Schema.Types.ObjectId,
         ref: 'User',
       },
-      text: String,
+      value: String,
     },
   ],
 });
@@ -65,4 +65,4 @@ const namesSchema = new Schema<IName>({
 export const GameModel = model<IGame>('Game', gameSchema);
 export const UserModel = model<IUser>('User', userSchema);
 export const StoryModel = model<IStory>('Story', storySchema);
-export const NamesModel = model<IName>('Names', namesSchema);
+export const NamesModel = model<INames>('Names', namesSchema);

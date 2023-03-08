@@ -21,27 +21,29 @@ export const upperFirst = (part: string) => {
   return part.slice(0, 1).toUpperCase() + part.slice(1);
 };
 
-export async function getAllSubmissions<Type extends Entry>(
+export async function getAllEntries<Type>(
   game: Game,
-  subs: Type[],
+  entries: Entry<Type>[],
   // eslint-disable-next-line no-unused-vars
-  createSub: (user: User) => Type
+  createEntry: (user: User) => Entry<Type>
 ) {
   if (game.phase !== 'play') return [];
 
   const users = await getUsersInGame(game);
 
-  const allUserSet = new Set(users.map((user) => user._id.valueOf()));
-  const subUserSet = new Set(subs.map((item) => item.user._id.valueOf()));
-
-  const filteredSubs = subs.filter((elem) =>
-    allUserSet.has(elem.user._id.valueOf())
+  const allUsers = new Set(users.map((user) => user._id.valueOf()));
+  const usersWithEntries = new Set(
+    entries.map((item) => item.user._id.valueOf())
   );
-  const newSubs = users
-    .filter((user) => !subUserSet.has(user._id.valueOf()))
-    .map(createSub);
 
-  return [...filteredSubs, ...newSubs];
+  const filteredEntries = entries.filter((elem) =>
+    allUsers.has(elem.user._id.valueOf())
+  );
+  const newEntries = users
+    .filter((user) => !usersWithEntries.has(user._id.valueOf()))
+    .map(createEntry);
+
+  return [...filteredEntries, ...newEntries];
 }
 
 export const gameExists = (game: Game) => {

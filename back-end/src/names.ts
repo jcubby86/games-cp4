@@ -1,18 +1,13 @@
 import { Router, Request } from 'express';
 import { NamesModel } from './models.js';
-import { getAllSubmissions } from './utils.js';
+import { getAllEntries } from './utils.js';
 import { shuffleArray, upperFirst } from './utils.js';
 
 import male_names from './generation/male_names.js';
 import female_names from './generation/female_names.js';
 import { randomElement } from './generation/generationUtils.js';
 import { joinPhase, loadNames, loadUser } from './middleware.js';
-import {
-  StringEntry,
-  Game,
-  NamesDocument,
-  User,
-} from './types.js';
+import { Entry, Game, NamesDocument, User } from './types.js';
 
 export const createNames = async (game: Game) => {
   const names = new NamesModel({
@@ -22,20 +17,17 @@ export const createNames = async (game: Game) => {
   await names.save();
 };
 
-const checkCompletion = async (
-  game: Game,
-  names: NamesDocument
-) => {
+const checkCompletion = async (game: Game, names: NamesDocument) => {
   if (game.phase !== 'play') return [];
 
-  const userToName = (user: User): StringEntry => ({
+  const userToName = (user: User): Entry<string> => ({
     user: user,
-    text: '',
+    value: '',
   });
-  names.entries = await getAllSubmissions(game, names.entries, userToName);
+  names.entries = await getAllEntries(game, names.entries, userToName);
 
   const waitingOnUsers = names.entries
-    .filter((elem) => elem.text === '')
+    .filter((elem) => elem.value === '')
     .map((elem) => elem.user?.nickname);
 
   if (waitingOnUsers.length > 0) return waitingOnUsers;
@@ -64,17 +56,17 @@ router.get('/', joinPhase, async (req: Request, res) => {
         elem.user._id.equals(userId)
       );
 
-      const waiting = userElem?.text !== '';
+      const waiting = userElem?.value !== '';
       return res.send({
         phase: waiting ? 'wait' : 'play',
         users: waitingOnUsers,
-        text: userElem?.text,
+        text: userElem?.value,
         placeholder: randomElement(randomElement([male_names, female_names])),
       });
     } else if (req.game.phase === 'read') {
       return res.send({
         phase: 'read',
-        names: names.entries.map((elem) => elem.text),
+        names: names.entries.map((elem) => elem.value),
       });
     } else {
       return res.send({
@@ -103,14 +95,14 @@ router.put('/', async (req: Request, res) => {
   if (userIndex === -1) {
     statusCode = 201;
     userIndex = names.entries.length;
-    names.entries.push({ user: req.user, text: '' });
+    names.entries.push({ user: req.user, value: '' });
   }
 
   const text = upperFirst(req.body.text.replaceAll(quoteRegex, '').trim());
   if (
     names.entries.find(
       (elem, index) =>
-        elem.text.toLowerCase() === text.toLowerCase() && index != userIndex
+        elem.value.toLowerCase() === text.toLowerCase() && index != userIndex
     )
   ) {
     return res
@@ -120,7 +112,7 @@ router.put('/', async (req: Request, res) => {
       );
   }
 
-  names.entries[userIndex].text = text;
+  names.entries[userIndex].value = text;
 
   await names.save();
   return res.sendStatus(statusCode);

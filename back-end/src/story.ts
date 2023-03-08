@@ -1,6 +1,6 @@
 import { Router, Request } from 'express';
 import { StoryModel } from './models.js';
-import { getAllSubmissions } from './utils.js';
+import { getAllEntries } from './utils.js';
 import { upperFirst, lowerFirst } from './utils.js';
 
 import male_names from './generation/male_names.js';
@@ -9,7 +9,7 @@ import actions_past from './generation/actions_past.js';
 import actions_present from './generation/actions_present.js';
 import statements from './generation/statements.js';
 import { randomElement } from './generation/generationUtils.js';
-import { Game, StoryDocument, User } from './types.js';
+import { Entry, Game, StoryDocument, User } from './types.js';
 import { joinPhase, loadStory, loadUser } from './middleware.js';
 
 const punctRegex = /.*([.!?])$/;
@@ -44,21 +44,17 @@ export const createStory = async (game: Game) => {
   await story.save();
 };
 
-const checkRoundCompletion = async (
-  game: Game,
-  story: StoryDocument
-) => {
+const checkRoundCompletion = async (game: Game, story: StoryDocument) => {
   if (game.phase !== 'play') return [];
 
-  const userToStory = (user: User) => ({ user: user, parts: [] });
-  story.entries = await getAllSubmissions(
-    game,
-    story.entries,
-    userToStory
-  );
+  const userToStory = (user: User): Entry<string[]> => ({
+    user: user,
+    value: [],
+  });
+  story.entries = await getAllEntries(game, story.entries, userToStory);
 
   const waitingOnUsers = story.entries
-    .filter((elem) => elem.parts.length <= story.round)
+    .filter((elem) => elem.value.length <= story.round)
     .map((elem) => elem.user?.nickname);
 
   if (waitingOnUsers.length > 0) return waitingOnUsers;
@@ -80,12 +76,12 @@ const finishGame = async (game: Game, story: StoryDocument) => {
     const s = [];
     for (let j = 0; j < 6; j++) {
       s.push(prefixes[j]);
-      s.push(stories[(i + j) % stories.length].parts[j]);
+      s.push(stories[(i + j) % stories.length].value[j]);
       s.push(suffixes[j]);
     }
     story.finalEntries.push({
       user: stories[i].user,
-      text: s.join(''),
+      value: s.join(''),
     });
   }
 };
@@ -107,7 +103,7 @@ router.get('/', joinPhase, async (req: Request, res) => {
         elem.user._id.equals(userId)
       );
 
-      const canPlay = !userElem || userElem.parts.length <= round;
+      const canPlay = !userElem || userElem.value.length <= round;
       return res.send({
         phase: canPlay ? 'play' : 'wait',
         round: round,
@@ -123,7 +119,7 @@ router.get('/', joinPhase, async (req: Request, res) => {
         phase: 'read',
         story: story.finalEntries.find((element) =>
           element.user._id.equals(userId)
-        )?.text,
+        )?.value,
       });
     }
   } catch (error) {
@@ -146,9 +142,9 @@ router.put('/', async (req: Request, res) => {
     );
     if (userIndex === -1) {
       userIndex = story.entries.length;
-      story.entries.push({ user: req.user, parts: [] });
+      story.entries.push({ user: req.user, value: [] });
     }
-    if (story.entries[userIndex].parts.length > story.round)
+    if (story.entries[userIndex].value.length > story.round)
       return res.sendStatus(403);
 
     let part = req.body.part.replaceAll(quoteRegex, '').trim();
@@ -159,7 +155,7 @@ router.put('/', async (req: Request, res) => {
       part = upperFirst(part);
     }
 
-    story.entries[userIndex].parts.push(part);
+    story.entries[userIndex].value.push(part);
 
     await story.save();
     return res.sendStatus(201);

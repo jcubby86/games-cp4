@@ -1,11 +1,5 @@
 import { NamesModel, StoryModel, UserModel } from './models.js';
-import {
-  Game,
-  NamesDocument,
-  StoryDocument,
-  User,
-  Session,
-} from './types.js';
+import { Game, NamesDocument, StoryDocument, User, Session } from './types.js';
 import { gameExists, getUsersInGame } from './utils.js';
 import type { Request, Response, NextFunction } from 'express';
 

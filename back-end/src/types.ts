@@ -17,28 +17,23 @@ export interface IUser {
 }
 export type User = HydratedDocument<IUser>;
 
-export interface Entry {
+export interface Entry<Type> {
   user: HydratedDocument<IUser>;
-}
-export interface StringEntry extends Entry {
-  text: string;
-}
-export interface StringArrayEntry extends Entry {
-  parts: string[];
+  value: Type;
 }
 export interface IStory {
   game: HydratedDocument<IGame>;
-  entries: StringArrayEntry[];
-  finalEntries: StringEntry[];
+  entries: Entry<string[]>[];
+  finalEntries: Entry<string>[];
   round: number;
 }
 export type StoryDocument = HydratedDocument<IStory>;
 
-export interface IName {
+export interface INames {
   game: HydratedDocument<IGame>;
-  entries: StringEntry[];
+  entries: Entry<string>[];
 }
-export type NamesDocument = HydratedDocument<IName>;
+export type NamesDocument = HydratedDocument<INames>;
 
 export type CreateGameFunction = (game: Game) => Promise<void>;
 
