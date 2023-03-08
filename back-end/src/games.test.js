@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 const axios = require('axios');
 const dotenv = require('dotenv');
 dotenv.config();
