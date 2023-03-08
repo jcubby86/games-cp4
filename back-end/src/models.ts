@@ -1,6 +1,7 @@
-import { Schema, model, Types } from 'mongoose';
+import { Schema, model } from 'mongoose';
+import { IGame, IUser, IStory, IName } from './types';
 
-const gameSchema = new Schema(
+const gameSchema = new Schema<IGame>(
   {
     type: { type: String, required: true },
     code: { type: String, required: true },
@@ -9,24 +10,24 @@ const gameSchema = new Schema(
   { timestamps: true }
 );
 
-const userSchema = new Schema({
+const userSchema = new Schema<IUser>({
   nickname: { type: String, required: true },
   game: {
-    type: Types.ObjectId,
+    type: Schema.Types.ObjectId,
     ref: 'Game',
   },
 });
 
-const storySchema = new Schema({
+const storySchema = new Schema<IStory>({
   game: {
-    type: Types.ObjectId,
+    type: Schema.Types.ObjectId,
     ref: 'Game',
     required: true,
   },
   stories: [
     {
       user: {
-        type: Types.ObjectId,
+        type: Schema.Types.ObjectId,
         ref: 'User',
       },
       parts: [String],
@@ -35,7 +36,7 @@ const storySchema = new Schema({
   finalStories: [
     {
       user: {
-        type: Types.ObjectId,
+        type: Schema.Types.ObjectId,
         ref: 'User',
       },
       text: String,
@@ -44,16 +45,16 @@ const storySchema = new Schema({
   round: { type: Number, required: true, default: 0 },
 });
 
-const namesSchema = new Schema({
+const namesSchema = new Schema<IName>({
   game: {
-    type: Types.ObjectId,
+    type: Schema.Types.ObjectId,
     ref: 'Game',
     required: true,
   },
   names: [
     {
       user: {
-        type: Types.ObjectId,
+        type: Schema.Types.ObjectId,
         ref: 'User',
       },
       text: String,
@@ -61,7 +62,7 @@ const namesSchema = new Schema({
   ],
 });
 
-export const GameModel = model('Game', gameSchema);
-export const UserModel = model('User', userSchema);
-export const StoryModel = model('Story', storySchema);
-export const NamesModel = model('Names', namesSchema);
+export const GameModel = model<IGame>('Game', gameSchema);
+export const UserModel = model<IUser>('User', userSchema);
+export const StoryModel = model<IStory>('Story', storySchema);
+export const NamesModel = model<IName>('Names', namesSchema);
