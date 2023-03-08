@@ -1,5 +1,5 @@
 import { UserModel } from './models';
-import { Entry, GameDocument, UserDocument } from './types';
+import { Entry, Game, User } from './types';
 
 export const shuffleArray = (array: unknown[]) => {
   let curId = array.length;
@@ -22,10 +22,10 @@ export const upperFirst = (part: string) => {
 };
 
 export async function getAllSubmissions<Type extends Entry>(
-  game: GameDocument,
+  game: Game,
   subs: Type[],
   // eslint-disable-next-line no-unused-vars
-  createSub: (user: UserDocument) => Type
+  createSub: (user: User) => Type
 ) {
   if (game.phase !== 'play') return [];
 
@@ -44,11 +44,11 @@ export async function getAllSubmissions<Type extends Entry>(
   return [...filteredSubs, ...newSubs];
 }
 
-export const gameExists = (game: GameDocument) => {
+export const gameExists = (game: Game) => {
   return new Date().getTime() - 2 * 60 * 60 * 1000 < game.createdAt.getTime();
 };
 
-export const getUsersInGame = async (game: GameDocument) => {
+export const getUsersInGame = async (game: Game) => {
   const users = await UserModel.find({ game: game._id });
   return users;
 };

@@ -9,39 +9,39 @@ import { randomElement } from './generation/generationUtils.js';
 import { joinPhase, loadNames, loadUser } from './middleware.js';
 import {
   StringEntry,
-  GameDocument,
+  Game,
   NamesDocument,
-  UserDocument,
+  User,
 } from './types.js';
 
-export const createNames = async (game: GameDocument) => {
+export const createNames = async (game: Game) => {
   const names = new NamesModel({
     game: game._id,
-    names: [],
+    entries: [],
   });
   await names.save();
 };
 
 const checkCompletion = async (
-  game: GameDocument,
-  namesType: NamesDocument
+  game: Game,
+  names: NamesDocument
 ) => {
   if (game.phase !== 'play') return [];
 
-  const userToName = (user: UserDocument): StringEntry => ({
+  const userToName = (user: User): StringEntry => ({
     user: user,
     text: '',
   });
-  namesType.names = await getAllSubmissions(game, namesType.names, userToName);
+  names.entries = await getAllSubmissions(game, names.entries, userToName);
 
-  const waitingOnUsers = namesType.names
+  const waitingOnUsers = names.entries
     .filter((elem) => elem.text === '')
     .map((elem) => elem.user?.nickname);
 
   if (waitingOnUsers.length > 0) return waitingOnUsers;
 
-  shuffleArray(namesType.names);
-  await namesType.save();
+  shuffleArray(names.entries);
+  await names.save();
 
   game.phase = 'read';
   await game.save();
@@ -53,14 +53,14 @@ router.use(loadUser, loadNames);
 
 router.get('/', joinPhase, async (req: Request, res) => {
   try {
-    if (!req.game || !req.user || !req.namesType) return res.sendStatus(500);
+    if (!req.game || !req.user || !req.names) return res.sendStatus(500);
 
-    const namesType = req.namesType;
+    const names = req.names;
     const userId = req.user._id;
-    const waitingOnUsers = await checkCompletion(req.game, namesType);
+    const waitingOnUsers = await checkCompletion(req.game, names);
 
     if (req.game.phase === 'play') {
-      const userElem = namesType.names.find((elem) =>
+      const userElem = names.entries.find((elem) =>
         elem.user._id.equals(userId)
       );
 
@@ -74,7 +74,7 @@ router.get('/', joinPhase, async (req: Request, res) => {
     } else if (req.game.phase === 'read') {
       return res.send({
         phase: 'read',
-        names: namesType.names.map((elem) => elem.text),
+        names: names.entries.map((elem) => elem.text),
       });
     } else {
       return res.send({
@@ -89,26 +89,26 @@ router.get('/', joinPhase, async (req: Request, res) => {
 
 const quoteRegex = /["“”]/g;
 router.put('/', async (req: Request, res) => {
-  if (!req.game || !req.user || !req.namesType) return res.sendStatus(500);
+  if (!req.game || !req.user || !req.names) return res.sendStatus(500);
 
   if (req.game.phase !== 'play') return res.sendStatus(403);
 
-  const namesType = req.namesType;
+  const names = req.names;
   const userId = req.user._id;
   let statusCode = 200;
 
-  let userIndex = namesType.names.findIndex((elem) =>
+  let userIndex = names.entries.findIndex((elem) =>
     elem.user._id.equals(userId)
   );
   if (userIndex === -1) {
     statusCode = 201;
-    userIndex = namesType.names.length;
-    namesType.names.push({ user: req.user, text: '' });
+    userIndex = names.entries.length;
+    names.entries.push({ user: req.user, text: '' });
   }
 
   const text = upperFirst(req.body.text.replaceAll(quoteRegex, '').trim());
   if (
-    namesType.names.find(
+    names.entries.find(
       (elem, index) =>
         elem.text.toLowerCase() === text.toLowerCase() && index != userIndex
     )
@@ -120,8 +120,8 @@ router.put('/', async (req: Request, res) => {
       );
   }
 
-  namesType.names[userIndex].text = text;
+  names.entries[userIndex].text = text;
 
-  await namesType.save();
+  await names.save();
   return res.sendStatus(statusCode);
 });

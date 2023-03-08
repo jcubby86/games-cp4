@@ -2,14 +2,14 @@ import { Router, Request } from 'express';
 import { Types } from 'mongoose';
 import { loadUser } from './middleware.js';
 import { GameModel, UserModel } from './models.js';
-import { GameDocument } from './types.js';
+import { Game } from './types.js';
 import { gameExists, getUsersInGame } from './utils.js';
 
 export const router = Router();
 
 const uniqueUsername = async (
   name: string,
-  game: GameDocument,
+  game: Game,
   id?: Types.ObjectId
 ) => {
   const user = await UserModel.findOne({

@@ -2,8 +2,7 @@ import { Router } from 'express';
 import { GameModel } from './models.js';
 import { createStory } from './story.js';
 import { createNames } from './names.js';
-import { HydratedDocument } from 'mongoose';
-import { CreateGameFunction, IGame } from './types';
+import { CreateGameFunction, Game } from './types';
 
 export const router = Router();
 
@@ -39,7 +38,7 @@ router.post('/', async (req: { body: { type: string } }, res) => {
     }
 
     const newCode = await getCode();
-    const game: HydratedDocument<IGame> = new GameModel({
+    const game: Game = new GameModel({
       type: req.body.type,
       code: newCode,
       phase: 'join',

@@ -24,7 +24,7 @@ const storySchema = new Schema<IStory>({
     ref: 'Game',
     required: true,
   },
-  stories: [
+  entries: [
     {
       user: {
         type: Schema.Types.ObjectId,
@@ -33,7 +33,7 @@ const storySchema = new Schema<IStory>({
       parts: [String],
     },
   ],
-  finalStories: [
+  finalEntries: [
     {
       user: {
         type: Schema.Types.ObjectId,
@@ -51,7 +51,7 @@ const namesSchema = new Schema<IName>({
     ref: 'Game',
     required: true,
   },
-  names: [
+  entries: [
     {
       user: {
         type: Schema.Types.ObjectId,

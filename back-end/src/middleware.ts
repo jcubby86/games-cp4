@@ -1,9 +1,9 @@
 import { NamesModel, StoryModel, UserModel } from './models.js';
 import {
-  GameDocument,
+  Game,
   NamesDocument,
   StoryDocument,
-  UserDocument,
+  User,
   Session,
 } from './types.js';
 import { gameExists, getUsersInGame } from './utils.js';
@@ -13,10 +13,10 @@ declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Express {
     interface Request {
-      user?: UserDocument | null | undefined;
-      game?: GameDocument | null | undefined;
-      namesType?: NamesDocument | null | undefined;
-      storyType?: StoryDocument | null | undefined;
+      user?: User | null | undefined;
+      game?: Game | null | undefined;
+      names?: NamesDocument | null | undefined;
+      story?: StoryDocument | null | undefined;
       session?: Session | null | undefined;
     }
   }
@@ -57,10 +57,10 @@ export const loadNames = async (
   if (!req.user || !req.game) return res.sendStatus(401);
   if (req.game.type !== 'names') return res.sendStatus(400);
 
-  req.namesType = await NamesModel.findOne({ game: req.game._id }).populate(
-    'names.user'
+  req.names = await NamesModel.findOne({ game: req.game._id }).populate(
+    'entries.user'
   );
-  if (!req.namesType) return res.sendStatus(400);
+  if (!req.names) return res.sendStatus(400);
   next();
 };
 
@@ -72,10 +72,10 @@ export const loadStory = async (
   if (!req.user || !req.game) return res.sendStatus(401);
   if (req.game.type !== 'story') return res.sendStatus(400);
 
-  req.storyType = await StoryModel.findOne({ game: req.game._id }).populate(
-    'stories.user'
+  req.story = await StoryModel.findOne({ game: req.game._id }).populate(
+    'entries.user'
   );
-  if (!req.storyType) return res.sendStatus(400);
+  if (!req.story) return res.sendStatus(400);
   next();
 };
 
@@ -89,7 +89,7 @@ export const joinPhase = async (
       const users = await getUsersInGame(req.game);
       return res.send({
         phase: 'join',
-        users: users.map((user: UserDocument) => user.nickname),
+        users: users.map((user: User) => user.nickname),
         code: req.game.code,
         nickname: req.user?.nickname,
       });

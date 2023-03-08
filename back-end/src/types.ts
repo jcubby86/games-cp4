@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-unused-vars */
-import { Request, Response, NextFunction } from 'express';
 import { HydratedDocument, Types } from 'mongoose';
 
 export interface IGame {
@@ -10,13 +9,13 @@ export interface IGame {
   test: number;
   createdAt: Date;
 }
-export type GameDocument = HydratedDocument<IGame>;
+export type Game = HydratedDocument<IGame>;
 
 export interface IUser {
   game?: HydratedDocument<IGame>;
   nickname: string;
 }
-export type UserDocument = HydratedDocument<IUser>;
+export type User = HydratedDocument<IUser>;
 
 export interface Entry {
   user: HydratedDocument<IUser>;
@@ -29,19 +28,19 @@ export interface StringArrayEntry extends Entry {
 }
 export interface IStory {
   game: HydratedDocument<IGame>;
-  stories: StringArrayEntry[];
-  finalStories: StringEntry[];
+  entries: StringArrayEntry[];
+  finalEntries: StringEntry[];
   round: number;
 }
 export type StoryDocument = HydratedDocument<IStory>;
 
 export interface IName {
   game: HydratedDocument<IGame>;
-  names: StringEntry[];
+  entries: StringEntry[];
 }
 export type NamesDocument = HydratedDocument<IName>;
 
-export type CreateGameFunction = (game: GameDocument) => Promise<void>;
+export type CreateGameFunction = (game: Game) => Promise<void>;
 
 export interface Session {
   userID?: Types.ObjectId;
