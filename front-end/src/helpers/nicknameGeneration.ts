@@ -66,11 +66,16 @@ const adjectives = [
   'funky'
 ];
 
-const randomNumber = (limit: number) => Math.floor(Math.random() * limit);
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const randomElement = (arr: any[]) => arr[randomNumber(arr.length)];
-const getSubjectArr = () => randomElement([objects, places, animals, foods]);
-const generateNickname = () => {
+function randomNumber(limit: number) {
+  return Math.floor(Math.random() * limit);
+}
+function randomElement<Type>(arr: Type[]) {
+  return arr[randomNumber(arr.length)];
+}
+function getSubjectArr() {
+  return randomElement([objects, places, animals, foods]);
+}
+function generateNickname() {
   const index = randomNumber(3);
   let myArr;
 
@@ -81,6 +86,6 @@ const generateNickname = () => {
   }
 
   return myArr.map((x) => randomElement(x)).join('-');
-};
+}
 
 export default generateNickname;
