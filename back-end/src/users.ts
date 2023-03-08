@@ -1,39 +1,17 @@
-import { Router } from 'express';
+import { Router, Request } from 'express';
+import { Types } from 'mongoose';
+import { loadUser } from './middleware.js';
 import { GameModel, UserModel } from './models.js';
+import { GameDocument } from './types.js';
+import { gameExists, getUsersInGame } from './utils.js';
 
 export const router = Router();
 
-const gameExists = (game: any) =>
-  game && new Date().getTime() - 2 * 60 * 60 * 1000 < game.createdAt;
-
-export const loadUser = async (req: any, res: any, next: any) => {
-  try {
-    if (!req.session.userID) return next();
-
-    const user = await UserModel.findOne({ _id: req.session.userID }).populate(
-      'game'
-    );
-    if (!user) return next();
-
-    if (!gameExists(user.game)) {
-      user.game = undefined;
-      await user.save();
-    }
-
-    req.user = user;
-    req.game = user.game;
-    next();
-  } catch (error) {
-    console.error(error);
-    return res.sendStatus(500);
-  }
-};
-export const getUsersInGame = async (id: any) => {
-  const users = await UserModel.find({ game: id });
-  return users;
-};
-
-const uniqueUsername = async (name: any, game: any, id = null) => {
+const uniqueUsername = async (
+  name: string,
+  game: GameDocument,
+  id?: Types.ObjectId
+) => {
   const user = await UserModel.findOne({
     nickname: name,
     game: game,
@@ -41,10 +19,13 @@ const uniqueUsername = async (name: any, game: any, id = null) => {
   return !user || (id != null && user._id.equals(id));
 };
 
-router.post('/', loadUser, async (req: any, res) => {
+router.post('/', loadUser, async (req: Request, res) => {
   try {
+    if (!req.user) return res.sendStatus(500);
+
     const game = await GameModel.findOne({ code: req.body.code });
     if (
+      !game ||
       !gameExists(game) ||
       !(game?.phase === 'join' || req.user?.game?.equals(game))
     ) {
@@ -61,7 +42,7 @@ router.post('/', loadUser, async (req: any, res) => {
     const isUniqueUsername = await uniqueUsername(
       req.body.nickname,
       game,
-      req.user?._id
+      req.user._id
     );
     if (!isUniqueUsername) {
       console.warn(`The nickname ${req.body.nickname} is already taken`);
@@ -84,8 +65,11 @@ router.post('/', loadUser, async (req: any, res) => {
     }
 
     await req.user.save();
-    req.session.userID = req.user._id;
-    req.session.nowInMinutes = Math.floor(Date.now() / 60e3); //refresh cookie so it won't expire for another 2 hours
+    req.session = {
+      ...req.session,
+      userID: req.user._id,
+      nowInMinutes: Math.floor(Date.now() / 60e3), //refresh cookie so it won't expire for another 2 hours
+    };
 
     res.status(statusCode).send(req.user);
   } catch (err) {
@@ -94,7 +78,7 @@ router.post('/', loadUser, async (req: any, res) => {
   }
 });
 
-router.get('/', loadUser, async (req: any, res) => {
+router.get('/', loadUser, async (req: Request, res) => {
   if (!req.user) {
     return res.sendStatus(404);
   }
@@ -105,7 +89,7 @@ router.get('/:code', async (req, res) => {
   try {
     const game = await GameModel.findOne({ code: req.params.code });
     if (!game) return res.sendStatus(404);
-    const users = await getUsersInGame(game._id);
+    const users = await getUsersInGame(game);
     res.send(users);
   } catch (err) {
     console.error(err);
@@ -113,10 +97,10 @@ router.get('/:code', async (req, res) => {
   }
 });
 
-router.delete('/', loadUser, async (req: any, res) => {
+router.delete('/', loadUser, async (req: Request, res) => {
   try {
     if (req.user) {
-      req.user.game = null;
+      req.user.game = undefined;
       await req.user.save();
     }
 

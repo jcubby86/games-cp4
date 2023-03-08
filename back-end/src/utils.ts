@@ -1,6 +1,7 @@
-import { getUsersInGame } from './users.js';
+import { UserModel } from './models';
+import { Entry, GameDocument, UserDocument } from './types';
 
-export const shuffleArray = (array: any[]) => {
+export const shuffleArray = (array: unknown[]) => {
   let curId = array.length;
 
   while (curId) {
@@ -12,25 +13,6 @@ export const shuffleArray = (array: any[]) => {
   }
 };
 
-export const joinPhase = async (req: any, res: any, next: any) => {
-  try {
-    if (req.game.phase === 'join') {
-      const users = await getUsersInGame(req.game._id);
-      return res.send({
-        phase: 'join',
-        users: users.map((user) => user.nickname),
-        code: req.game.code,
-        nickname: req.user.nickname,
-      });
-    }
-
-    next();
-  } catch (err) {
-    console.error(err);
-    res.sendStatus(500);
-  }
-};
-
 export const lowerFirst = (part: string) => {
   return part.slice(0, 1).toLowerCase() + part.slice(1);
 };
@@ -39,19 +21,20 @@ export const upperFirst = (part: string) => {
   return part.slice(0, 1).toUpperCase() + part.slice(1);
 };
 
-export const getAllSubmissions = async (
-  game: any,
-  subs: any,
-  createSub: any
-) => {
+export async function getAllSubmissions<Type extends Entry>(
+  game: GameDocument,
+  subs: Type[],
+  // eslint-disable-next-line no-unused-vars
+  createSub: (user: UserDocument) => Type
+) {
   if (game.phase !== 'play') return [];
 
-  const users = await getUsersInGame(game._id);
+  const users = await getUsersInGame(game);
 
   const allUserSet = new Set(users.map((user) => user._id.valueOf()));
-  const subUserSet = new Set(subs.map((item: any) => item.user._id.valueOf()));
+  const subUserSet = new Set(subs.map((item) => item.user._id.valueOf()));
 
-  const filteredSubs = subs.filter((elem: any) =>
+  const filteredSubs = subs.filter((elem) =>
     allUserSet.has(elem.user._id.valueOf())
   );
   const newSubs = users
@@ -59,4 +42,13 @@ export const getAllSubmissions = async (
     .map(createSub);
 
   return [...filteredSubs, ...newSubs];
+}
+
+export const gameExists = (game: GameDocument) => {
+  return new Date().getTime() - 2 * 60 * 60 * 1000 < game.createdAt.getTime();
+};
+
+export const getUsersInGame = async (game: GameDocument) => {
+  const users = await UserModel.find({ game: game._id });
+  return users;
 };

@@ -2,14 +2,16 @@ import { Router } from 'express';
 import { GameModel } from './models.js';
 import { createStory } from './story.js';
 import { createNames } from './names.js';
+import { HydratedDocument } from 'mongoose';
+import { CreateGameFunction, IGame } from './types';
 
 export const router = Router();
 
-const validGameTypes: { [key: string]: any } = {
+const validGameTypes: { [key: string]: CreateGameFunction } = {
   story: createStory,
   names: createNames,
 };
-const gameTitles: { [key: string]: any } = {
+const gameTitles: { [key: string]: string } = {
   story: 'He Said She Said',
   names: 'The Name Game',
 };
@@ -27,9 +29,9 @@ const getCode = async () => {
   }
 };
 
-router.post('/', async (req: any, res) => {
+router.post('/', async (req: { body: { type: string } }, res) => {
   try {
-    const createType = validGameTypes[req.body.type];
+    const createType: CreateGameFunction = validGameTypes[req.body.type];
 
     if (!createType) {
       console.warn(`Invalid game type: ${req.body.type}`);
@@ -37,7 +39,7 @@ router.post('/', async (req: any, res) => {
     }
 
     const newCode = await getCode();
-    const game = new GameModel({
+    const game: HydratedDocument<IGame> = new GameModel({
       type: req.body.type,
       code: newCode,
       phase: 'join',

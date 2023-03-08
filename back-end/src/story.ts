@@ -1,7 +1,6 @@
-import { Router } from 'express';
+import { Router, Request } from 'express';
 import { StoryModel } from './models.js';
-import { loadUser } from './users.js';
-import { joinPhase, getAllSubmissions } from './utils.js';
+import { getAllSubmissions } from './utils.js';
 import { upperFirst, lowerFirst } from './utils.js';
 
 import male_names from './generation/male_names.js';
@@ -10,6 +9,8 @@ import actions_past from './generation/actions_past.js';
 import actions_present from './generation/actions_present.js';
 import statements from './generation/statements.js';
 import { randomElement } from './generation/generationUtils.js';
+import { GameDocument, StoryDocument, UserDocument } from './types.js';
+import { joinPhase, loadStory, loadUser } from './middleware.js';
 
 const punctRegex = /.*([.!?])$/;
 const quoteRegex = /["“”]/g;
@@ -34,7 +35,7 @@ const placeholders = [
 const prefixes = ['', 'and ', 'were ', 'He said, "', 'She said, "', 'So they '];
 const suffixes = [' ', ' ', ' ', '" ', '" ', ' '];
 
-export const createStory = async (game: any) => {
+export const createStory = async (game: GameDocument) => {
   const story = new StoryModel({
     game: game._id,
     stories: [],
@@ -42,21 +43,14 @@ export const createStory = async (game: any) => {
   });
   await story.save();
 };
-const loadStory = async (req: any, res: any, next: any) => {
-  if (!req.user || !req.game) return res.sendStatus(401);
-  if (req.game.type !== 'story') return res.sendStatus(400);
 
-  req.storyType = await StoryModel.findOne({ game: req.game._id }).populate(
-    'stories.user'
-  );
-  if (!req.storyType) return res.sendStatus(400);
-  next();
-};
-
-const checkRoundCompletion = async (game: any, storyType: any) => {
+const checkRoundCompletion = async (
+  game: GameDocument,
+  storyType: StoryDocument
+) => {
   if (game.phase !== 'play') return [];
 
-  const userToStory = (user: any) => ({ user: user, parts: [] });
+  const userToStory = (user: UserDocument) => ({ user: user, parts: [] });
   storyType.stories = await getAllSubmissions(
     game,
     storyType.stories,
@@ -64,8 +58,8 @@ const checkRoundCompletion = async (game: any, storyType: any) => {
   );
 
   const waitingOnUsers = storyType.stories
-    .filter((elem: any) => elem.parts.length <= storyType.round)
-    .map((elem: any) => elem.user?.nickname);
+    .filter((elem) => elem.parts.length <= storyType.round)
+    .map((elem) => elem.user?.nickname);
 
   if (waitingOnUsers.length > 0) return waitingOnUsers;
 
@@ -76,7 +70,7 @@ const checkRoundCompletion = async (game: any, storyType: any) => {
   return [];
 };
 
-const finishGame = async (game: any, storyType: any) => {
+const finishGame = async (game: GameDocument, storyType: StoryDocument) => {
   if (game.phase === 'read') return;
   game.phase = 'read';
   await game.save();
@@ -90,7 +84,7 @@ const finishGame = async (game: any, storyType: any) => {
       s.push(suffixes[j]);
     }
     storyType.finalStories.push({
-      user: stories[i].user._id,
+      user: stories[i].user,
       text: s.join(''),
     });
   }
@@ -99,34 +93,37 @@ const finishGame = async (game: any, storyType: any) => {
 export const router = Router();
 router.use(loadUser, loadStory);
 
-router.get('/', joinPhase, async (req: any, res) => {
+router.get('/', joinPhase, async (req: Request, res) => {
   try {
+    if (!req.game || !req.user || !req.storyType) return res.sendStatus(500);
+
     const storyType = req.storyType;
+    const userId = req.user._id;
     const waitingOnUsers = await checkRoundCompletion(req.game, storyType);
 
     if (req.game.phase === 'play') {
       const round = storyType.round;
-      const userElem = storyType.stories.find((element: any) =>
-        element.user._id.equals(req.user._id)
+      const userElem = storyType.stories.find((elem) =>
+        elem.user._id.equals(userId)
       );
 
-      const waiting = userElem?.parts.length > round;
+      const canPlay = !userElem || userElem.parts.length <= round;
       return res.send({
-        phase: waiting ? 'wait' : 'play',
+        phase: canPlay ? 'play' : 'wait',
         round: round,
         filler: fillers[round],
         prompt: prompts[round],
         prefix: prefixes[round],
         suffix: suffixes[round],
-        placeholder: waiting ? '' : randomElement(placeholders[round]),
+        placeholder: canPlay ? randomElement(placeholders[round]) : '',
         users: waitingOnUsers,
       });
     } else {
       return res.send({
         phase: 'read',
-        story: storyType.finalStories.find((element: any) =>
-          element.user._id.equals(req.user._id)
-        ).text,
+        story: storyType.finalStories.find((element) =>
+          element.user._id.equals(userId)
+        )?.text,
       });
     }
   } catch (error) {
@@ -135,14 +132,17 @@ router.get('/', joinPhase, async (req: any, res) => {
   }
 });
 
-router.put('/', async (req: any, res) => {
+router.put('/', async (req: Request, res) => {
   try {
+    if (!req.game || !req.user || !req.storyType) return res.sendStatus(500);
+
     if (req.game.phase !== 'play') return res.sendStatus(403);
 
     const storyType = req.storyType;
+    const userId = req.user._id;
 
-    let userIndex = storyType.stories.findIndex((element: any) =>
-      element.user._id.equals(req.user._id)
+    let userIndex = storyType.stories.findIndex((element) =>
+      element.user._id.equals(userId)
     );
     if (userIndex === -1) {
       userIndex = storyType.stories.length;

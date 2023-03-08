@@ -1,3 +1,5 @@
 export const randomNumber = (limit: number) =>
   Math.floor(Math.random() * limit);
-export const randomElement = (arr: any[]) => arr[randomNumber(arr.length)];
+export function randomElement<Type>(arr: Type[]): Type {
+  return arr[randomNumber(arr.length)];
+}
