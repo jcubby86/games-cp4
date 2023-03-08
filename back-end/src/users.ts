@@ -21,8 +21,6 @@ const uniqueUsername = async (
 
 router.post('/', loadUser, async (req: Request, res) => {
   try {
-    if (!req.user) return res.sendStatus(500);
-
     const game = await GameModel.findOne({ code: req.body.code });
     if (
       !game ||
@@ -42,7 +40,7 @@ router.post('/', loadUser, async (req: Request, res) => {
     const isUniqueUsername = await uniqueUsername(
       req.body.nickname,
       game,
-      req.user._id
+      req.user?._id
     );
     if (!isUniqueUsername) {
       console.warn(`The nickname ${req.body.nickname} is already taken`);
