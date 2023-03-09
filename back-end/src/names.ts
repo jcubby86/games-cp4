@@ -1,4 +1,4 @@
-import { Router, Request } from 'express';
+import { Router } from 'express';
 import { NamesModel } from './models.js';
 import { getAllEntries } from './utils.js';
 import { shuffleArray, upperFirst } from './utils.js';
@@ -17,14 +17,15 @@ export const createNames = async (game: Game) => {
   await names.save();
 };
 
+const createNamesEntry = (user: User): Entry<string> => ({
+  user: user,
+  value: '',
+});
+
 const checkCompletion = async (game: Game, names: NamesDocument) => {
   if (game.phase !== 'play') return [];
 
-  const userToName = (user: User): Entry<string> => ({
-    user: user,
-    value: '',
-  });
-  names.entries = await getAllEntries(game, names.entries, userToName);
+  names.entries = await getAllEntries(game, names.entries, createNamesEntry);
 
   const waitingOnUsers = names.entries
     .filter((elem) => elem.value === '')
@@ -43,7 +44,7 @@ const checkCompletion = async (game: Game, names: NamesDocument) => {
 export const router = Router();
 router.use(loadUser, loadNames);
 
-router.get('/', joinPhase, async (req: Request, res) => {
+router.get('/', joinPhase, async (req, res) => {
   try {
     if (!req.game || !req.user || !req.names) return res.sendStatus(500);
 
@@ -80,7 +81,7 @@ router.get('/', joinPhase, async (req: Request, res) => {
 });
 
 const quoteRegex = /["“”]/g;
-router.put('/', async (req: Request, res) => {
+router.put('/', async (req, res) => {
   if (!req.game || !req.user || !req.names) return res.sendStatus(500);
 
   if (req.game.phase !== 'play') return res.sendStatus(403);

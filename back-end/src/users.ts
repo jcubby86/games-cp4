@@ -1,4 +1,4 @@
-import { Router, Request } from 'express';
+import { Router } from 'express';
 import { Types } from 'mongoose';
 import { loadUser } from './middleware.js';
 import { GameModel, UserModel } from './models.js';
@@ -19,7 +19,7 @@ const uniqueUsername = async (
   return !user || (id != null && user._id.equals(id));
 };
 
-router.post('/', loadUser, async (req: Request, res) => {
+router.post('/', loadUser, async (req, res) => {
   try {
     const game = await GameModel.findOne({ code: req.body.code });
     if (
@@ -76,7 +76,7 @@ router.post('/', loadUser, async (req: Request, res) => {
   }
 });
 
-router.get('/', loadUser, async (req: Request, res) => {
+router.get('/', loadUser, async (req, res) => {
   if (!req.user) {
     return res.sendStatus(404);
   }
@@ -95,7 +95,7 @@ router.get('/:code', async (req, res) => {
   }
 });
 
-router.delete('/', loadUser, async (req: Request, res) => {
+router.delete('/', loadUser, async (req, res) => {
   try {
     if (req.user) {
       req.user.game = undefined;

@@ -1,7 +1,7 @@
 import { UserModel } from './models';
 import { Entry, Game, User } from './types';
 
-export const shuffleArray = (array: unknown[]) => {
+export function shuffleArray<Type>(array: Type[]) {
   let curId = array.length;
 
   while (curId) {
@@ -11,15 +11,13 @@ export const shuffleArray = (array: unknown[]) => {
     array[curId] = array[randId];
     array[randId] = tmp;
   }
-};
+}
 
-export const lowerFirst = (part: string) => {
-  return part.slice(0, 1).toLowerCase() + part.slice(1);
-};
+export const lowerFirst = (part: string) =>
+  part.slice(0, 1).toLowerCase() + part.slice(1);
 
-export const upperFirst = (part: string) => {
-  return part.slice(0, 1).toUpperCase() + part.slice(1);
-};
+export const upperFirst = (part: string) =>
+  part.slice(0, 1).toUpperCase() + part.slice(1);
 
 export async function getAllEntries<Type>(
   game: Game,
@@ -45,12 +43,10 @@ export async function getAllEntries<Type>(
 
   return [...filteredEntries, ...newEntries];
 }
+//               hr  min  sec  millis
+const twoHours = 2 * 60 * 60 * 1000;
+export const gameExists = (game: Game) =>
+  new Date().getTime() - twoHours < game.createdAt.getTime();
 
-export const gameExists = (game: Game) => {
-  return new Date().getTime() - 2 * 60 * 60 * 1000 < game.createdAt.getTime();
-};
-
-export const getUsersInGame = async (game: Game) => {
-  const users = await UserModel.find({ game: game._id });
-  return users;
-};
+export const getUsersInGame = async (game: Game) =>
+  await UserModel.find({ game: game._id });

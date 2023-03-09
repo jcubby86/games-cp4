@@ -1,4 +1,4 @@
-import { Router, Request } from 'express';
+import { Router } from 'express';
 import { StoryModel } from './models.js';
 import { getAllEntries } from './utils.js';
 import { upperFirst, lowerFirst } from './utils.js';
@@ -44,14 +44,15 @@ export const createStory = async (game: Game) => {
   await story.save();
 };
 
+const createStoryEntry = (user: User): Entry<string[]> => ({
+  user: user,
+  value: [],
+});
+
 const checkRoundCompletion = async (game: Game, story: StoryDocument) => {
   if (game.phase !== 'play') return [];
 
-  const userToStory = (user: User): Entry<string[]> => ({
-    user: user,
-    value: [],
-  });
-  story.entries = await getAllEntries(game, story.entries, userToStory);
+  story.entries = await getAllEntries(game, story.entries, createStoryEntry);
 
   const waitingOnUsers = story.entries
     .filter((elem) => elem.value.length <= story.round)
@@ -89,7 +90,7 @@ const finishGame = async (game: Game, story: StoryDocument) => {
 export const router = Router();
 router.use(loadUser, loadStory);
 
-router.get('/', joinPhase, async (req: Request, res) => {
+router.get('/', joinPhase, async (req, res) => {
   try {
     if (!req.game || !req.user || !req.story) return res.sendStatus(500);
 
@@ -128,7 +129,7 @@ router.get('/', joinPhase, async (req: Request, res) => {
   }
 });
 
-router.put('/', async (req: Request, res) => {
+router.put('/', async (req, res) => {
   try {
     if (!req.game || !req.user || !req.story) return res.sendStatus(500);
 

@@ -28,7 +28,7 @@ const getCode = async () => {
   }
 };
 
-router.post('/', async (req: { body: { type: string } }, res) => {
+router.post('/', async (req, res) => {
   try {
     const createType: CreateGameFunction = validGameTypes[req.body.type];
 

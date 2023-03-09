@@ -21,6 +21,7 @@ export interface Entry<Type> {
   user: HydratedDocument<IUser>;
   value: Type;
 }
+
 export interface IStory {
   game: HydratedDocument<IGame>;
   entries: Entry<string[]>[];
