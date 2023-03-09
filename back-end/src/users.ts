@@ -27,6 +27,11 @@ async function isUniqueUsername(
   return !user || (id != null && user._id.equals(id));
 }
 
+/**
+ * Join a game.
+ * If the user already has a session, we update the session/user
+ * rather than creating a new one.
+ */
 router.post('/', loadUser, async (req, res) => {
   try {
     const game = await GameModel.findOne({ code: req.body.code });
@@ -84,6 +89,9 @@ router.post('/', loadUser, async (req, res) => {
   }
 });
 
+/**
+ * Get the state of the user.
+ */
 router.get('/', loadUser, async (req, res) => {
   if (!req.user) {
     return res.sendStatus(404);
@@ -91,6 +99,9 @@ router.get('/', loadUser, async (req, res) => {
   res.send(req.user);
 });
 
+/**
+ * Get all the users in a game.
+ */
 router.get('/:code', async (req, res) => {
   try {
     const game = await GameModel.findOne({ code: req.params.code });
@@ -103,6 +114,9 @@ router.get('/:code', async (req, res) => {
   }
 });
 
+/**
+ * Delete a user.
+ */
 router.delete('/', loadUser, async (req, res) => {
   try {
     if (req.user) {

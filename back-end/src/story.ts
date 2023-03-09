@@ -114,6 +114,9 @@ async function finishGame(game: Game, story: StoryDocument): Promise<void> {
 export const router = Router();
 router.use(loadUser, loadStory);
 
+/**
+ * Get the state of the game.
+ */
 router.get('/', joinPhase, async (req, res) => {
   try {
     if (!req.game || !req.user || !req.story) return res.sendStatus(500);
@@ -153,6 +156,9 @@ router.get('/', joinPhase, async (req, res) => {
   }
 });
 
+/**
+ * Save a user's entry.
+ */
 router.put('/', async (req, res) => {
   try {
     if (!req.game || !req.user || !req.story) return res.sendStatus(500);

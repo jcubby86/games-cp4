@@ -34,6 +34,9 @@ async function getCode(): Promise<string> {
   }
 }
 
+/**
+ * Create a new Game.
+ */
 router.post('/', async (req, res) => {
   try {
     const createType: CreateGameFunction = validGameTypes[req.body.type];
@@ -60,6 +63,9 @@ router.post('/', async (req, res) => {
   }
 });
 
+/**
+ * Get a Game object and title.
+ */
 router.get('/:code', async (req, res) => {
   try {
     const game = await GameModel.findOne({ code: req.params.code });
@@ -74,6 +80,9 @@ router.get('/:code', async (req, res) => {
   }
 });
 
+/**
+ * Update the phase of a Game.
+ */
 router.put('/:code', async (req, res) => {
   try {
     const game = await GameModel.findOne({ code: req.params.code });

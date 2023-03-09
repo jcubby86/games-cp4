@@ -59,6 +59,9 @@ async function checkCompletion(
 export const router = Router();
 router.use(loadUser, loadNames);
 
+/**
+ * Get the state of the game.
+ */
 router.get('/', joinPhase, async (req, res) => {
   try {
     if (!req.game || !req.user || !req.names) return res.sendStatus(500);
@@ -95,6 +98,9 @@ router.get('/', joinPhase, async (req, res) => {
   }
 });
 
+/**
+ * Save a user's entry.
+ */
 const quoteRegex = /["“”]/g;
 router.put('/', async (req, res) => {
   if (!req.game || !req.user || !req.names) return res.sendStatus(500);

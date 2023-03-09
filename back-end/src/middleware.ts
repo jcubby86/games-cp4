@@ -16,6 +16,14 @@ declare global {
   }
 }
 
+/**
+ * Middleware for loading in a user from the session.
+ *
+ * @param req
+ * @param res
+ * @param next
+ * @returns
+ */
 export const loadUser = async (
   req: Request,
   res: Response,
@@ -43,6 +51,14 @@ export const loadUser = async (
   }
 };
 
+/**
+ * Middleware for loading in the Names Document.
+ *
+ * @param req
+ * @param res
+ * @param next
+ * @returns
+ */
 export const loadNames = async (
   req: Request,
   res: Response,
@@ -58,6 +74,14 @@ export const loadNames = async (
   next();
 };
 
+/**
+ * Middleware for loading in the Story Document.
+ *
+ * @param req
+ * @param res
+ * @param next
+ * @returns
+ */
 export const loadStory = async (
   req: Request,
   res: Response,
@@ -73,6 +97,15 @@ export const loadStory = async (
   next();
 };
 
+/**
+ * Middleware for handling a game if it's in the join phase.
+ * Used by Story and Names types.
+ *
+ * @param req
+ * @param res
+ * @param next
+ * @returns
+ */
 export const joinPhase = async (
   req: Request,
   res: Response,
