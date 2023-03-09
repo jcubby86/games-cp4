@@ -3,7 +3,7 @@ import { Types } from 'mongoose';
 import { loadUser } from './middleware.js';
 import { GameModel, UserModel } from './models.js';
 import { Game } from './types.js';
-import { gameExists, getUsersInGame } from './utils.js';
+import { gameExists } from './utils.js';
 
 export const router = Router();
 
@@ -97,21 +97,6 @@ router.get('/', loadUser, async (req, res) => {
     return res.sendStatus(404);
   }
   res.send(req.user);
-});
-
-/**
- * Get all the users in a game.
- */
-router.get('/:code', async (req, res) => {
-  try {
-    const game = await GameModel.findOne({ code: req.params.code });
-    if (!game) return res.sendStatus(404);
-    const users = await getUsersInGame(game);
-    res.send(users);
-  } catch (err) {
-    console.error(err);
-    return res.sendStatus(500);
-  }
 });
 
 /**

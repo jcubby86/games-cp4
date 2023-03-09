@@ -3,6 +3,7 @@ import { GameModel } from './models.js';
 import { createStory } from './story.js';
 import { createNames } from './names.js';
 import { CreateGameFunction, Game } from './types';
+import { getUsersInGame } from './utils.js';
 
 export const router = Router();
 
@@ -95,6 +96,21 @@ router.put('/:code', async (req, res) => {
 
     console.info('Game updated:', JSON.stringify(game));
     res.send(game);
+  } catch (err) {
+    console.error(err);
+    return res.sendStatus(500);
+  }
+});
+
+/**
+ * Get all the users in a game.
+ */
+router.get('/:code/users', async (req, res) => {
+  try {
+    const game = await GameModel.findOne({ code: req.params.code });
+    if (!game) return res.sendStatus(404);
+    const users = await getUsersInGame(game);
+    res.send(users);
   } catch (err) {
     console.error(err);
     return res.sendStatus(500);

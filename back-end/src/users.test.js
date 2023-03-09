@@ -202,7 +202,7 @@ describe('read list of users from game', () => {
   });
 
   test('get user count', async () => {
-    const response = await axios.get(`${baseURL}/api/users/${gameCode}`);
+    const response = await axios.get(`${baseURL}/api/games/${gameCode}/users`);
     expect(response.status).toBe(200);
     expect(response.data.length).toBe(4);
   });
