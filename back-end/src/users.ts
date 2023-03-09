@@ -7,17 +7,25 @@ import { gameExists, getUsersInGame } from './utils.js';
 
 export const router = Router();
 
-const uniqueUsername = async (
+/**
+ * Check if a username is unique across all players in the same game instance.
+ *
+ * @param {string} name
+ * @param {Game} game
+ * @param {Types.ObjectId} [id]
+ * @return {*}  {Promise<boolean>}
+ */
+async function isUniqueUsername(
   name: string,
   game: Game,
   id?: Types.ObjectId
-) => {
+): Promise<boolean> {
   const user = await UserModel.findOne({
     nickname: name,
     game: game,
   });
   return !user || (id != null && user._id.equals(id));
-};
+}
 
 router.post('/', loadUser, async (req, res) => {
   try {
@@ -37,12 +45,12 @@ router.post('/', loadUser, async (req, res) => {
         );
     }
 
-    const isUniqueUsername = await uniqueUsername(
+    const isUnique = await isUniqueUsername(
       req.body.nickname,
       game,
       req.user?._id
     );
-    if (!isUniqueUsername) {
+    if (!isUnique) {
       console.warn(`The nickname ${req.body.nickname} is already taken`);
       return res
         .status(400)

@@ -15,7 +15,13 @@ const gameTitles: { [key: string]: string } = {
   names: 'The Name Game',
 };
 
-const getCode = async () => {
+/**
+ * Generate a 4 letter string as game code,
+ * and make sure that it is not already in use.
+ *
+ * @return {*}  {Promise<string>}
+ */
+async function getCode(): Promise<string> {
   while (true) {
     const c = Math.random()
       .toString(36)
@@ -26,7 +32,7 @@ const getCode = async () => {
       return c;
     }
   }
-};
+}
 
 router.post('/', async (req, res) => {
   try {

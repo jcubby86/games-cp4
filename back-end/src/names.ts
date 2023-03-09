@@ -9,22 +9,37 @@ import { randomElement } from './generation/generationUtils.js';
 import { joinPhase, loadNames, loadUser } from './middleware.js';
 import { Entry, Game, NamesDocument, User } from './types.js';
 
-export const createNames = async (game: Game) => {
+/**
+ * Create a Names Document for a game.
+ *
+ * @export
+ * @param {Game} game
+ */
+export async function createNames(game: Game) {
   const names = new NamesModel({
     game: game._id,
     entries: [],
   });
   await names.save();
-};
+}
 
-const createNamesEntry = (user: User): Entry<string> => ({
-  user: user,
-  value: '',
-});
-
-const checkCompletion = async (game: Game, names: NamesDocument) => {
+/**
+ * Check if all players have submitted an entry.
+ *
+ * @param {Game} game
+ * @param {NamesDocument} names
+ * @return {*}  {Promise<string[]>}
+ */
+async function checkCompletion(
+  game: Game,
+  names: NamesDocument
+): Promise<string[]> {
   if (game.phase !== 'play') return [];
 
+  const createNamesEntry = (user: User): Entry<string> => ({
+    user: user,
+    value: '',
+  });
   names.entries = await getAllEntries(game, names.entries, createNamesEntry);
 
   const waitingOnUsers = names.entries
@@ -39,7 +54,7 @@ const checkCompletion = async (game: Game, names: NamesDocument) => {
   game.phase = 'read';
   await game.save();
   return [];
-};
+}
 
 export const router = Router();
 router.use(loadUser, loadNames);

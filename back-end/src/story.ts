@@ -35,23 +35,40 @@ const placeholders = [
 const prefixes = ['', 'and ', 'were ', 'He said, "', 'She said, "', 'So they '];
 const suffixes = [' ', ' ', ' ', '" ', '" ', ' '];
 
-export const createStory = async (game: Game) => {
+/**
+ * Create a Story Document for a game.
+ *
+ * @export
+ * @param {Game} game
+ * @return {*}  {Promise<void>}
+ */
+export async function createStory(game: Game): Promise<void> {
   const story = new StoryModel({
     game: game._id,
     entries: [],
     round: 0,
   });
   await story.save();
-};
+}
 
-const createStoryEntry = (user: User): Entry<string[]> => ({
-  user: user,
-  value: [],
-});
-
-const checkRoundCompletion = async (game: Game, story: StoryDocument) => {
+/**
+ * Check if all players have submitted an entry for the current round.
+ * Once all rounds are complete, marks the game as complete.
+ *
+ * @param {Game} game
+ * @param {StoryDocument} story
+ * @return {*}  {Promise<string[]>}
+ */
+async function checkRoundCompletion(
+  game: Game,
+  story: StoryDocument
+): Promise<string[]> {
   if (game.phase !== 'play') return [];
 
+  const createStoryEntry = (user: User): Entry<string[]> => ({
+    user: user,
+    value: [],
+  });
   story.entries = await getAllEntries(game, story.entries, createStoryEntry);
 
   const waitingOnUsers = story.entries
@@ -65,9 +82,16 @@ const checkRoundCompletion = async (game: Game, story: StoryDocument) => {
 
   await story.save();
   return [];
-};
+}
 
-const finishGame = async (game: Game, story: StoryDocument) => {
+/**
+ * Generates the completed stories at the end of the game.
+ *
+ * @param {Game} game
+ * @param {StoryDocument} story
+ * @return {*}  {Promise<void>}
+ */
+async function finishGame(game: Game, story: StoryDocument): Promise<void> {
   if (game.phase === 'read') return;
   game.phase = 'read';
   await game.save();
@@ -85,7 +109,7 @@ const finishGame = async (game: Game, story: StoryDocument) => {
       value: s.join(''),
     });
   }
-};
+}
 
 export const router = Router();
 router.use(loadUser, loadStory);
