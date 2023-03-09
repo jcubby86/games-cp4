@@ -24,7 +24,7 @@ const Story = (props: StoryProps): JSX.Element => {
 
   const pollStatus = async () => {
     try {
-      const response = await axios.get('/api/stories');
+      const response = await axios.get('/api/story');
       setPhase(response.data.phase);
       setUsers(response.data.users);
       setPrompt(response.data.prompt);
@@ -52,7 +52,7 @@ const Story = (props: StoryProps): JSX.Element => {
           return;
       }
 
-      await axios.put('/api/stories', {
+      await axios.put('/api/story', {
         part: partRef.current?.value || placeholder
       });
       setPhase('');

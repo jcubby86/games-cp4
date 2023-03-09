@@ -23,11 +23,11 @@ const Create = (props: CreateProps) => {
         return;
       }
 
-      const gameResponse = await axios.post('/api/games', {
+      const gameResponse = await axios.post('/api/game', {
         creator: nickname.toLowerCase(),
         type: selected
       });
-      const userResponse = await axios.post('/api/users', {
+      const userResponse = await axios.post('/api/user', {
         nickname: nickname.toLowerCase() || suggestion.current,
         code: gameResponse.data.code
       });

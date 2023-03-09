@@ -34,9 +34,9 @@ app.use(
 //   next();
 // });
 
-app.use('/api/games', gameRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/stories', storyRoutes);
+app.use('/api/game', gameRoutes);
+app.use('/api/user', userRoutes);
+app.use('/api/story', storyRoutes);
 app.use('/api/names', namesRoutes);
 
 const runPort = process.env.NODE_PORT || 3001;

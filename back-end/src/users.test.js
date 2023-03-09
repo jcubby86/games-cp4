@@ -7,14 +7,14 @@ const baseURL = `http://localhost:${process.env.NODE_PORT}`;
 describe('joining valid game', () => {
   let gameCode = '';
   beforeAll(async () => {
-    const response = await axios.post(`${baseURL}/api/games`, {
+    const response = await axios.post(`${baseURL}/api/game`, {
       type: 'story',
     });
     gameCode = response.data.code;
   });
 
   test('create a single user', async () => {
-    const response = await axios.post(`${baseURL}/api/users`, {
+    const response = await axios.post(`${baseURL}/api/user`, {
       code: gameCode,
       nickname: 'testUser',
     });
@@ -27,14 +27,14 @@ describe('joining valid game', () => {
 
   test('create two valid users in one game', async () => {
     expect(
-      axios.post(`${baseURL}/api/users`, {
+      axios.post(`${baseURL}/api/user`, {
         code: gameCode,
         nickname: 'testUser5',
       })
     ).resolves.toMatchObject({ status: 201, data: { nickname: 'testUser5' } });
 
     expect(
-      axios.post(`${baseURL}/api/users`, {
+      axios.post(`${baseURL}/api/user`, {
         code: gameCode,
         nickname: 'testUser6',
       })
@@ -43,19 +43,19 @@ describe('joining valid game', () => {
 
   test('join nonexistent game', async () => {
     expect(
-      axios.post(`${baseURL}/api/users`, { code: '1234', nickname: 'testUser' })
+      axios.post(`${baseURL}/api/user`, { code: '1234', nickname: 'testUser' })
     ).rejects.toThrow(axios.AxiosError);
   });
 
   test('create a new user with duplicate nickname', async () => {
-    const response = await axios.post(`${baseURL}/api/users`, {
+    const response = await axios.post(`${baseURL}/api/user`, {
       code: gameCode,
       nickname: 'testUser2',
     });
     expect(response.status).toBe(201);
 
     expect(
-      axios.post(`${baseURL}/api/users`, {
+      axios.post(`${baseURL}/api/user`, {
         code: gameCode,
         nickname: 'testUser2',
       })
@@ -68,14 +68,14 @@ describe('joining valid game', () => {
   });
 
   test('get user from cookie', async () => {
-    const response = await axios.post(`${baseURL}/api/users`, {
+    const response = await axios.post(`${baseURL}/api/user`, {
       code: gameCode,
       nickname: 'testUser3',
     });
 
     expect(response.status).toBe(201);
 
-    const response2 = await axios.get(`${baseURL}/api/users`, {
+    const response2 = await axios.get(`${baseURL}/api/user`, {
       headers: { Cookie: response.headers['set-cookie'] },
     });
     expect(response2.status).toBe(200);
@@ -83,7 +83,7 @@ describe('joining valid game', () => {
   });
 
   test('same user rejoins game', async () => {
-    const response = await axios.post(`${baseURL}/api/users`, {
+    const response = await axios.post(`${baseURL}/api/user`, {
       code: gameCode,
       nickname: 'testUser4',
     });
@@ -91,7 +91,7 @@ describe('joining valid game', () => {
     expect(response.status).toBe(201);
 
     const response2 = await axios.post(
-      `${baseURL}/api/users`,
+      `${baseURL}/api/user`,
       {
         code: gameCode,
         nickname: 'testUser4',
@@ -105,7 +105,7 @@ describe('joining valid game', () => {
   });
 
   test('same user changes nickname', async () => {
-    const response = await axios.post(`${baseURL}/api/users`, {
+    const response = await axios.post(`${baseURL}/api/user`, {
       code: gameCode,
       nickname: 'testUser7',
     });
@@ -113,7 +113,7 @@ describe('joining valid game', () => {
     expect(response.status).toBe(201);
 
     const response2 = await axios.post(
-      `${baseURL}/api/users`,
+      `${baseURL}/api/user`,
       {
         code: gameCode,
         nickname: 'testUser8',
@@ -132,23 +132,23 @@ describe('trying to join game that has already started', () => {
   let gameCode = '';
   let cookie = {};
   beforeAll(async () => {
-    const response = await axios.post(`${baseURL}/api/games`, {
+    const response = await axios.post(`${baseURL}/api/game`, {
       type: 'story',
     });
     gameCode = response.data.code;
 
-    const userResponse = await axios.post(`${baseURL}/api/users`, {
+    const userResponse = await axios.post(`${baseURL}/api/user`, {
       code: gameCode,
       nickname: 'testUser',
     });
     cookie = userResponse.headers['set-cookie'];
 
-    await axios.put(`${baseURL}/api/games/${gameCode}`, { phase: 'play' });
+    await axios.put(`${baseURL}/api/game/${gameCode}`, { phase: 'play' });
   });
 
   test('user rejoining', async () => {
     const response = await axios.post(
-      `${baseURL}/api/users`,
+      `${baseURL}/api/user`,
       {
         code: gameCode,
         nickname: 'testUser',
@@ -162,7 +162,7 @@ describe('trying to join game that has already started', () => {
 
   test('new user tries to join', async () => {
     expect(
-      axios.post(`${baseURL}/api/users`, {
+      axios.post(`${baseURL}/api/user`, {
         code: gameCode,
         nickname: 'testUser2',
       })
@@ -178,31 +178,31 @@ describe('trying to join game that has already started', () => {
 describe('read list of users from game', () => {
   let gameCode = '';
   beforeAll(async () => {
-    const response = await axios.post(`${baseURL}/api/games`, {
+    const response = await axios.post(`${baseURL}/api/game`, {
       type: 'story',
     });
     gameCode = response.data.code;
 
-    await axios.post(`${baseURL}/api/users`, {
+    await axios.post(`${baseURL}/api/user`, {
       code: gameCode,
       nickname: 'testUser',
     });
-    await axios.post(`${baseURL}/api/users`, {
+    await axios.post(`${baseURL}/api/user`, {
       code: gameCode,
       nickname: 'testUser2',
     });
-    await axios.post(`${baseURL}/api/users`, {
+    await axios.post(`${baseURL}/api/user`, {
       code: gameCode,
       nickname: 'testUser3',
     });
-    await axios.post(`${baseURL}/api/users`, {
+    await axios.post(`${baseURL}/api/user`, {
       code: gameCode,
       nickname: 'testUser4',
     });
   });
 
   test('get user count', async () => {
-    const response = await axios.get(`${baseURL}/api/games/${gameCode}/users`);
+    const response = await axios.get(`${baseURL}/api/game/${gameCode}/users`);
     expect(response.status).toBe(200);
     expect(response.data.length).toBe(4);
   });

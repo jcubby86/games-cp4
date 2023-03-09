@@ -58,7 +58,7 @@ const Names = (props: NamesProps) => {
 
   const endGame = async (e: React.MouseEvent) => {
     e.preventDefault();
-    await axios.put(`/api/games/${props.code}`, { phase: 'end' });
+    await axios.put(`/api/game/${props.code}`, { phase: 'end' });
     setPhase('end');
   };
 

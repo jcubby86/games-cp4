@@ -30,7 +30,7 @@ const Join = (props: JoinProps) => {
         return;
       }
 
-      const response = await axios.post('/api/users', {
+      const response = await axios.post('/api/user', {
         nickname: nickname.toLowerCase() || suggestion.current,
         code: code.toLowerCase()
       });
@@ -53,7 +53,7 @@ const Join = (props: JoinProps) => {
     try {
       setCode(gameCode);
       if (gameCode.length === 4) {
-        const result = await axios.get('/api/games/' + gameCode);
+        const result = await axios.get('/api/game/' + gameCode);
         setGameType({
           title: result.data.title,
           valid: true

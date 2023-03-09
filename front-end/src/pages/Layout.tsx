@@ -16,7 +16,7 @@ const Layout = (props: LayoutProps) => {
     try {
       e.preventDefault();
 
-      await axios.delete('/api/users');
+      await axios.delete('/api/user');
       props.setCode('');
       props.setGameType('');
       navigate('/');

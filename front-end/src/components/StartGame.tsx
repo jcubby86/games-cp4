@@ -11,7 +11,7 @@ interface StartGameProps {
 const StartGame = (props: StartGameProps) => {
   const startGame = async (e: React.FormEvent) => {
     e.preventDefault();
-    await axios.put(`/api/games/${props.code}`, { phase: 'play' });
+    await axios.put(`/api/game/${props.code}`, { phase: 'play' });
     props.setPhase('');
   };
 

@@ -9,7 +9,7 @@ jest.setTimeout(30000);
 describe('play name game with one user', () => {
   let gameCode = '';
   beforeAll(async () => {
-    const response = await axios.post(`${baseURL}/api/games`, {
+    const response = await axios.post(`${baseURL}/api/game`, {
       type: 'names',
     });
     gameCode = response.data.code;
@@ -17,7 +17,7 @@ describe('play name game with one user', () => {
 
   test('play game', async () => {
     //join game
-    const userResponse = await axios.post(`${baseURL}/api/users`, {
+    const userResponse = await axios.post(`${baseURL}/api/user`, {
       code: gameCode,
       nickname: 'TestUser',
     });
@@ -31,7 +31,7 @@ describe('play name game with one user', () => {
     expect(response.data.users.length).toBe(1);
 
     //start game
-    await axios.put(`${baseURL}/api/games/${gameCode}`, { phase: 'play' });
+    await axios.put(`${baseURL}/api/game/${gameCode}`, { phase: 'play' });
 
     response = await axios.get(`${baseURL}/api/names`, {
       headers: { Cookie: cookie },

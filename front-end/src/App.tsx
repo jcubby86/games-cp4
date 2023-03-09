@@ -16,7 +16,7 @@ function App() {
 
   const fetchUser = async () => {
     try {
-      const response = await axios.get('/api/users');
+      const response = await axios.get('/api/user');
       setNickname(response.data.nickname);
       setCode(response.data.game.code);
       setGameType(response.data.game.type);
