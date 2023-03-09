@@ -5,8 +5,8 @@ services:
     build:
       context: ./front-end
       tags:
-        - 'ghcr.io/jcubby86/games-app:latest'
-        # - 'ghcr.io/jcubby86/games-app:v2.0.0'
+        # - 'ghcr.io/jcubby86/games-app:latest'
+        - 'ghcr.io/jcubby86/games-app:2.2.0'
     image: ghcr.io/jcubby86/games-app:latest
     ports:
       - '3020:80'
@@ -18,8 +18,8 @@ services:
     build:
       context: ./back-end
       tags:
-        - 'ghcr.io/jcubby86/games-backend:latest'
-        # - 'ghcr.io/jcubby86/games-backend:v2.0.0'
+        # - 'ghcr.io/jcubby86/games-backend:latest'
+        - 'ghcr.io/jcubby86/games-backend:2.2.0'
     image: ghcr.io/jcubby86/games-backend:latest
     environment:
       - MONGO_DB_CONN_STR=mongodb://mongo/games-cp4
