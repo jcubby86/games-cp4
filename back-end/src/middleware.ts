@@ -1,5 +1,12 @@
 import { NamesModel, StoryModel, UserModel } from './models.js';
-import { Game, NamesDocument, StoryDocument, User, Session } from './types.js';
+import {
+  Game,
+  NamesDocument,
+  StoryDocument,
+  User,
+  Session,
+  JoinResBody,
+} from './types.js';
 import { gameExists, getUsersInGame } from './utils.js';
 import type { Request, Response, NextFunction } from 'express';
 import { JOIN, NAMES, STORY } from './helpers/constants.js';
@@ -109,7 +116,7 @@ export const loadStory = async (
  */
 export const joinPhase = async (
   req: Request,
-  res: Response,
+  res: Response<JoinResBody>,
   next: NextFunction
 ) => {
   try {

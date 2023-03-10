@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Request, Response } from 'express';
 import { NamesModel } from './models.js';
 import { getAllEntries } from './utils.js';
 import { shuffleArray, upperFirst } from './utils.js';
@@ -7,8 +7,15 @@ import male_names from './generation/male_names.js';
 import female_names from './generation/female_names.js';
 import { randomElement } from './generation/generationUtils.js';
 import { joinPhase, loadNames, loadUser } from './middleware.js';
-import { Entry, Game, NamesDocument, User } from './types.js';
-import { END, PLAY, READ, WAIT } from './helpers/constants.js';
+import {
+  Entry,
+  Game,
+  NamesDocument,
+  User,
+  NamesReqBody,
+  NamesResBody,
+} from './types.js';
+import { END, PLAY, quoteRegex, READ, WAIT } from './helpers/constants.js';
 
 /**
  * Create a Names Document for a game.
@@ -63,80 +70,92 @@ router.use(loadUser, loadNames);
 /**
  * Get the state of the game.
  */
-router.get('/', joinPhase, async (req, res) => {
-  try {
-    if (!req.game || !req.user || !req.names) return res.sendStatus(500);
+router.get(
+  '/',
+  joinPhase,
+  async (
+    req: Request<unknown, unknown, unknown>,
+    res: Response<NamesResBody>
+  ) => {
+    try {
+      if (!req.game || !req.user || !req.names) return res.sendStatus(500);
 
-    const names = req.names;
-    const userId = req.user._id;
-    const waitingOnUsers = await checkCompletion(req.game, names);
+      const names = req.names;
+      const userId = req.user._id;
+      const waitingOnUsers = await checkCompletion(req.game, names);
 
-    if (req.game.phase === PLAY) {
-      const userElem = names.entries.find((elem) =>
-        elem.user._id.equals(userId)
-      );
+      if (req.game.phase === PLAY) {
+        const userElem = names.entries.find((elem) =>
+          elem.user._id.equals(userId)
+        );
 
-      const waiting = userElem?.value !== '';
-      return res.send({
-        phase: waiting ? WAIT : PLAY,
-        users: waitingOnUsers,
-        text: userElem?.value,
-        placeholder: randomElement(randomElement([male_names, female_names])),
-      });
-    } else if (req.game.phase === READ) {
-      return res.send({
-        phase: READ,
-        names: names.entries.map((elem) => elem.value),
-      });
-    } else {
-      return res.send({
-        phase: END,
-      });
+        const waiting = userElem?.value !== '';
+        return res.send({
+          phase: waiting ? WAIT : PLAY,
+          users: waitingOnUsers,
+          text: userElem?.value,
+          placeholder: randomElement(randomElement([male_names, female_names])),
+        });
+      } else if (req.game.phase === READ) {
+        return res.send({
+          phase: READ,
+          names: names.entries.map((elem) => elem.value),
+        });
+      } else {
+        return res.send({
+          phase: END,
+        });
+      }
+    } catch (err) {
+      console.error(err);
+      return res.sendStatus(500);
     }
-  } catch (err) {
-    console.error(err);
-    return res.sendStatus(500);
   }
-});
+);
 
 /**
  * Save a user's entry.
  */
-const quoteRegex = /["“”]/g;
-router.put('/', async (req, res) => {
-  if (!req.game || !req.user || !req.names) return res.sendStatus(500);
+router.put(
+  '/',
+  async (
+    req: Request<unknown, unknown, NamesReqBody>,
+    res: Response<string>
+  ) => {
+    if (!req.game || !req.user || !req.names) return res.sendStatus(500);
 
-  if (req.game.phase !== PLAY) return res.sendStatus(403);
+    if (req.game.phase !== PLAY) return res.sendStatus(403);
 
-  const names = req.names;
-  const userId = req.user._id;
-  let statusCode = 200;
+    const names = req.names;
+    const userId = req.user._id;
+    let statusCode = 200;
 
-  let userIndex = names.entries.findIndex((elem) =>
-    elem.user._id.equals(userId)
-  );
-  if (userIndex === -1) {
-    statusCode = 201;
-    userIndex = names.entries.length;
-    names.entries.push({ user: req.user, value: '' });
+    let userIndex = names.entries.findIndex((elem) =>
+      elem.user._id.equals(userId)
+    );
+    if (userIndex === -1) {
+      statusCode = 201;
+      userIndex = names.entries.length;
+      names.entries.push({ user: req.user, value: '' });
+    }
+
+    const text = upperFirst(req.body.text.replace(quoteRegex, '').trim());
+    if (
+      names.entries.find(
+        (elem, index) =>
+          elem.value.toLowerCase() === text.toLowerCase() && index != userIndex
+      )
+    ) {
+      return res
+        .status(400)
+        .send(
+          'That name has already been entered. Please choose something else!'
+        );
+    }
+
+    names.entries[userIndex].value = text;
+
+    await names.save();
+    return res.sendStatus(statusCode);
   }
-
-  const text = upperFirst(req.body.text.replaceAll(quoteRegex, '').trim());
-  if (
-    names.entries.find(
-      (elem, index) =>
-        elem.value.toLowerCase() === text.toLowerCase() && index != userIndex
-    )
-  ) {
-    return res
-      .status(400)
-      .send(
-        'That name has already been entered. Please choose something else!'
-      );
-  }
-
-  names.entries[userIndex].value = text;
-
-  await names.save();
-  return res.sendStatus(statusCode);
-});
+);
