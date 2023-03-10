@@ -18,13 +18,13 @@
 Using docker compose:
 
 ```yaml
-version: '3'
+version: "3"
 services:
   app:
     container_name: games-app
     image: ghcr.io/jcubby86/games-app:latest
     ports:
-      - '3020:80'
+      - "3020:80"
     environment:
       - NGINX_BACKEND_ADDRESS=http://games-backend:3000
 
@@ -35,7 +35,7 @@ services:
       - MONGO_DB_CONN_STR=mongodb://mongo/games-cp4
       - NODE_PORT=3000
     depends_on:
-      - 'db'
+      - "db"
 
   db:
     container_name: mongo
