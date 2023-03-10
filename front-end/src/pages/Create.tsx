@@ -59,6 +59,7 @@ const Create = (props: CreateProps) => {
             spellCheck="false"
             autoCorrect="off"
             placeholder={suggestion.current}
+            maxLength={30}
             value={nickname}
             onChange={(e) => setNickname(e.target.value)}
           />
