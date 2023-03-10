@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { Types } from 'mongoose';
+import { JOIN } from './helpers/constants.js';
 import { loadUser } from './middleware.js';
 import { GameModel, UserModel } from './models.js';
 import { Game } from './types.js';
@@ -38,7 +39,7 @@ router.post('/', loadUser, async (req, res) => {
     if (
       !game ||
       !gameExists(game) ||
-      !(game?.phase === 'join' || req.user?.game?.equals(game))
+      !(game?.phase === JOIN || req.user?.game?.equals(game))
     ) {
       console.warn(
         `Game with code ${req.body.code} does not exist or can no longer be joined.`

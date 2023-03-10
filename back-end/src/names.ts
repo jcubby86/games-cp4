@@ -8,6 +8,7 @@ import female_names from './generation/female_names.js';
 import { randomElement } from './generation/generationUtils.js';
 import { joinPhase, loadNames, loadUser } from './middleware.js';
 import { Entry, Game, NamesDocument, User } from './types.js';
+import { END, PLAY, READ, WAIT } from './helpers/constants.js';
 
 /**
  * Create a Names Document for a game.
@@ -34,7 +35,7 @@ async function checkCompletion(
   game: Game,
   names: NamesDocument
 ): Promise<string[]> {
-  if (game.phase !== 'play') return [];
+  if (game.phase !== PLAY) return [];
 
   const createNamesEntry = (user: User): Entry<string> => ({
     user: user,
@@ -51,7 +52,7 @@ async function checkCompletion(
   shuffleArray(names.entries);
   await names.save();
 
-  game.phase = 'read';
+  game.phase = READ;
   await game.save();
   return [];
 }
@@ -70,26 +71,26 @@ router.get('/', joinPhase, async (req, res) => {
     const userId = req.user._id;
     const waitingOnUsers = await checkCompletion(req.game, names);
 
-    if (req.game.phase === 'play') {
+    if (req.game.phase === PLAY) {
       const userElem = names.entries.find((elem) =>
         elem.user._id.equals(userId)
       );
 
       const waiting = userElem?.value !== '';
       return res.send({
-        phase: waiting ? 'wait' : 'play',
+        phase: waiting ? WAIT : PLAY,
         users: waitingOnUsers,
         text: userElem?.value,
         placeholder: randomElement(randomElement([male_names, female_names])),
       });
-    } else if (req.game.phase === 'read') {
+    } else if (req.game.phase === READ) {
       return res.send({
-        phase: 'read',
+        phase: READ,
         names: names.entries.map((elem) => elem.value),
       });
     } else {
       return res.send({
-        phase: 'end',
+        phase: END,
       });
     }
   } catch (err) {
@@ -105,7 +106,7 @@ const quoteRegex = /["“”]/g;
 router.put('/', async (req, res) => {
   if (!req.game || !req.user || !req.names) return res.sendStatus(500);
 
-  if (req.game.phase !== 'play') return res.sendStatus(403);
+  if (req.game.phase !== PLAY) return res.sendStatus(403);
 
   const names = req.names;
   const userId = req.user._id;

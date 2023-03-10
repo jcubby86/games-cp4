@@ -4,6 +4,7 @@ import { createStory } from './story.js';
 import { createNames } from './names.js';
 import { CreateGameFunction, Game } from './types';
 import { getUsersInGame } from './utils.js';
+import { JOIN } from './helpers/constants.js';
 
 export const router = Router();
 
@@ -51,7 +52,7 @@ router.post('/', async (req, res) => {
     const game: Game = new GameModel({
       type: req.body.type,
       code: newCode,
-      phase: 'join',
+      phase: JOIN,
     });
 
     await game.save();

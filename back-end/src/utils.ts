@@ -1,3 +1,4 @@
+import { PLAY } from './helpers/constants';
 import { UserModel } from './models';
 import { Entry, Game, User } from './types';
 
@@ -62,7 +63,7 @@ export async function getAllEntries<Type>(
   // eslint-disable-next-line no-unused-vars
   createEntry: (user: User) => Entry<Type>
 ): Promise<Entry<Type>[]> {
-  if (game.phase !== 'play') return [];
+  if (game.phase !== PLAY) return [];
 
   const users = await getUsersInGame(game);
 

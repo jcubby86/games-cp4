@@ -11,6 +11,7 @@ import statements from './generation/statements.js';
 import { randomElement } from './generation/generationUtils.js';
 import { Entry, Game, StoryDocument, User } from './types.js';
 import { joinPhase, loadStory, loadUser } from './middleware.js';
+import { PLAY, READ, WAIT } from './helpers/constants.js';
 
 const punctRegex = /.*([.!?])$/;
 const quoteRegex = /["“”]/g;
@@ -63,7 +64,7 @@ async function checkRoundCompletion(
   game: Game,
   story: StoryDocument
 ): Promise<string[]> {
-  if (game.phase !== 'play') return [];
+  if (game.phase !== PLAY) return [];
 
   const createStoryEntry = (user: User): Entry<string[]> => ({
     user: user,
@@ -92,8 +93,8 @@ async function checkRoundCompletion(
  * @return {*}  {Promise<void>}
  */
 async function finishGame(game: Game, story: StoryDocument): Promise<void> {
-  if (game.phase === 'read') return;
-  game.phase = 'read';
+  if (game.phase === READ) return;
+  game.phase = READ;
   await game.save();
 
   const stories = story.entries;
@@ -125,7 +126,7 @@ router.get('/', joinPhase, async (req, res) => {
     const userId = req.user._id;
     const waitingOnUsers = await checkRoundCompletion(req.game, story);
 
-    if (req.game.phase === 'play') {
+    if (req.game.phase === PLAY) {
       const round = story.round;
       const userElem = story.entries.find((elem) =>
         elem.user._id.equals(userId)
@@ -133,7 +134,7 @@ router.get('/', joinPhase, async (req, res) => {
 
       const canPlay = !userElem || userElem.value.length <= round;
       return res.send({
-        phase: canPlay ? 'play' : 'wait',
+        phase: canPlay ? PLAY : WAIT,
         round: round,
         filler: fillers[round],
         prompt: prompts[round],
@@ -144,7 +145,7 @@ router.get('/', joinPhase, async (req, res) => {
       });
     } else {
       return res.send({
-        phase: 'read',
+        phase: READ,
         story: story.finalEntries.find((element) =>
           element.user._id.equals(userId)
         )?.value,
@@ -163,7 +164,7 @@ router.put('/', async (req, res) => {
   try {
     if (!req.game || !req.user || !req.story) return res.sendStatus(500);
 
-    if (req.game.phase !== 'play') return res.sendStatus(403);
+    if (req.game.phase !== PLAY) return res.sendStatus(403);
 
     const story = req.story;
     const userId = req.user._id;
