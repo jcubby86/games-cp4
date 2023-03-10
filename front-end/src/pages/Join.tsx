@@ -8,26 +8,33 @@ interface GameType {
   title?: string | null;
   valid?: boolean | null;
 }
+interface JoinState {
+  nickname: string;
+  gameCode: string;
+  gameType: GameType;
+}
 
 const Join = (): JSX.Element => {
   const suggestion = useRef(generateNickname());
   const { appState, setAppState } = useAppState();
-  const [nickname, setNickname] = useState(appState.nickname);
-  const [code, setCode] = useState(appState.gameCode);
-  const [gameType, setGameType] = useState<GameType>({});
+  const [state, setState] = useState<JoinState>({
+    nickname: appState.nickname,
+    gameCode: appState.gameCode,
+    gameType: {}
+  });
   const navigate = useNavigate();
 
   const joinGame = async (e: React.FormEvent) => {
     try {
       e.preventDefault();
-      if (code?.length !== 4) {
+      if (state.gameCode?.length !== 4) {
         alert('Please enter a code.');
         return;
       }
 
       const response = await axios.post('/api/user', {
-        nickname: nickname.toLowerCase() || suggestion.current,
-        code: code.toLowerCase()
+        nickname: state.nickname.toLowerCase() || suggestion.current,
+        code: state.gameCode.toLowerCase()
       });
 
       setAppState({
@@ -47,25 +54,24 @@ const Join = (): JSX.Element => {
     }
   };
 
-  const checkGameType = async (gameCode: string) => {
+  const checkGameType = async (code: string) => {
+    let gameType: GameType = {};
     try {
-      setCode(gameCode);
-      if (gameCode.length === 4) {
-        const result = await axios.get('/api/game/' + gameCode);
-        setGameType({
+      if (code.length === 4) {
+        const result = await axios.get('/api/game/' + code);
+        gameType = {
           title: result.data.title,
           valid: true
-        });
-      } else {
-        setGameType({});
+        };
       }
     } catch (error) {
-      setGameType({ title: 'Game not found', valid: false });
+      gameType = { title: 'Game not found', valid: false };
     }
+    setState((prev) => ({ ...prev, gameCode: code, gameType: gameType }));
   };
 
   useEffect(() => {
-    setNickname(appState.nickname);
+    setState((prev) => ({ ...prev, nickname: appState.nickname }));
     checkGameType(appState.gameCode);
   }, [appState]);
 
@@ -85,7 +91,7 @@ const Join = (): JSX.Element => {
             autoCorrect="off"
             placeholder="abxy"
             maxLength={4}
-            value={code}
+            value={state.gameCode}
             onChange={(e) => checkGameType(e.target.value.toLowerCase())}
           />
         </div>
@@ -103,23 +109,27 @@ const Join = (): JSX.Element => {
             autoCorrect="off"
             placeholder={suggestion.current}
             maxLength={30}
-            value={nickname}
-            onChange={(e) => setNickname(e.target.value)}
+            value={state.nickname}
+            onChange={(e) =>
+              setState((prev) => ({ ...prev, nickname: e.target.value }))
+            }
           />
         </div>
 
         <input
-          disabled={!gameType.valid}
+          disabled={!state.gameType.valid}
           type="submit"
           className="form-control btn btn-success col-12 mt-3"
           value={
-            gameType.valid && appState.gameCode && appState.gameCode === code
+            state.gameType.valid &&
+            appState.gameCode &&
+            appState.gameCode === state.gameCode
               ? 'Return to Game'
               : 'Join Game'
           }
         />
-        <div className={gameType.valid ? 'text-muted' : 'text-danger'}>
-          {gameType.title}
+        <div className={state.gameType.valid ? 'text-muted' : 'text-danger'}>
+          {state.gameType.title}
         </div>
       </form>
     </div>

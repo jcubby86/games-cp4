@@ -3,16 +3,32 @@ import { useState, useEffect, useRef } from 'react';
 import StartGame from '../components/StartGame';
 import List from '../components/List';
 import axios from 'axios';
+import { JOIN, PLAY, READ, WAIT } from '../helpers/constants';
+
+interface StoryState {
+  phase: string;
+  users: string[];
+  prompt: string;
+  placeholder: string;
+  prefix: string;
+  suffix: string;
+  story: string;
+  filler: string;
+}
+
+const initialState: StoryState = {
+  phase: '',
+  users: [],
+  prompt: '',
+  placeholder: '',
+  prefix: '',
+  suffix: '',
+  story: '',
+  filler: ''
+};
 
 const Story = (): JSX.Element => {
-  const [phase, setPhase] = useState('');
-  const [users, setUsers] = useState<string[]>([]);
-  const [prompt, setPrompt] = useState('');
-  const [placeholder, setPlaceholder] = useState('');
-  const [prefix, setPrefix] = useState('');
-  const [suffix, setSuffix] = useState('');
-  const [story, setStory] = useState('');
-  const [filler, setFiller] = useState('');
+  const [state, setState] = useState<StoryState>(initialState);
   const partRef = useRef<HTMLTextAreaElement>(null);
 
   // const navigate = useNavigate();
@@ -20,14 +36,18 @@ const Story = (): JSX.Element => {
   const pollStatus = async () => {
     try {
       const response = await axios.get('/api/story');
-      setPhase(response.data.phase);
-      setUsers(response.data.users);
-      setPrompt(response.data.prompt);
-      setPlaceholder((old) => old || response.data.placeholder);
-      setPrefix(response.data.prefix);
-      setSuffix(response.data.suffix);
-      setFiller(response.data.filler);
-      setStory(response.data.story);
+      setState(
+        (prev): StoryState => ({
+          phase: response.data.phase,
+          users: response.data.users,
+          prompt: response.data.prompt,
+          placeholder: prev.placeholder || response.data.placeholder,
+          prefix: response.data.prefix,
+          suffix: response.data.suffix,
+          story: response.data.story,
+          filler: response.data.filler
+        })
+      );
     } catch (error) {
       alert('An error has occurred');
       // navigate('/');
@@ -47,10 +67,10 @@ const Story = (): JSX.Element => {
       }
 
       await axios.put('/api/story', {
-        part: partRef.current?.value || placeholder
+        part: partRef.current?.value || state.placeholder
       });
-      setPhase('');
-      setPlaceholder('');
+      setState((prev) => ({ ...prev, phase: '', placeholder: '' }));
+
       if (partRef.current) {
         partRef.current.value = '';
       }
@@ -66,7 +86,7 @@ const Story = (): JSX.Element => {
       if (navigator.share) {
         await navigator.share({
           title: 'Games: He Said She Said',
-          text: 'Read my hilarious story!\n' + story,
+          text: 'Read my hilarious story!\n' + state.story,
           url: document.querySelector<HTMLAnchorElement>('.navbar-brand')?.href
         });
       }
@@ -76,36 +96,38 @@ const Story = (): JSX.Element => {
   };
 
   useEffect(() => {
-    if (!phase) pollStatus();
+    if (!state.phase) pollStatus();
     const timer = setInterval(() => {
-      if (phase === 'join' || phase === 'wait') pollStatus();
+      if (state.phase === JOIN || state.phase === WAIT) pollStatus();
     }, 3000);
 
     return () => clearInterval(timer);
   });
 
-  if (phase === 'join') {
+  if (state.phase === JOIN) {
     return (
       <StartGame
-        users={users}
+        users={state.users}
         title={'He Said She Said'}
-        setPhase={setPhase}
+        setPhase={(newPhase) =>
+          setState((prev) => ({ ...prev, phase: newPhase }))
+        }
       ></StartGame>
     );
-  } else if (phase === 'play') {
+  } else if (state.phase === PLAY) {
     return (
       <form className="w-100" onSubmit={sendPart}>
-        <h3 className="text-center w-100">{prompt}</h3>
+        <h3 className="text-center w-100">{state.prompt}</h3>
         <p className="form-label">
-          {filler} {prefix}
+          {state.filler} {state.prefix}
         </p>
         <textarea
-          placeholder={placeholder}
+          placeholder={state.placeholder}
           ref={partRef}
           className="form-control"
           rows={3}
         />
-        <p className="form-label">{suffix}</p>
+        <p className="form-label">{state.suffix}</p>
         <input
           type="submit"
           value="Send"
@@ -113,10 +135,10 @@ const Story = (): JSX.Element => {
         />
       </form>
     );
-  } else if (phase === 'read') {
+  } else if (state.phase === READ) {
     return (
       <div className="w-100">
-        <p className="lh-lg fs-5 px-2 w-100">{story}</p>
+        <p className="lh-lg fs-5 px-2 w-100">{state.story}</p>
         {navigator['share'] && (
           <button onClick={share} className={'btn'}>
             <span className="icon py-1">
@@ -130,7 +152,7 @@ const Story = (): JSX.Element => {
     return (
       <div className="w-100">
         <h3 className="text-center w-100">Waiting for other players...</h3>
-        {phase === 'wait' && <List items={users}></List>}
+        {state.phase === WAIT && <List items={state.users}></List>}
       </div>
     );
   }

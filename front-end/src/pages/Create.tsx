@@ -3,28 +3,36 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import generateNickname from '../helpers/nicknameGeneration';
 import { useAppState } from '../contexts/AppContext';
+import { NAMES, STORY } from '../helpers/constants';
+
+interface CreateState {
+  nickname: string;
+  selected: string;
+}
 
 const Create = (): JSX.Element => {
   const { appState, setAppState } = useAppState();
   const suggestion = useRef(generateNickname());
-  const [nickname, setNickname] = useState(appState.nickname);
-  const [selected, setSelected] = useState('story');
+  const [state, setState] = useState<CreateState>({
+    nickname: appState.nickname,
+    selected: STORY
+  });
   const navigate = useNavigate();
 
   const createGame = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      if (selected === '') {
+      if (state.selected === '') {
         alert('Please select a valid game type');
         return;
       }
 
       const gameResponse = await axios.post('/api/game', {
-        creator: nickname.toLowerCase(),
-        type: selected
+        creator: state.nickname.toLowerCase(),
+        type: state.selected
       });
       const userResponse = await axios.post('/api/user', {
-        nickname: nickname.toLowerCase() || suggestion.current,
+        nickname: state.nickname.toLowerCase() || suggestion.current,
         code: gameResponse.data.code
       });
 
@@ -40,7 +48,7 @@ const Create = (): JSX.Element => {
   };
 
   useEffect(() => {
-    setNickname(appState.nickname);
+    setState((prev) => ({ ...prev, nickname: appState.nickname }));
   }, [appState]);
 
   return (
@@ -59,8 +67,10 @@ const Create = (): JSX.Element => {
             autoCorrect="off"
             placeholder={suggestion.current}
             maxLength={30}
-            value={nickname}
-            onChange={(e) => setNickname(e.target.value)}
+            value={state.nickname}
+            onChange={(e) =>
+              setState((prev) => ({ ...prev, nickname: e.target.value }))
+            }
           />
         </div>
         <div className="mb-3">
@@ -72,11 +82,13 @@ const Create = (): JSX.Element => {
             <button
               className={
                 'btn opacity-75 ' +
-                (selected === 'story' ? 'btn-primary' : 'btn-outline-primary')
+                (state.selected === STORY
+                  ? 'btn-primary'
+                  : 'btn-outline-primary')
               }
               onClick={(e) => {
                 e.preventDefault();
-                setSelected('story');
+                setState((prev) => ({ ...prev, selected: STORY }));
               }}
             >
               He Said She Said
@@ -84,11 +96,13 @@ const Create = (): JSX.Element => {
             <button
               className={
                 'btn opacity-75 ' +
-                (selected === 'names' ? 'btn-primary' : 'btn-outline-primary')
+                (state.selected === NAMES
+                  ? 'btn-primary'
+                  : 'btn-outline-primary')
               }
               onClick={(e) => {
                 e.preventDefault();
-                setSelected('names');
+                setState((prev) => ({ ...prev, selected: NAMES }));
               }}
             >
               Name Game
@@ -101,12 +115,12 @@ const Create = (): JSX.Element => {
           className="form-control btn btn-success"
         />
       </form>
-      {selected === 'story' && (
+      {state.selected === STORY && (
         <p className="p-3 text-wrap">
           Create a fun story reminiscent of mad libs together!
         </p>
       )}
-      {selected === 'names' && (
+      {state.selected === NAMES && (
         <p className="p-3 text-wrap">
           Everyone secretly enters the name of a person (real or fictional) that
           others would know. Players then take turns guessing each other's names

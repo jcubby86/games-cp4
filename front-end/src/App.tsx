@@ -7,6 +7,7 @@ import Join from './pages/Join';
 import Create from './pages/Create';
 import Names from './pages/Names';
 import { AppContextProvider } from './contexts/AppContext';
+import { NAMES, STORY } from './helpers/constants';
 
 function App(): JSX.Element {
   return (
@@ -17,8 +18,8 @@ function App(): JSX.Element {
             <Route index element={<Home />} />
             <Route path="join" element={<Join />} />
             <Route path="create" element={<Create />} />
-            <Route path="story" element={<Story />} />
-            <Route path="names" element={<Names />} />
+            <Route path={STORY} element={<Story />} />
+            <Route path={NAMES} element={<Names />} />
             <Route path="*" element={<Home />} />
           </Route>
         </Routes>

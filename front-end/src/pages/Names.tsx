@@ -4,13 +4,23 @@ import StartGame from '../components/StartGame';
 import List from '../components/List';
 import axios, { AxiosError } from 'axios';
 import { useAppState } from '../contexts/AppContext';
+import { END, JOIN, PLAY, READ, WAIT } from '../helpers/constants';
+
+interface NamesState {
+  phase: string;
+  users: string[];
+  names: string[];
+  placeholder: string;
+}
 
 const Names = (): JSX.Element => {
   const { appState } = useAppState();
-  const [phase, setPhase] = useState('');
-  const [users, setUsers] = useState<string[]>([]);
-  const [names, setNames] = useState<string[]>([]);
-  const [placeholder, setPlaceholder] = useState('');
+  const [state, setState] = useState<NamesState>({
+    phase: '',
+    users: [],
+    names: [],
+    placeholder: ''
+  });
   const entryRef = useRef<HTMLInputElement>(null);
 
   // const navigate = useNavigate();
@@ -18,10 +28,12 @@ const Names = (): JSX.Element => {
   const pollStatus = async () => {
     try {
       const response = await axios.get('/api/names');
-      setPhase(response.data.phase);
-      setUsers(response.data.users);
-      setNames(response.data.names);
-      setPlaceholder((old) => old || response.data.placeholder);
+      setState((prev) => ({
+        phase: response.data.phase,
+        users: response.data.users,
+        names: response.data.names,
+        placeholder: prev.placeholder || response.data.placeholder
+      }));
     } catch (error) {
       alert('An error has occurred');
       // navigate('/');
@@ -39,8 +51,11 @@ const Names = (): JSX.Element => {
       await axios.put('/api/names', {
         text: entryRef.current.value
       });
-      setPhase('');
-      setPlaceholder('');
+      setState((prev) => ({
+        ...prev,
+        phase: '',
+        placeholder: ''
+      }));
     } catch (e: unknown) {
       const err = e as AxiosError;
       if (err?.response?.status === 400) {
@@ -54,34 +69,39 @@ const Names = (): JSX.Element => {
 
   const endGame = async (e: React.MouseEvent) => {
     e.preventDefault();
-    await axios.put(`/api/game/${appState.gameCode}`, { phase: 'end' });
-    setPhase('end');
+    await axios.put(`/api/game/${appState.gameCode}`, { phase: END });
+    setState((prev) => ({
+      ...prev,
+      phase: END
+    }));
   };
 
   useEffect(() => {
-    if (!phase) pollStatus();
+    if (!state.phase) pollStatus();
     const timer = setInterval(() => {
-      if (phase === 'join' || phase === 'wait' || phase === 'read')
+      if (state.phase === JOIN || state.phase === WAIT || state.phase === READ)
         pollStatus();
     }, 3000);
 
     return () => clearInterval(timer);
   });
 
-  if (phase === 'join') {
+  if (state.phase === JOIN) {
     return (
       <StartGame
-        users={users}
+        users={state.users}
         title={'The Name Game'}
-        setPhase={setPhase}
+        setPhase={(newPhase) =>
+          setState((prev) => ({ ...prev, phase: newPhase }))
+        }
       ></StartGame>
     );
-  } else if (phase === 'play') {
+  } else if (state.phase === PLAY) {
     return (
       <form className="w-100" onSubmit={sendEntry}>
         <h3 className="text-center w-100">Enter a name:</h3>
         <input
-          placeholder={placeholder}
+          placeholder={state.placeholder}
           ref={entryRef}
           className="form-control"
         />
@@ -92,12 +112,12 @@ const Names = (): JSX.Element => {
         />
       </form>
     );
-  } else if (phase === 'read') {
+  } else if (state.phase === READ) {
     return (
       <div className="w-100 d-flex flex-column">
         <div className="w-100">
           <h3 className="text-center w-100">Names:</h3>
-          <List items={names}></List>
+          <List items={state.names}></List>
         </div>
 
         <button className={'btn btn-danger mt-4'} onClick={endGame}>
@@ -105,13 +125,13 @@ const Names = (): JSX.Element => {
         </button>
       </div>
     );
-  } else if (phase === 'end') {
+  } else if (state.phase === END) {
     return <h3 className="w-100 text-center">Enjoy the game!</h3>;
   } else {
     return (
       <div className="w-100">
         <h3 className="text-center w-100">Waiting for other players...</h3>
-        {phase === 'wait' && <List items={users}></List>}
+        {state.phase === WAIT && <List items={state.users}></List>}
       </div>
     );
   }
