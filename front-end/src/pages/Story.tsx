@@ -78,7 +78,6 @@ const Story = (props: StoryProps): JSX.Element => {
         });
       }
     } catch (err) {
-      alert(err);
       console.error(err);
     }
   };
