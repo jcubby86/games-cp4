@@ -10,8 +10,8 @@ interface NamesProps {
 }
 const Names = (props: NamesProps) => {
   const [phase, setPhase] = useState('');
-  const [users, setUsers] = useState([]);
-  const [names, setNames] = useState([]);
+  const [users, setUsers] = useState<string[]>([]);
+  const [names, setNames] = useState<string[]>([]);
   const [placeholder, setPlaceholder] = useState('');
   const entryRef = useRef<HTMLInputElement>(null);
 

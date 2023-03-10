@@ -11,7 +11,7 @@ interface StoryProps {
 
 const Story = (props: StoryProps): JSX.Element => {
   const [phase, setPhase] = useState('');
-  const [users, setUsers] = useState([]);
+  const [users, setUsers] = useState<string[]>([]);
   const [prompt, setPrompt] = useState('');
   const [placeholder, setPlaceholder] = useState('');
   const [prefix, setPrefix] = useState('');
@@ -67,6 +67,21 @@ const Story = (props: StoryProps): JSX.Element => {
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const share = async (_e: React.MouseEvent) => {
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: 'Games: He Said She Said',
+          text: 'Read my hilarious story!\n' + story,
+          url: document.querySelector<HTMLAnchorElement>('.navbar-brand')?.href
+        });
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   useEffect(() => {
     if (!phase) pollStatus();
     const timer = setInterval(() => {
@@ -107,7 +122,18 @@ const Story = (props: StoryProps): JSX.Element => {
       </form>
     );
   } else if (phase === 'read') {
-    return <p className="lh-lg fs-5 px-2 w-100">{story}</p>;
+    return (
+      <div className="w-100">
+        <p className="lh-lg fs-5 px-2 w-100">{story}</p>
+        { navigator['share'] && 
+          <button onClick={share} className={'btn'}>
+            <span className="icon py-1">
+              <i className="nf-fa-share_square_o" />
+            </span>
+          </button>
+        }
+      </div>
+    );
   } else {
     return (
       <div className="w-100">
