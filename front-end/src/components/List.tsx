@@ -1,11 +1,15 @@
-const List = (props: { items: string[] }) => {
-  if (!props.items || props.items.length === 0) {
+interface ListProps {
+  items: string[];
+}
+
+const List = ({ items }: ListProps): JSX.Element => {
+  if (!items || items.length === 0) {
     return <></>;
   }
 
   return (
     <ul className="list-group mt-3">
-      {props.items.map((item: string, index: number) => (
+      {items.map((item: string, index: number) => (
         <li key={index} className="list-group-item">
           {item}
         </li>

@@ -1,17 +1,16 @@
 import { Link } from 'react-router-dom';
+import { useAppState } from '../contexts/AppContext';
 
-interface HomeProps {
-  code: string;
-  gameType: string;
-}
-const Home = (props: HomeProps) => {
+const Home = (): JSX.Element => {
+  const { appState } = useAppState();
+
   return (
     <>
       <div className="row justify-content-center gap-4 w-100 m-0">
-        {props.code && (
+        {appState.gameCode && (
           <Link
             role="button"
-            to={props.gameType}
+            to={appState.gameType}
             className="btn btn-lg btn-success d-flex flex-column fw-bold px-5 col-12"
           >
             <span className="icon py-1">
@@ -25,7 +24,7 @@ const Home = (props: HomeProps) => {
           to="/join"
           className={
             'btn btn-lg d-flex flex-column fw-bold col ' +
-            (props.code ? 'btn-outline-success' : 'btn-success')
+            (appState.gameCode ? 'btn-outline-success' : 'btn-success')
           }
         >
           <span className="icon flex-grow-1">
@@ -38,7 +37,7 @@ const Home = (props: HomeProps) => {
           to="/create"
           className={
             'btn btn-lg d-flex flex-column fw-bold col ' +
-            (props.code ? 'btn-outline-success' : 'btn-success')
+            (appState.gameCode ? 'btn-outline-success' : 'btn-success')
           }
         >
           <span className="icon flex-grow-1">

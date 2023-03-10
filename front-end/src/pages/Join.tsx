@@ -2,23 +2,18 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios, { AxiosError } from 'axios';
 import generateNickname from '../helpers/nicknameGeneration';
+import { useAppState } from '../contexts/AppContext';
 
 interface GameType {
   title?: string | null;
   valid?: boolean | null;
 }
-interface JoinProps {
-  code: string;
-  nickname: string;
-  setNickname: React.Dispatch<React.SetStateAction<string>>;
-  setGameType: React.Dispatch<React.SetStateAction<string>>;
-  setCode: React.Dispatch<React.SetStateAction<string>>;
-}
 
-const Join = (props: JoinProps) => {
+const Join = (): JSX.Element => {
   const suggestion = useRef(generateNickname());
-  const [nickname, setNickname] = useState(props.nickname);
-  const [code, setCode] = useState(props.code);
+  const { appState, setAppState } = useAppState();
+  const [nickname, setNickname] = useState(appState.nickname);
+  const [code, setCode] = useState(appState.gameCode);
   const [gameType, setGameType] = useState<GameType>({});
   const navigate = useNavigate();
 
@@ -35,9 +30,12 @@ const Join = (props: JoinProps) => {
         code: code.toLowerCase()
       });
 
-      props.setNickname(response.data.nickname);
-      props.setCode(response.data.game.code);
-      props.setGameType(response.data.game.type);
+      setAppState({
+        nickname: response.data.nickname,
+        gameCode: response.data.game.code,
+        gameType: response.data.game.type
+      });
+
       navigate('/' + response.data.game.type);
     } catch (e: unknown) {
       const err = e as AxiosError;
@@ -67,9 +65,9 @@ const Join = (props: JoinProps) => {
   };
 
   useEffect(() => {
-    setNickname(props.nickname);
-    checkGameType(props.code);
-  }, [props]);
+    setNickname(appState.nickname);
+    checkGameType(appState.gameCode);
+  }, [appState]);
 
   return (
     <div>
@@ -115,7 +113,7 @@ const Join = (props: JoinProps) => {
           type="submit"
           className="form-control btn btn-success col-12 mt-3"
           value={
-            gameType.valid && props.code && props.code === code
+            gameType.valid && appState.gameCode && appState.gameCode === code
               ? 'Return to Game'
               : 'Join Game'
           }

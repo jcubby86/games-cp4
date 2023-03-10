@@ -2,16 +2,12 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import generateNickname from '../helpers/nicknameGeneration';
+import { useAppState } from '../contexts/AppContext';
 
-interface CreateProps {
-  nickname: string;
-  setGameType: React.Dispatch<React.SetStateAction<string>>;
-  setCode: React.Dispatch<React.SetStateAction<string>>;
-  setNickname: React.Dispatch<React.SetStateAction<string>>;
-}
-const Create = (props: CreateProps) => {
+const Create = (): JSX.Element => {
+  const { appState, setAppState } = useAppState();
   const suggestion = useRef(generateNickname());
-  const [nickname, setNickname] = useState(props.nickname);
+  const [nickname, setNickname] = useState(appState.nickname);
   const [selected, setSelected] = useState('story');
   const navigate = useNavigate();
 
@@ -31,9 +27,12 @@ const Create = (props: CreateProps) => {
         nickname: nickname.toLowerCase() || suggestion.current,
         code: gameResponse.data.code
       });
-      props.setCode(gameResponse.data.code);
-      props.setNickname(userResponse.data.nickname);
-      props.setGameType(gameResponse.data.type);
+
+      setAppState({
+        nickname: userResponse.data.nickname,
+        gameCode: gameResponse.data.code,
+        gameType: gameResponse.data.type
+      });
       navigate('/' + gameResponse.data.type);
     } catch (err) {
       alert('Unable to create game. Please try again in a little bit.');
@@ -41,8 +40,8 @@ const Create = (props: CreateProps) => {
   };
 
   useEffect(() => {
-    setNickname(props.nickname);
-  }, [props]);
+    setNickname(appState.nickname);
+  }, [appState]);
 
   return (
     <div className="w-100">

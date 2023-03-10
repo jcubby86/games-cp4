@@ -1,24 +1,20 @@
 import { Outlet, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useAppState } from '../contexts/AppContext';
+import { AppState } from '../contexts/AppContextTypes';
 
-interface LayoutProps {
-  setGameType: React.Dispatch<React.SetStateAction<string>>;
-  setCode: React.Dispatch<React.SetStateAction<string>>;
-  nickname: string;
-  code: string;
-  gameType: string;
-}
-
-const Layout = (props: LayoutProps) => {
+const Layout = (): JSX.Element => {
   const navigate = useNavigate();
+  const { appState, setAppState } = useAppState();
 
   const leaveGame = async (e: React.FormEvent) => {
     try {
       e.preventDefault();
 
       await axios.delete('/api/user');
-      props.setCode('');
-      props.setGameType('');
+      setAppState((state: AppState): AppState => {
+        return { ...state, gameCode: '', gameType: '' };
+      });
       navigate('/');
     } catch (err) {
       console.error(err);
@@ -34,7 +30,7 @@ const Layout = (props: LayoutProps) => {
               <i className="nf-fa-home px-3"></i>Games
             </Link>
 
-            {props.code && (
+            {appState.gameCode && (
               <form
                 onSubmit={leaveGame}
                 className="d-flex justify-content-start"

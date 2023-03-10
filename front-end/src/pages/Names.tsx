@@ -3,12 +3,10 @@ import { useState, useEffect, useRef } from 'react';
 import StartGame from '../components/StartGame';
 import List from '../components/List';
 import axios, { AxiosError } from 'axios';
+import { useAppState } from '../contexts/AppContext';
 
-interface NamesProps {
-  code: string;
-  setCode: React.Dispatch<React.SetStateAction<string>>;
-}
-const Names = (props: NamesProps) => {
+const Names = (): JSX.Element => {
+  const { appState } = useAppState();
   const [phase, setPhase] = useState('');
   const [users, setUsers] = useState<string[]>([]);
   const [names, setNames] = useState<string[]>([]);
@@ -26,7 +24,6 @@ const Names = (props: NamesProps) => {
       setPlaceholder((old) => old || response.data.placeholder);
     } catch (error) {
       alert('An error has occurred');
-      // props.setCode('');
       // navigate('/');
     }
   };
@@ -50,7 +47,6 @@ const Names = (props: NamesProps) => {
         alert(err.response.data);
       } else {
         alert('An error has occurred');
-        // props.setCode('');
         // navigate('/');
       }
     }
@@ -58,7 +54,7 @@ const Names = (props: NamesProps) => {
 
   const endGame = async (e: React.MouseEvent) => {
     e.preventDefault();
-    await axios.put(`/api/game/${props.code}`, { phase: 'end' });
+    await axios.put(`/api/game/${appState.gameCode}`, { phase: 'end' });
     setPhase('end');
   };
 
@@ -75,7 +71,6 @@ const Names = (props: NamesProps) => {
   if (phase === 'join') {
     return (
       <StartGame
-        code={props.code}
         users={users}
         title={'The Name Game'}
         setPhase={setPhase}

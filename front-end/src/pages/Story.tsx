@@ -4,12 +4,7 @@ import StartGame from '../components/StartGame';
 import List from '../components/List';
 import axios from 'axios';
 
-interface StoryProps {
-  code: string;
-  setCode: React.Dispatch<React.SetStateAction<string>>;
-}
-
-const Story = (props: StoryProps): JSX.Element => {
+const Story = (): JSX.Element => {
   const [phase, setPhase] = useState('');
   const [users, setUsers] = useState<string[]>([]);
   const [prompt, setPrompt] = useState('');
@@ -35,7 +30,6 @@ const Story = (props: StoryProps): JSX.Element => {
       setStory(response.data.story);
     } catch (error) {
       alert('An error has occurred');
-      // props.setCode('');
       // navigate('/');
     }
   };
@@ -62,7 +56,6 @@ const Story = (props: StoryProps): JSX.Element => {
       }
     } catch (error) {
       alert('An error has occurred');
-      // props.setCode('');
       // navigate('/');
     }
   };
@@ -94,7 +87,6 @@ const Story = (props: StoryProps): JSX.Element => {
   if (phase === 'join') {
     return (
       <StartGame
-        code={props.code}
         users={users}
         title={'He Said She Said'}
         setPhase={setPhase}
@@ -125,13 +117,13 @@ const Story = (props: StoryProps): JSX.Element => {
     return (
       <div className="w-100">
         <p className="lh-lg fs-5 px-2 w-100">{story}</p>
-        { navigator['share'] && 
+        {navigator['share'] && (
           <button onClick={share} className={'btn'}>
             <span className="icon py-1">
               <i className="nf-fa-share_square_o" />
             </span>
           </button>
-        }
+        )}
       </div>
     );
   } else {
