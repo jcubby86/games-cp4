@@ -11,7 +11,7 @@ interface StoryProps {
 
 const Story = (props: StoryProps): JSX.Element => {
   const [phase, setPhase] = useState('');
-  const [users, setUsers] = useState([]);
+  const [users, setUsers] = useState<string[]>([]);
   const [prompt, setPrompt] = useState('');
   const [placeholder, setPlaceholder] = useState('');
   const [prefix, setPrefix] = useState('');
