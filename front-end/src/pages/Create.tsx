@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import generateNickname from '../helpers/nicknameGeneration';
 import { useAppState } from '../contexts/AppContext';
 import { NAMES, STORY } from '../helpers/constants';
+import { Game, PostGameReqBody } from '../helpers/types';
 
 interface CreateState {
   nickname: string;
@@ -27,7 +28,7 @@ const Create = (): JSX.Element => {
         return;
       }
 
-      const gameResponse = await axios.post('/api/game', {
+      const gameResponse = await axios.post<Game, AxiosResponse<Game>, PostGameReqBody>('/api/game', {
         creator: state.nickname.toLowerCase(),
         type: state.selected
       });
