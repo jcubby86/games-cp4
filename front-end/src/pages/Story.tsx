@@ -39,16 +39,11 @@ const Story = (): JSX.Element => {
       const response = await axios.get('/api/story');
       setState(
         (prev): StoryState => ({
-          phase: response.data.phase,
-          users: response.data.users,
-          prompt: response.data.prompt,
-          placeholder: prev.placeholder || response.data.placeholder,
-          prefix: response.data.prefix,
-          suffix: response.data.suffix,
-          story: response.data.story,
-          filler: response.data.filler
+          ...response.data,
+          placeholder: prev.placeholder || response.data.placeholder
         })
       );
+      console.log(state)
     } catch (error) {
       alert('An error has occurred');
       // navigate('/');

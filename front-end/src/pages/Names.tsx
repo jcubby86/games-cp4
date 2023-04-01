@@ -30,9 +30,7 @@ const Names = (): JSX.Element => {
     try {
       const response = await axios.get('/api/names');
       setState((prev) => ({
-        phase: response.data.phase,
-        users: response.data.users,
-        names: response.data.names,
+        ...response.data,
         placeholder: prev.placeholder || response.data.placeholder
       }));
     } catch (error) {
