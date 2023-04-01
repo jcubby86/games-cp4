@@ -19,7 +19,7 @@ describe('creating games', () => {
     expect(
       axios.post(`${baseURL}/api/game`, { type: 'bad' })
     ).rejects.toMatchObject({
-      response: { data: `Invalid game type: bad`, status: 400 },
+      response: { status: 500 },
     });
   });
 

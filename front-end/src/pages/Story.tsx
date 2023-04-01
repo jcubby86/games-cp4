@@ -4,6 +4,7 @@ import StartGame from '../components/StartGame';
 import List from '../components/List';
 import axios from 'axios';
 import { JOIN, PLAY, READ, WAIT } from '../helpers/constants';
+import Recreate from '../components/Recreate';
 
 interface StoryState {
   phase: string;
@@ -52,6 +53,10 @@ const Story = (): JSX.Element => {
       alert('An error has occurred');
       // navigate('/');
     }
+  };
+
+  const reset = (newPhase: string, nickname: string) => {
+    setState((prev) => ({ ...prev, phase: newPhase, users: [nickname] }));
   };
 
   const sendPart = async (e: React.FormEvent) => {
@@ -106,13 +111,15 @@ const Story = (): JSX.Element => {
 
   if (state.phase === JOIN) {
     return (
-      <StartGame
-        users={state.users}
-        title={'He Said She Said'}
-        setPhase={(newPhase) =>
-          setState((prev) => ({ ...prev, phase: newPhase }))
-        }
-      ></StartGame>
+      <>
+        <StartGame
+          users={state.users}
+          title={'He Said She Said'}
+          setPhase={(newPhase) =>
+            setState((prev) => ({ ...prev, phase: newPhase }))
+          }
+        ></StartGame>
+      </>
     );
   } else if (state.phase === PLAY) {
     return (
@@ -139,13 +146,16 @@ const Story = (): JSX.Element => {
     return (
       <div className="w-100">
         <p className="lh-lg fs-5 px-2 w-100">{state.story}</p>
-        {navigator['share'] && (
-          <button onClick={share} className={'btn'}>
-            <span className="icon py-1">
-              <i className="nf-fa-share_square_o" />
-            </span>
-          </button>
-        )}
+        <div>
+          <Recreate reset={reset} />
+          {navigator['share'] && (
+            <button onClick={share} className={'btn'}>
+              <span className="icon py-1">
+                <i className="nf-fa-share_square_o" />
+              </span>
+            </button>
+          )}
+        </div>
       </div>
     );
   } else {

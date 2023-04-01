@@ -5,6 +5,7 @@ import List from '../components/List';
 import axios, { AxiosError } from 'axios';
 import { useAppState } from '../contexts/AppContext';
 import { END, JOIN, PLAY, READ, WAIT } from '../helpers/constants';
+import Recreate from '../components/Recreate';
 
 interface NamesState {
   phase: string;
@@ -86,6 +87,10 @@ const Names = (): JSX.Element => {
     return () => clearInterval(timer);
   });
 
+  const reset = (newPhase: string, nickname: string) => {
+    setState((prev) => ({ ...prev, phase: newPhase, users: [nickname] }));
+  };
+
   if (state.phase === JOIN) {
     return (
       <StartGame
@@ -126,7 +131,14 @@ const Names = (): JSX.Element => {
       </div>
     );
   } else if (state.phase === END) {
-    return <h3 className="w-100 text-center">Enjoy the game!</h3>;
+    return (
+      <div className="w-100">
+        <h3 className="w-100 text-center pb-3">Enjoy the game!</h3>
+        <div className="d-flex justify-content-center">
+          <Recreate reset={reset} />
+        </div>
+      </div>
+    );
   } else {
     return (
       <div className="w-100">

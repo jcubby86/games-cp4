@@ -2,6 +2,17 @@
 /* eslint-disable no-unused-vars */
 import { HydratedDocument, Types } from 'mongoose';
 
+/*
+ 
+                                                    
+   _ __ ___   ___  _ __   __ _  ___   ___  ___  ___ 
+  | '_ ` _ \ / _ \| '_ \ / _` |/ _ \ / _ \/ __|/ _ \
+  | | | | | | (_) | | | | (_| | (_) | (_) \__ \  __/
+  |_| |_| |_|\___/|_| |_|\__, |\___/ \___/|___/\___|
+                         |___/                      
+ 
+*/
+
 export interface IGame {
   type: string;
   code: string;
@@ -37,6 +48,23 @@ export interface INames {
   entries: Entry<string>[];
 }
 export type NamesDocument = HydratedDocument<INames>;
+
+export interface IRecreate {
+  oldGame: HydratedDocument<IGame>;
+  newGame: HydratedDocument<IGame>;
+}
+export type Recreate = HydratedDocument<IRecreate>;
+
+/*
+ 
+         _   _               
+    ___ | |_| |__   ___ _ __ 
+   / _ \| __| '_ \ / _ \ '__|
+  | (_) | |_| | | |  __/ |   
+   \___/ \__|_| |_|\___|_|   
+                             
+ 
+*/
 
 export type CreateGameFunction = (game: Game) => Promise<void>;
 
