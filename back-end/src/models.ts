@@ -1,5 +1,5 @@
 import { Schema, model } from 'mongoose';
-import { IGame, IUser, IStory, INames } from './types';
+import { IGame, IUser, IStory, INames, IRecreate } from './types';
 
 const gameSchema = new Schema<IGame>(
   {
@@ -62,7 +62,19 @@ const namesSchema = new Schema<INames>({
   ],
 });
 
+const recreateSchema = new Schema<IRecreate>({
+  oldGame: {
+    type: Schema.Types.ObjectId,
+    ref: 'Game',
+  },
+  newGame: {
+    type: Schema.Types.ObjectId,
+    ref: 'Game',
+  },
+});
+
 export const GameModel = model<IGame>('Game', gameSchema);
 export const UserModel = model<IUser>('User', userSchema);
 export const StoryModel = model<IStory>('Story', storySchema);
 export const NamesModel = model<INames>('Names', namesSchema);
+export const RecreateModel = model<IRecreate>('Recreate', recreateSchema);

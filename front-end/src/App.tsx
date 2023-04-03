@@ -1,6 +1,4 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { useEffect, useState } from 'react';
-import axios from 'axios';
 import './App.css';
 import Layout from './pages/Layout';
 import Home from './pages/Home';
@@ -8,77 +6,24 @@ import Story from './pages/Story';
 import Join from './pages/Join';
 import Create from './pages/Create';
 import Names from './pages/Names';
+import { AppContextProvider } from './contexts/AppContext';
+import { NAMES, STORY } from './helpers/constants';
 
-function App() {
-  const [nickname, setNickname] = useState('');
-  const [code, setCode] = useState('');
-  const [gameType, setGameType] = useState('');
-
-  const fetchUser = async () => {
-    try {
-      const response = await axios.get('/api/user');
-      setNickname(response.data.nickname);
-      setCode(response.data.game.code);
-      setGameType(response.data.game.type);
-    } catch (err) {
-      return;
-    }
-  };
-
-  useEffect(() => {
-    fetchUser();
-  }, []);
-
+function App(): JSX.Element {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <Layout
-              nickname={nickname}
-              code={code}
-              setCode={setCode}
-              setGameType={setGameType}
-              gameType={gameType}
-            />
-          }
-        >
-          <Route index element={<Home gameType={gameType} code={code} />} />
-          <Route
-            path="join"
-            element={
-              <Join
-                nickname={nickname}
-                code={code}
-                setNickname={setNickname}
-                setCode={setCode}
-                setGameType={setGameType}
-              />
-            }
-          />
-          <Route
-            path="create"
-            element={
-              <Create
-                nickname={nickname}
-                setNickname={setNickname}
-                setCode={setCode}
-                setGameType={setGameType}
-              />
-            }
-          />
-          <Route
-            path="story"
-            element={<Story code={code} setCode={setCode} />}
-          />
-          <Route
-            path="names"
-            element={<Names code={code} setCode={setCode} />}
-          />
-          <Route path="*" element={<Home gameType={gameType} code={code} />} />
-        </Route>
-      </Routes>
+      <AppContextProvider>
+        <Routes>
+          <Route path="/" element={<Layout />}>
+            <Route index element={<Home />} />
+            <Route path="join" element={<Join />} />
+            <Route path="create" element={<Create />} />
+            <Route path={STORY} element={<Story />} />
+            <Route path={NAMES} element={<Names />} />
+            <Route path="*" element={<Home />} />
+          </Route>
+        </Routes>
+      </AppContextProvider>
     </BrowserRouter>
   );
 }

@@ -1,25 +1,27 @@
 import axios from 'axios';
+import { useAppState } from '../contexts/AppContext';
+import { PLAY } from '../helpers/constants';
 import List from './List';
 
 interface StartGameProps {
-  setPhase: React.Dispatch<React.SetStateAction<string>>;
-  code: string;
+  setPhase: (prevState: string) => unknown;
   title: string;
   users: string[];
 }
 
-const StartGame = (props: StartGameProps) => {
+const StartGame = ({ setPhase, title, users }: StartGameProps): JSX.Element => {
+  const { appState } = useAppState();
   const startGame = async (e: React.FormEvent) => {
     e.preventDefault();
-    await axios.put(`/api/game/${props.code}`, { phase: 'play' });
-    props.setPhase('');
+    await axios.put(`/api/game/${appState.gameCode}`, { phase: PLAY });
+    setPhase('');
   };
 
   return (
     <>
       <div className="w-100">
         <div className="text-center mb-4">
-          <h1 className="text-nowrap">{props.title}</h1>
+          <h1 className="text-nowrap">{title}</h1>
         </div>
         <form className="row gap-3" onSubmit={startGame}>
           <div className="mb-3 col p-0">
@@ -29,7 +31,7 @@ const StartGame = (props: StartGameProps) => {
             <input
               className="form-control"
               type="text"
-              value={props.code}
+              value={appState.gameCode}
               aria-label="game code"
               readOnly
               id="gameCode"
@@ -45,7 +47,7 @@ const StartGame = (props: StartGameProps) => {
             <input
               className="form-control"
               type="text"
-              value={props.users.length}
+              value={users.length}
               aria-label="player count"
               readOnly
               id="playerCount"
@@ -58,7 +60,7 @@ const StartGame = (props: StartGameProps) => {
           />
         </form>
         <h3 className="text-center mt-5">Players:</h3>
-        <List items={props.users}></List>
+        <List items={users}></List>
       </div>
     </>
   );

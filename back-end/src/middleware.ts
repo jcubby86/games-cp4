@@ -1,7 +1,15 @@
 import { NamesModel, StoryModel, UserModel } from './models.js';
-import { Game, NamesDocument, StoryDocument, User, Session } from './types.js';
+import {
+  Game,
+  NamesDocument,
+  StoryDocument,
+  User,
+  Session,
+  JoinResBody,
+} from './types.js';
 import { gameExists, getUsersInGame } from './utils.js';
 import type { Request, Response, NextFunction } from 'express';
+import { JOIN, NAMES, STORY } from './helpers/constants.js';
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -65,7 +73,7 @@ export const loadNames = async (
   next: NextFunction
 ) => {
   if (!req.user || !req.game) return res.sendStatus(401);
-  if (req.game.type !== 'names') return res.sendStatus(400);
+  if (req.game.type !== NAMES) return res.sendStatus(400);
 
   req.names = await NamesModel.findOne({ game: req.game._id }).populate(
     'entries.user'
@@ -88,7 +96,7 @@ export const loadStory = async (
   next: NextFunction
 ) => {
   if (!req.user || !req.game) return res.sendStatus(401);
-  if (req.game.type !== 'story') return res.sendStatus(400);
+  if (req.game.type !== STORY) return res.sendStatus(400);
 
   req.story = await StoryModel.findOne({ game: req.game._id }).populate(
     'entries.user'
@@ -108,14 +116,14 @@ export const loadStory = async (
  */
 export const joinPhase = async (
   req: Request,
-  res: Response,
+  res: Response<JoinResBody>,
   next: NextFunction
 ) => {
   try {
-    if (req.game?.phase === 'join') {
+    if (req.game?.phase === JOIN) {
       const users = await getUsersInGame(req.game);
       return res.send({
-        phase: 'join',
+        phase: JOIN,
         users: users.map((user: User) => user.nickname),
         code: req.game.code,
         nickname: req.user?.nickname,

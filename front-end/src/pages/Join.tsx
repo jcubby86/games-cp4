@@ -2,42 +2,47 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios, { AxiosError } from 'axios';
 import generateNickname from '../helpers/nicknameGeneration';
+import { useAppState } from '../contexts/AppContext';
 
 interface GameType {
   title?: string | null;
   valid?: boolean | null;
 }
-interface JoinProps {
-  code: string;
+interface JoinState {
   nickname: string;
-  setNickname: React.Dispatch<React.SetStateAction<string>>;
-  setGameType: React.Dispatch<React.SetStateAction<string>>;
-  setCode: React.Dispatch<React.SetStateAction<string>>;
+  gameCode: string;
+  gameType: GameType;
 }
 
-const Join = (props: JoinProps) => {
+const Join = (): JSX.Element => {
   const suggestion = useRef(generateNickname());
-  const [nickname, setNickname] = useState(props.nickname);
-  const [code, setCode] = useState(props.code);
-  const [gameType, setGameType] = useState<GameType>({});
+  const { appState, setAppState } = useAppState();
+  const [state, setState] = useState<JoinState>({
+    nickname: appState.nickname,
+    gameCode: appState.gameCode,
+    gameType: {}
+  });
   const navigate = useNavigate();
 
   const joinGame = async (e: React.FormEvent) => {
     try {
       e.preventDefault();
-      if (code?.length !== 4) {
+      if (state.gameCode?.length !== 4) {
         alert('Please enter a code.');
         return;
       }
 
       const response = await axios.post('/api/user', {
-        nickname: nickname.toLowerCase() || suggestion.current,
-        code: code.toLowerCase()
+        nickname: state.nickname.toLowerCase() || suggestion.current,
+        code: state.gameCode.toLowerCase()
       });
 
-      props.setNickname(response.data.nickname);
-      props.setCode(response.data.game.code);
-      props.setGameType(response.data.game.type);
+      setAppState({
+        nickname: response.data.nickname,
+        gameCode: response.data.game.code,
+        gameType: response.data.game.type
+      });
+
       navigate('/' + response.data.game.type);
     } catch (e: unknown) {
       const err = e as AxiosError;
@@ -49,27 +54,26 @@ const Join = (props: JoinProps) => {
     }
   };
 
-  const checkGameType = async (gameCode: string) => {
+  const checkGameType = async (code: string) => {
+    let gameType: GameType = {};
     try {
-      setCode(gameCode);
-      if (gameCode.length === 4) {
-        const result = await axios.get('/api/game/' + gameCode);
-        setGameType({
+      if (code.length === 4) {
+        const result = await axios.get('/api/game/' + code);
+        gameType = {
           title: result.data.title,
           valid: true
-        });
-      } else {
-        setGameType({});
+        };
       }
     } catch (error) {
-      setGameType({ title: 'Game not found', valid: false });
+      gameType = { title: 'Game not found', valid: false };
     }
+    setState((prev) => ({ ...prev, gameCode: code, gameType: gameType }));
   };
 
   useEffect(() => {
-    setNickname(props.nickname);
-    checkGameType(props.code);
-  }, [props]);
+    setState((prev) => ({ ...prev, nickname: appState.nickname }));
+    checkGameType(appState.gameCode);
+  }, [appState]);
 
   return (
     <div>
@@ -87,7 +91,7 @@ const Join = (props: JoinProps) => {
             autoCorrect="off"
             placeholder="abxy"
             maxLength={4}
-            value={code}
+            value={state.gameCode}
             onChange={(e) => checkGameType(e.target.value.toLowerCase())}
           />
         </div>
@@ -105,23 +109,27 @@ const Join = (props: JoinProps) => {
             autoCorrect="off"
             placeholder={suggestion.current}
             maxLength={30}
-            value={nickname}
-            onChange={(e) => setNickname(e.target.value)}
+            value={state.nickname}
+            onChange={(e) =>
+              setState((prev) => ({ ...prev, nickname: e.target.value }))
+            }
           />
         </div>
 
         <input
-          disabled={!gameType.valid}
+          disabled={!state.gameType.valid}
           type="submit"
           className="form-control btn btn-success col-12 mt-3"
           value={
-            gameType.valid && props.code && props.code === code
+            state.gameType.valid &&
+            appState.gameCode &&
+            appState.gameCode === state.gameCode
               ? 'Return to Game'
               : 'Join Game'
           }
         />
-        <div className={gameType.valid ? 'text-muted' : 'text-danger'}>
-          {gameType.title}
+        <div className={state.gameType.valid ? 'text-muted' : 'text-danger'}>
+          {state.gameType.title}
         </div>
       </form>
     </div>

@@ -1,39 +1,47 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import generateNickname from '../helpers/nicknameGeneration';
+import { useAppState } from '../contexts/AppContext';
+import { NAMES, STORY } from '../helpers/constants';
+import { Game, PostGameReqBody } from '../helpers/types';
 
-interface CreateProps {
+interface CreateState {
   nickname: string;
-  setGameType: React.Dispatch<React.SetStateAction<string>>;
-  setCode: React.Dispatch<React.SetStateAction<string>>;
-  setNickname: React.Dispatch<React.SetStateAction<string>>;
+  selected: string;
 }
-const Create = (props: CreateProps) => {
+
+const Create = (): JSX.Element => {
+  const { appState, setAppState } = useAppState();
   const suggestion = useRef(generateNickname());
-  const [nickname, setNickname] = useState(props.nickname);
-  const [selected, setSelected] = useState('story');
+  const [state, setState] = useState<CreateState>({
+    nickname: appState.nickname,
+    selected: STORY
+  });
   const navigate = useNavigate();
 
   const createGame = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      if (selected === '') {
+      if (state.selected === '') {
         alert('Please select a valid game type');
         return;
       }
 
-      const gameResponse = await axios.post('/api/game', {
-        creator: nickname.toLowerCase(),
-        type: selected
+      const gameResponse = await axios.post<Game, AxiosResponse<Game>, PostGameReqBody>('/api/game', {
+        creator: state.nickname.toLowerCase(),
+        type: state.selected
       });
       const userResponse = await axios.post('/api/user', {
-        nickname: nickname.toLowerCase() || suggestion.current,
+        nickname: state.nickname.toLowerCase() || suggestion.current,
         code: gameResponse.data.code
       });
-      props.setCode(gameResponse.data.code);
-      props.setNickname(userResponse.data.nickname);
-      props.setGameType(gameResponse.data.type);
+
+      setAppState({
+        nickname: userResponse.data.nickname,
+        gameCode: gameResponse.data.code,
+        gameType: gameResponse.data.type
+      });
       navigate('/' + gameResponse.data.type);
     } catch (err) {
       alert('Unable to create game. Please try again in a little bit.');
@@ -41,8 +49,8 @@ const Create = (props: CreateProps) => {
   };
 
   useEffect(() => {
-    setNickname(props.nickname);
-  }, [props]);
+    setState((prev) => ({ ...prev, nickname: appState.nickname }));
+  }, [appState]);
 
   return (
     <div className="w-100">
@@ -60,8 +68,10 @@ const Create = (props: CreateProps) => {
             autoCorrect="off"
             placeholder={suggestion.current}
             maxLength={30}
-            value={nickname}
-            onChange={(e) => setNickname(e.target.value)}
+            value={state.nickname}
+            onChange={(e) =>
+              setState((prev) => ({ ...prev, nickname: e.target.value }))
+            }
           />
         </div>
         <div className="mb-3">
@@ -73,11 +83,13 @@ const Create = (props: CreateProps) => {
             <button
               className={
                 'btn opacity-75 ' +
-                (selected === 'story' ? 'btn-primary' : 'btn-outline-primary')
+                (state.selected === STORY
+                  ? 'btn-primary'
+                  : 'btn-outline-primary')
               }
               onClick={(e) => {
                 e.preventDefault();
-                setSelected('story');
+                setState((prev) => ({ ...prev, selected: STORY }));
               }}
             >
               He Said She Said
@@ -85,11 +97,13 @@ const Create = (props: CreateProps) => {
             <button
               className={
                 'btn opacity-75 ' +
-                (selected === 'names' ? 'btn-primary' : 'btn-outline-primary')
+                (state.selected === NAMES
+                  ? 'btn-primary'
+                  : 'btn-outline-primary')
               }
               onClick={(e) => {
                 e.preventDefault();
-                setSelected('names');
+                setState((prev) => ({ ...prev, selected: NAMES }));
               }}
             >
               Name Game
@@ -102,12 +116,12 @@ const Create = (props: CreateProps) => {
           className="form-control btn btn-success"
         />
       </form>
-      {selected === 'story' && (
+      {state.selected === STORY && (
         <p className="p-3 text-wrap">
           Create a fun story reminiscent of mad libs together!
         </p>
       )}
-      {selected === 'names' && (
+      {state.selected === NAMES && (
         <p className="p-3 text-wrap">
           Everyone secretly enters the name of a person (real or fictional) that
           others would know. Players then take turns guessing each other's names

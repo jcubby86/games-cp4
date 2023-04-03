@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Request, Response } from 'express';
 import { StoryModel } from './models.js';
 import { getAllEntries } from './utils.js';
 import { upperFirst, lowerFirst } from './utils.js';
@@ -9,11 +9,22 @@ import actions_past from './generation/actions_past.js';
 import actions_present from './generation/actions_present.js';
 import statements from './generation/statements.js';
 import { randomElement } from './generation/generationUtils.js';
-import { Entry, Game, StoryDocument, User } from './types.js';
+import {
+  Entry,
+  Game,
+  StoryDocument,
+  User,
+  StoryReqBody,
+  StoryResBody,
+} from './types.js';
 import { joinPhase, loadStory, loadUser } from './middleware.js';
-
-const punctRegex = /.*([.!?])$/;
-const quoteRegex = /["“”]/g;
+import {
+  PLAY,
+  punctRegex,
+  quoteRegex,
+  READ,
+  WAIT,
+} from './helpers/constants.js';
 
 const prompts = [
   "Man's name:",
@@ -63,7 +74,7 @@ async function checkRoundCompletion(
   game: Game,
   story: StoryDocument
 ): Promise<string[]> {
-  if (game.phase !== 'play') return [];
+  if (game.phase !== PLAY) return [];
 
   const createStoryEntry = (user: User): Entry<string[]> => ({
     user: user,
@@ -92,8 +103,8 @@ async function checkRoundCompletion(
  * @return {*}  {Promise<void>}
  */
 async function finishGame(game: Game, story: StoryDocument): Promise<void> {
-  if (game.phase === 'read') return;
-  game.phase = 'read';
+  if (game.phase === READ) return;
+  game.phase = READ;
   await game.save();
 
   const stories = story.entries;
@@ -117,81 +128,91 @@ router.use(loadUser, loadStory);
 /**
  * Get the state of the game.
  */
-router.get('/', joinPhase, async (req, res) => {
-  try {
-    if (!req.game || !req.user || !req.story) return res.sendStatus(500);
+router.get(
+  '/',
+  joinPhase,
+  async (
+    req: Request<unknown, unknown, unknown>,
+    res: Response<StoryResBody>
+  ) => {
+    try {
+      if (!req.game || !req.user || !req.story) return res.sendStatus(500);
 
-    const story = req.story;
-    const userId = req.user._id;
-    const waitingOnUsers = await checkRoundCompletion(req.game, story);
+      const story = req.story;
+      const userId = req.user._id;
+      const waitingOnUsers = await checkRoundCompletion(req.game, story);
 
-    if (req.game.phase === 'play') {
-      const round = story.round;
-      const userElem = story.entries.find((elem) =>
-        elem.user._id.equals(userId)
-      );
+      if (req.game.phase === PLAY) {
+        const round = story.round;
+        const userElem = story.entries.find((elem) =>
+          elem.user._id.equals(userId)
+        );
 
-      const canPlay = !userElem || userElem.value.length <= round;
-      return res.send({
-        phase: canPlay ? 'play' : 'wait',
-        round: round,
-        filler: fillers[round],
-        prompt: prompts[round],
-        prefix: prefixes[round],
-        suffix: suffixes[round],
-        placeholder: canPlay ? randomElement(placeholders[round]) : '',
-        users: waitingOnUsers,
-      });
-    } else {
-      return res.send({
-        phase: 'read',
-        story: story.finalEntries.find((element) =>
-          element.user._id.equals(userId)
-        )?.value,
-      });
+        const canPlay = !userElem || userElem.value.length <= round;
+        return res.send({
+          phase: canPlay ? PLAY : WAIT,
+          round: round,
+          filler: fillers[round],
+          prompt: prompts[round],
+          prefix: prefixes[round],
+          suffix: suffixes[round],
+          placeholder: canPlay ? randomElement(placeholders[round]) : '',
+          users: waitingOnUsers,
+        });
+      } else {
+        return res.send({
+          phase: READ,
+          story: story.finalEntries.find((element) =>
+            element.user._id.equals(userId)
+          )?.value,
+        });
+      }
+    } catch (error) {
+      console.error(error);
+      return res.sendStatus(500);
     }
-  } catch (error) {
-    console.error(error);
-    return res.sendStatus(500);
   }
-});
+);
 
 /**
  * Save a user's entry.
  */
-router.put('/', async (req, res) => {
-  try {
-    if (!req.game || !req.user || !req.story) return res.sendStatus(500);
+router.put(
+  '/',
+  async (req: Request<unknown, unknown, StoryReqBody>, res: Response) => {
+    try {
+      if (!req.game || !req.user || !req.story) return res.sendStatus(500);
 
-    if (req.game.phase !== 'play') return res.sendStatus(403);
+      if (req.game.phase !== PLAY) return res.sendStatus(403);
 
-    const story = req.story;
-    const userId = req.user._id;
+      const story = req.story;
+      const userId = req.user._id;
 
-    let userIndex = story.entries.findIndex((element) =>
-      element.user._id.equals(userId)
-    );
-    if (userIndex === -1) {
-      userIndex = story.entries.length;
-      story.entries.push({ user: req.user, value: [] });
+      let userIndex = story.entries.findIndex((element) =>
+        element.user._id.equals(userId)
+      );
+      if (userIndex === -1) {
+        userIndex = story.entries.length;
+        story.entries.push({ user: req.user, value: [] });
+      }
+      if (story.entries[userIndex].value.length > story.round)
+        return res.sendStatus(403);
+
+      let part = req.body.part.replace(quoteRegex, '').trim();
+      if (story.round > 1 && !punctRegex.test(part)) part += '.';
+      if (story.round === 2 || story.round === 5) {
+        part = lowerFirst(part);
+      } else {
+        part = upperFirst(part);
+      }
+
+      story.entries[userIndex].value.push(part);
+
+      await story.save();
+      return res.sendStatus(201);
+    } catch (err) {
+      console.error(err);
+      res.sendStatus(500);
     }
-    if (story.entries[userIndex].value.length > story.round)
-      return res.sendStatus(403);
-
-    let part = req.body.part.replaceAll(quoteRegex, '').trim();
-    if (story.round > 1 && !punctRegex.test(part)) part += '.';
-    if (story.round === 2 || story.round === 5) {
-      part = lowerFirst(part);
-    } else {
-      part = upperFirst(part);
-    }
-
-    story.entries[userIndex].value.push(part);
-
-    await story.save();
-    return res.sendStatus(201);
-  } catch (err) {
-    console.error(err);
-    res.sendStatus(500);
   }
-});
+);

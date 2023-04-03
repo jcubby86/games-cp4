@@ -3,16 +3,25 @@ import { useState, useEffect, useRef } from 'react';
 import StartGame from '../components/StartGame';
 import List from '../components/List';
 import axios, { AxiosError } from 'axios';
+import { useAppState } from '../contexts/AppContext';
+import { END, JOIN, PLAY, READ, WAIT } from '../helpers/constants';
+import Recreate from '../components/Recreate';
 
-interface NamesProps {
-  code: string;
-  setCode: React.Dispatch<React.SetStateAction<string>>;
+interface NamesState {
+  phase: string;
+  users: string[];
+  names: string[];
+  placeholder: string;
 }
-const Names = (props: NamesProps) => {
-  const [phase, setPhase] = useState('');
-  const [users, setUsers] = useState<string[]>([]);
-  const [names, setNames] = useState<string[]>([]);
-  const [placeholder, setPlaceholder] = useState('');
+
+const Names = (): JSX.Element => {
+  const { appState } = useAppState();
+  const [state, setState] = useState<NamesState>({
+    phase: '',
+    users: [],
+    names: [],
+    placeholder: ''
+  });
   const entryRef = useRef<HTMLInputElement>(null);
 
   // const navigate = useNavigate();
@@ -20,13 +29,12 @@ const Names = (props: NamesProps) => {
   const pollStatus = async () => {
     try {
       const response = await axios.get('/api/names');
-      setPhase(response.data.phase);
-      setUsers(response.data.users);
-      setNames(response.data.names);
-      setPlaceholder((old) => old || response.data.placeholder);
+      setState((prev) => ({
+        ...response.data,
+        placeholder: prev.placeholder || response.data.placeholder
+      }));
     } catch (error) {
       alert('An error has occurred');
-      // props.setCode('');
       // navigate('/');
     }
   };
@@ -42,15 +50,17 @@ const Names = (props: NamesProps) => {
       await axios.put('/api/names', {
         text: entryRef.current.value
       });
-      setPhase('');
-      setPlaceholder('');
+      setState((prev) => ({
+        ...prev,
+        phase: '',
+        placeholder: ''
+      }));
     } catch (e: unknown) {
       const err = e as AxiosError;
       if (err?.response?.status === 400) {
         alert(err.response.data);
       } else {
         alert('An error has occurred');
-        // props.setCode('');
         // navigate('/');
       }
     }
@@ -58,35 +68,43 @@ const Names = (props: NamesProps) => {
 
   const endGame = async (e: React.MouseEvent) => {
     e.preventDefault();
-    await axios.put(`/api/game/${props.code}`, { phase: 'end' });
-    setPhase('end');
+    await axios.put(`/api/game/${appState.gameCode}`, { phase: END });
+    setState((prev) => ({
+      ...prev,
+      phase: END
+    }));
   };
 
   useEffect(() => {
-    if (!phase) pollStatus();
+    if (!state.phase) pollStatus();
     const timer = setInterval(() => {
-      if (phase === 'join' || phase === 'wait' || phase === 'read')
+      if (state.phase === JOIN || state.phase === WAIT || state.phase === READ)
         pollStatus();
     }, 3000);
 
     return () => clearInterval(timer);
   });
 
-  if (phase === 'join') {
+  const reset = (newPhase: string, nickname: string) => {
+    setState((prev) => ({ ...prev, phase: newPhase, users: [nickname] }));
+  };
+
+  if (state.phase === JOIN) {
     return (
       <StartGame
-        code={props.code}
-        users={users}
+        users={state.users}
         title={'The Name Game'}
-        setPhase={setPhase}
+        setPhase={(newPhase) =>
+          setState((prev) => ({ ...prev, phase: newPhase }))
+        }
       ></StartGame>
     );
-  } else if (phase === 'play') {
+  } else if (state.phase === PLAY) {
     return (
       <form className="w-100" onSubmit={sendEntry}>
         <h3 className="text-center w-100">Enter a name:</h3>
         <input
-          placeholder={placeholder}
+          placeholder={state.placeholder}
           ref={entryRef}
           className="form-control"
         />
@@ -97,12 +115,12 @@ const Names = (props: NamesProps) => {
         />
       </form>
     );
-  } else if (phase === 'read') {
+  } else if (state.phase === READ) {
     return (
       <div className="w-100 d-flex flex-column">
         <div className="w-100">
           <h3 className="text-center w-100">Names:</h3>
-          <List items={names}></List>
+          <List items={state.names}></List>
         </div>
 
         <button className={'btn btn-danger mt-4'} onClick={endGame}>
@@ -110,13 +128,20 @@ const Names = (props: NamesProps) => {
         </button>
       </div>
     );
-  } else if (phase === 'end') {
-    return <h3 className="w-100 text-center">Enjoy the game!</h3>;
+  } else if (state.phase === END) {
+    return (
+      <div className="w-100">
+        <h3 className="w-100 text-center pb-3">Enjoy the game!</h3>
+        <div className="d-flex justify-content-center">
+          <Recreate reset={reset} />
+        </div>
+      </div>
+    );
   } else {
     return (
       <div className="w-100">
         <h3 className="text-center w-100">Waiting for other players...</h3>
-        {phase === 'wait' && <List items={users}></List>}
+        {state.phase === WAIT && <List items={state.users}></List>}
       </div>
     );
   }
