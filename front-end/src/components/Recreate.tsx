@@ -23,6 +23,7 @@ const Recreate = ({ reset }: RecreateProps): JSX.Element => {
 
       setAppState({
         nickname: userResponse.data.nickname,
+        userId: userResponse.data._id,
         gameCode: gameResponse.data.code,
         gameType: gameResponse.data.type
       });

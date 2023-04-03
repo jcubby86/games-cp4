@@ -16,6 +16,7 @@ import {
   User,
   StoryReqBody,
   StoryResBody,
+  Params,
 } from './types.js';
 import { joinPhase, loadStory, loadUser } from './middleware.js';
 import {
@@ -123,6 +124,29 @@ async function finishGame(game: Game, story: StoryDocument): Promise<void> {
 }
 
 export const router = Router();
+
+router.get(
+  '/:id',
+  async (req: Request<Params, unknown, unknown>, res: Response<unknown>) => {
+    try {
+      const story: StoryDocument | null = await StoryModel.findOne({
+        _id: req.params.id,
+      }).populate('finalEntries.user');
+      if (!story) return res.status(404);
+      return res.send({
+        id: story.id,
+        stories: story.finalEntries.map((entry) => ({
+          value: entry.value,
+          user: { nickname: entry.user.nickname, id: entry.user.id },
+        })),
+      });
+    } catch (err) {
+      console.error(err);
+      res.sendStatus(500);
+    }
+  }
+);
+
 router.use(loadUser, loadStory);
 
 /**
@@ -165,6 +189,7 @@ router.get(
           story: story.finalEntries.find((element) =>
             element.user._id.equals(userId)
           )?.value,
+          id: story.id,
         });
       }
     } catch (error) {

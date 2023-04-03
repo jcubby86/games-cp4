@@ -28,7 +28,11 @@ const Create = (): JSX.Element => {
         return;
       }
 
-      const gameResponse = await axios.post<Game, AxiosResponse<Game>, PostGameReqBody>('/api/game', {
+      const gameResponse = await axios.post<
+        Game,
+        AxiosResponse<Game>,
+        PostGameReqBody
+      >('/api/game', {
         creator: state.nickname.toLowerCase(),
         type: state.selected
       });
@@ -39,6 +43,7 @@ const Create = (): JSX.Element => {
 
       setAppState({
         nickname: userResponse.data.nickname,
+        userId: userResponse.data._id,
         gameCode: gameResponse.data.code,
         gameType: gameResponse.data.type
       });

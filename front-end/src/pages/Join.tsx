@@ -39,6 +39,7 @@ const Join = (): JSX.Element => {
 
       setAppState({
         nickname: response.data.nickname,
+        userId: response.data._id,
         gameCode: response.data.game.code,
         gameType: response.data.game.type
       });

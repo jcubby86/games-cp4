@@ -2,6 +2,7 @@ export interface AppState {
   nickname: string;
   gameCode: string;
   gameType: string;
+  userId: string;
 }
 export interface AppContextProps {
   appState: AppState;

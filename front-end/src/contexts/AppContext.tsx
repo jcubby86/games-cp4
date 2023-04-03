@@ -8,6 +8,7 @@ import {
 
 const initialAppState: AppState = {
   nickname: '',
+  userId: '',
   gameCode: '',
   gameType: ''
 };
@@ -27,6 +28,7 @@ export const AppContextProvider = ({ children }: AppContextProviderProps) => {
 
       setAppState({
         nickname: response.data.nickname,
+        userId: response.data._id,
         gameCode: response.data.game.code,
         gameType: response.data.game.type
       });
