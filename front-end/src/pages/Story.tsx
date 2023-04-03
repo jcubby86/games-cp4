@@ -5,6 +5,7 @@ import List from '../components/List';
 import axios from 'axios';
 import { JOIN, PLAY, READ, WAIT } from '../helpers/constants';
 import Recreate from '../components/Recreate';
+import { useAppState } from '../contexts/AppContext';
 
 interface StoryState {
   phase: string;
@@ -15,6 +16,7 @@ interface StoryState {
   suffix: string;
   story: string;
   filler: string;
+  id: string;
 }
 
 const initialState: StoryState = {
@@ -25,10 +27,12 @@ const initialState: StoryState = {
   prefix: '',
   suffix: '',
   story: '',
-  filler: ''
+  filler: '',
+  id: ''
 };
 
 const Story = (): JSX.Element => {
+  const { appState } = useAppState();
   const [state, setState] = useState<StoryState>(initialState);
   const partRef = useRef<HTMLTextAreaElement>(null);
 
@@ -43,7 +47,6 @@ const Story = (): JSX.Element => {
           placeholder: prev.placeholder || response.data.placeholder
         })
       );
-      console.log(state)
     } catch (error) {
       alert('An error has occurred');
       // navigate('/');
@@ -86,8 +89,10 @@ const Story = (): JSX.Element => {
       if (navigator.share) {
         await navigator.share({
           title: 'Games: He Said She Said',
-          text: 'Read my hilarious story!\n' + state.story,
-          url: document.querySelector<HTMLAnchorElement>('.navbar-brand')?.href
+          text: 'Read my hilarious story!',
+          url:
+            document.querySelector<HTMLAnchorElement>('.navbar-brand')?.href +
+            `story/${state.id}/${appState.userId}`
         });
       }
     } catch (err) {

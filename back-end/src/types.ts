@@ -124,6 +124,7 @@ export interface StoryResBody extends JoinResBody {
   story?: string;
   filler?: string;
   round?: number;
+  id?: string;
 }
 
 export interface StoryReqBody {
