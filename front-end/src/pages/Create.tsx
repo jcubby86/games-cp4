@@ -33,7 +33,6 @@ const Create = (): JSX.Element => {
         AxiosResponse<Game>,
         PostGameReqBody
       >('/api/game', {
-        creator: state.nickname.toLowerCase(),
         type: state.selected
       });
       const userResponse = await axios.post('/api/user', {

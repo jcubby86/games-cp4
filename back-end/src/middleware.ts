@@ -51,6 +51,7 @@ export const loadUser = async (
     }
 
     req.user = user;
+    req.user.isHost = user.game?.host === user.id;
     req.game = user.game;
     next();
   } catch (error) {
@@ -127,6 +128,7 @@ export const joinPhase = async (
         users: users.map((user: User) => user.nickname),
         code: req.game.code,
         nickname: req.user?.nickname,
+        isHost: req.user?.isHost,
       });
     }
 

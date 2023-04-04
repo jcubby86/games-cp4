@@ -4,7 +4,7 @@ import { JOIN } from './helpers/constants.js';
 import { loadUser } from './middleware.js';
 import { GameModel, UserModel } from './models.js';
 import { Game, User, JoinReqBody } from './types.js';
-import { gameExists } from './utils.js';
+import { gameExists, getUsersInGame } from './utils.js';
 
 export const router = Router();
 
@@ -89,6 +89,11 @@ router.post(
         nowInMinutes: Math.floor(Date.now() / 60e3), //refresh cookie so it won't expire for another 2 hours
       };
 
+      if (!game.host) {
+        game.host = req.user.id;
+        await game.save();
+      }
+
       res.status(statusCode).send(req.user);
     } catch (err) {
       console.error(err);
@@ -119,9 +124,16 @@ router.delete(
   loadUser,
   async (req: Request<unknown, unknown, unknown>, res: Response) => {
     try {
+      const game = req.game;
+
       if (req.user) {
         req.user.game = undefined;
         await req.user.save();
+      }
+      if (game !== null && game !== undefined && game.host === req.user?.id) {
+        const users = await getUsersInGame(game);
+        game.host = users[0]?.id;
+        await game.save();
       }
 
       res.sendStatus(200);

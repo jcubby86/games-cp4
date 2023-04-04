@@ -43,7 +43,6 @@ export interface Names {
 
 export interface PostGameReqBody {
   type: string;
-  creator: string;
 }
 
 export interface UpdateGameReqBody {

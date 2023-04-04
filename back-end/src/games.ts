@@ -63,7 +63,7 @@ router.post(
   }
 );
 
-async function createGame(type: string): Promise<Game> {
+async function createGame(type: string, host?: string): Promise<Game> {
   const createType: CreateGameFunction = validGameTypes[type];
 
   if (!createType) {
@@ -74,6 +74,7 @@ async function createGame(type: string): Promise<Game> {
   const game: Game = new GameModel({
     type: type,
     code: newCode,
+    host: host,
     phase: JOIN,
   });
 

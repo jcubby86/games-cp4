@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "ts-node src/server.ts",
     "build": "tsc",
+    "typecheck": "tsc --noEmit",
     "test": "jest",
     "lint": "eslint .",
     "format": "prettier --config .prettierrc --write ."

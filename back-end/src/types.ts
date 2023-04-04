@@ -17,8 +17,8 @@ export interface IGame {
   type: string;
   code: string;
   phase: string;
-  test: number;
   createdAt: Date;
+  host?: string;
 }
 export type Game = HydratedDocument<IGame> & {
   title?: string;
@@ -28,7 +28,9 @@ export interface IUser {
   game?: HydratedDocument<IGame>;
   nickname: string;
 }
-export type User = HydratedDocument<IUser>;
+export type User = HydratedDocument<IUser> & {
+  isHost?: boolean;
+};
 
 export interface Entry<Type> {
   user: HydratedDocument<IUser>;
@@ -104,6 +106,7 @@ export interface JoinResBody {
   users?: string[];
   code?: string;
   nickname?: string;
+  isHost?: boolean;
 }
 
 export interface NamesResBody extends JoinResBody {

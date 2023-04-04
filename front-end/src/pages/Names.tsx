@@ -12,6 +12,7 @@ interface NamesState {
   users: string[];
   names: string[];
   placeholder: string;
+  isHost: boolean;
 }
 
 const Names = (): JSX.Element => {
@@ -20,7 +21,8 @@ const Names = (): JSX.Element => {
     phase: '',
     users: [],
     names: [],
-    placeholder: ''
+    placeholder: '',
+    isHost: false
   });
   const entryRef = useRef<HTMLInputElement>(null);
 
@@ -86,13 +88,19 @@ const Names = (): JSX.Element => {
   });
 
   const reset = (newPhase: string, nickname: string) => {
-    setState((prev) => ({ ...prev, phase: newPhase, users: [nickname] }));
+    setState((prev) => ({
+      ...prev,
+      phase: newPhase,
+      users: [nickname],
+      isHost: false
+    }));
   };
 
   if (state.phase === JOIN) {
     return (
       <StartGame
         users={state.users}
+        isHost={state.isHost}
         title={'The Name Game'}
         setPhase={(newPhase) =>
           setState((prev) => ({ ...prev, phase: newPhase }))
@@ -123,9 +131,11 @@ const Names = (): JSX.Element => {
           <List items={state.names}></List>
         </div>
 
-        <button className={'btn btn-danger mt-4'} onClick={endGame}>
-          Hide Names
-        </button>
+        {state.isHost && (
+          <button className={'btn btn-danger mt-4'} onClick={endGame}>
+            Hide Names
+          </button>
+        )}
       </div>
     );
   } else if (state.phase === END) {

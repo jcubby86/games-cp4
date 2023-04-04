@@ -100,10 +100,12 @@ router.get(
         return res.send({
           phase: READ,
           names: names.entries.map((elem) => elem.value),
+          isHost: req.user.isHost,
         });
       } else {
         return res.send({
           phase: END,
+          isHost: req.user.isHost,
         });
       }
     } catch (err) {

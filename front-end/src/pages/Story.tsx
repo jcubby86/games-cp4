@@ -17,6 +17,7 @@ interface StoryState {
   story: string;
   filler: string;
   id: string;
+  isHost: boolean;
 }
 
 const initialState: StoryState = {
@@ -28,7 +29,8 @@ const initialState: StoryState = {
   suffix: '',
   story: '',
   filler: '',
-  id: ''
+  id: '',
+  isHost: false
 };
 
 const Story = (): JSX.Element => {
@@ -54,7 +56,12 @@ const Story = (): JSX.Element => {
   };
 
   const reset = (newPhase: string, nickname: string) => {
-    setState((prev) => ({ ...prev, phase: newPhase, users: [nickname] }));
+    setState((prev) => ({
+      ...prev,
+      phase: newPhase,
+      users: [nickname],
+      isHost: false
+    }));
   };
 
   const sendPart = async (e: React.FormEvent) => {
@@ -114,6 +121,7 @@ const Story = (): JSX.Element => {
       <>
         <StartGame
           users={state.users}
+          isHost={state.isHost}
           title={'He Said She Said'}
           setPhase={(newPhase) =>
             setState((prev) => ({ ...prev, phase: newPhase }))
