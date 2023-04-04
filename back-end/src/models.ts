@@ -6,6 +6,7 @@ const gameSchema = new Schema<IGame>(
     type: { type: String, required: true },
     code: { type: String, required: true },
     phase: { type: String, required: true },
+    host: { type: String },
   },
   { timestamps: true }
 );
