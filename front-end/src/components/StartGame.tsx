@@ -10,7 +10,12 @@ interface StartGameProps {
   isHost: boolean;
 }
 
-const StartGame = ({ setPhase, title, users, isHost }: StartGameProps): JSX.Element => {
+const StartGame = ({
+  setPhase,
+  title,
+  users,
+  isHost
+}: StartGameProps): JSX.Element => {
   const { appState } = useAppState();
   const startGame = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,11 +59,13 @@ const StartGame = ({ setPhase, title, users, isHost }: StartGameProps): JSX.Elem
               id="playerCount"
             />
           </div>
-          {isHost && <input
-            type="submit"
-            value="Start Game"
-            className="form-control btn btn-success mt-4 col-12"
-          />}
+          {isHost && (
+            <input
+              type="submit"
+              value="Start Game"
+              className="form-control btn btn-success mt-4 col-12"
+            />
+          )}
         </form>
         <h3 className="text-center mt-5">Players:</h3>
         <List items={users}></List>

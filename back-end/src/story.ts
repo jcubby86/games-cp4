@@ -190,7 +190,7 @@ router.get(
             element.user._id.equals(userId)
           )?.value,
           id: story.id,
-          isHost: req.user.isHost
+          isHost: req.user.isHost,
         });
       }
     } catch (error) {

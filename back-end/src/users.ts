@@ -132,7 +132,7 @@ router.delete(
       }
       if (game !== null && game !== undefined && game.host === req.user?.id) {
         const users = await getUsersInGame(game);
-        game.host = users[0]?.id;      
+        game.host = users[0]?.id;
         await game.save();
       }
 
