@@ -1,5 +1,5 @@
-import { SuggestionModel } from "../models";
-import { Suggestion } from "../types";
+import { SuggestionModel } from '../models';
+import { Suggestion } from '../types';
 
 /**
  * Generate a random number between 0 and the limit, exclusive.
@@ -19,8 +19,6 @@ export const randomNumber = (limit: number) =>
 export function randomElement<Type>(arr: Type[]): Type {
   return arr[randomNumber(arr.length)];
 }
-
-
 
 export async function getSuggestion(category: string): Promise<string> {
   const suggestions: Suggestion[] = await SuggestionModel.find({
