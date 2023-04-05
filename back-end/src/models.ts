@@ -1,5 +1,13 @@
 import { Schema, model } from 'mongoose';
-import { IGame, IUser, IStory, INames, IRecreate } from './types';
+import {
+  IGame,
+  IUser,
+  IStory,
+  INames,
+  IRecreate,
+  ISuggestion,
+  ISeed,
+} from './types';
 
 const gameSchema = new Schema<IGame>(
   {
@@ -39,8 +47,23 @@ const recreateSchema = new Schema<IRecreate>({
   newGame: { type: Schema.Types.ObjectId, ref: 'Game' },
 });
 
+const suggestionSchema = new Schema<ISuggestion>({
+  value: { type: String, required: true },
+  category: { type: String, required: true },
+});
+
+const seedSchema = new Schema<ISeed>({
+  table: { type: String, required: true },
+  isSeeded: { type: Boolean, required: true },
+});
+
 export const GameModel = model<IGame>('Game', gameSchema);
 export const UserModel = model<IUser>('User', userSchema);
 export const StoryModel = model<IStory>('Story', storySchema);
 export const NamesModel = model<INames>('Names', namesSchema);
 export const RecreateModel = model<IRecreate>('Recreate', recreateSchema);
+export const SeedModel = model<ISeed>('Seed', seedSchema);
+export const SuggestionModel = model<ISuggestion>(
+  'Suggestion',
+  suggestionSchema
+);

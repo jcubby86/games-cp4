@@ -2,13 +2,8 @@ import { Router, Request, Response } from 'express';
 import { StoryModel } from './models.js';
 import { getAllEntries } from './utils.js';
 import { upperFirst, lowerFirst } from './utils.js';
-
-import male_names from './generation/male_names.js';
-import female_names from './generation/female_names.js';
-import actions_past from './generation/actions_past.js';
-import actions_present from './generation/actions_present.js';
-import statements from './generation/statements.js';
-import { randomElement } from './generation/generationUtils.js';
+import { getSuggestion } from './suggestion/utils.js';
+import { joinPhase, loadStory, loadUser } from './middleware.js';
 import {
   Entry,
   Game,
@@ -18,15 +13,22 @@ import {
   StoryResBody,
   Params,
 } from './types.js';
-import { joinPhase, loadStory, loadUser } from './middleware.js';
 import {
+  ACTIONS_PAST,
+  ACTIONS_PRESENT,
+  FEMALE_NAMES,
+  MALE_NAMES,
   PLAY,
   punctRegex,
   quoteRegex,
   READ,
+  STATEMENTS,
   WAIT,
 } from './helpers/constants.js';
 
+const fillers = ['', '(Man) ', '(Man) and (Woman) ', '', '', ''];
+const prefixes = ['', 'and ', 'were ', 'He said, "', 'She said, "', 'So they '];
+const suffixes = [' ', ' ', ' ', '" ', '" ', ' '];
 const prompts = [
   "Man's name:",
   "Woman's name:",
@@ -35,17 +37,14 @@ const prompts = [
   'Statement:',
   'Activity:',
 ];
-const fillers = ['', '(Man) ', '(Man) and (Woman) ', '', '', ''];
-const placeholders = [
-  male_names,
-  female_names,
-  actions_present,
-  statements,
-  statements,
-  actions_past,
+const categories = [
+  MALE_NAMES,
+  FEMALE_NAMES,
+  ACTIONS_PRESENT,
+  STATEMENTS,
+  STATEMENTS,
+  ACTIONS_PAST,
 ];
-const prefixes = ['', 'and ', 'were ', 'He said, "', 'She said, "', 'So they '];
-const suffixes = [' ', ' ', ' ', '" ', '" ', ' '];
 
 /**
  * Create a Story Document for a game.
@@ -173,6 +172,8 @@ router.get(
         );
 
         const canPlay = !userElem || userElem.value.length <= round;
+        const category = categories[round];
+        const suggestion = await getSuggestion(category);
         return res.send({
           phase: canPlay ? PLAY : WAIT,
           round: round,
@@ -180,7 +181,7 @@ router.get(
           prompt: prompts[round],
           prefix: prefixes[round],
           suffix: suffixes[round],
-          placeholder: canPlay ? randomElement(placeholders[round]) : '',
+          placeholder: canPlay ? suggestion : '',
           users: waitingOnUsers,
         });
       } else {
