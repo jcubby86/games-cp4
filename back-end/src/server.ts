@@ -7,6 +7,7 @@ import { router as gameRoutes } from './games.js';
 import { router as userRoutes } from './users.js';
 import { router as storyRoutes } from './story.js';
 import { router as namesRoutes } from './names.js';
+import { router as suggestionRoutes } from './suggestions.js';
 
 dotenv.config();
 
@@ -38,6 +39,7 @@ app.use('/api/game', gameRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/story', storyRoutes);
 app.use('/api/names', namesRoutes);
+app.use('/api/suggestions', suggestionRoutes);
 
 const runPort = process.env.NODE_PORT || 3001;
 app.listen(runPort, () => console.info(`Server listening on port ${runPort}!`));

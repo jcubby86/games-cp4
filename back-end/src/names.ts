@@ -3,9 +3,7 @@ import { NamesModel } from './models.js';
 import { getAllEntries } from './utils.js';
 import { shuffleArray, upperFirst } from './utils.js';
 
-import male_names from './generation/male_names.js';
-import female_names from './generation/female_names.js';
-import { randomElement } from './generation/generationUtils.js';
+import { getSuggestion, randomElement } from './suggestion/utils.js';
 import { joinPhase, loadNames, loadUser } from './middleware.js';
 import {
   Entry,
@@ -15,7 +13,15 @@ import {
   NamesReqBody,
   NamesResBody,
 } from './types.js';
-import { END, PLAY, quoteRegex, READ, WAIT } from './helpers/constants.js';
+import {
+  END,
+  FEMALE_NAMES,
+  MALE_NAMES,
+  PLAY,
+  quoteRegex,
+  READ,
+  WAIT,
+} from './helpers/constants.js';
 
 /**
  * Create a Names Document for a game.
@@ -90,11 +96,13 @@ router.get(
         );
 
         const waiting = userElem?.value !== '';
+        const category = randomElement([MALE_NAMES, FEMALE_NAMES]);
+        const suggestion = await getSuggestion(category);
         return res.send({
           phase: waiting ? WAIT : PLAY,
           users: waitingOnUsers,
           text: userElem?.value,
-          placeholder: randomElement(randomElement([male_names, female_names])),
+          placeholder: suggestion,
         });
       } else if (req.game.phase === READ) {
         return res.send({

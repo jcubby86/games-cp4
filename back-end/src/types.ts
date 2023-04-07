@@ -57,6 +57,18 @@ export interface IRecreate {
 }
 export type Recreate = HydratedDocument<IRecreate>;
 
+export interface ISuggestion {
+  value: string;
+  category: string;
+}
+export type Suggestion = HydratedDocument<ISuggestion>;
+
+export interface ISeed {
+  table: string;
+  isSeeded: boolean;
+}
+export type Seed = HydratedDocument<ISeed>;
+
 /*
  
          _   _               
