@@ -72,3 +72,13 @@ router.get('/seed', async (req: Request, res: Response) => {
     return res.sendStatus(500);
   }
 });
+
+router.get('/', async(req: Request, res: Response) => {
+try {
+    const suggestions: ISuggestion[] = await SuggestionModel.find();
+    return res.send(suggestions.map(x => ({value: x.value, category: x.category})));
+  } catch (err) {
+    console.error(err);
+    return res.sendStatus(500);
+  }
+});
