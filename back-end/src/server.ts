@@ -37,6 +37,7 @@ app.use(
 
 app.use((req, res, next) => {
   res.on('finish', () => {
+    if (req.originalUrl.endsWith('/health')) return;
     console.log(`${new Date().toISOString()} ${req.method} ${req.originalUrl} ${res.statusCode}`);
   });
   next();
