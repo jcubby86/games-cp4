@@ -33,7 +33,7 @@ services:
     
   db-seed:
     image: byrnedo/alpine-curl
-    command: "-X POST http://backend:${NODE_PORT:-3000}/api/seed"
+    command: "-X POST --silent http://backend:${NODE_PORT:-3000}/api/seed"
     depends_on:
       backend:
         condition: service_healthy
