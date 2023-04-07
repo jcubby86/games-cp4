@@ -41,5 +41,9 @@ app.use('/api/story', storyRoutes);
 app.use('/api/names', namesRoutes);
 app.use('/api/suggestions', suggestionRoutes);
 
+app.get('/api/health', (req, res) => {
+  res.sendStatus(200);
+})
+
 const runPort = process.env.NODE_PORT || 3001;
 app.listen(runPort, () => console.info(`Server listening on port ${runPort}!`));
