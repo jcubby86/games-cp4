@@ -17,6 +17,28 @@ import {
 
 export const router = Router();
 
+export const seed = async (updated: Seed[]) => {
+  let seed: Seed | null = await SeedModel.findOne({ table: 'Suggestion' });
+  if (seed?.isSeeded) return;
+
+  const suggestions: ISuggestion[] = [
+    ...male_names.map((x) => ({ value: x, category: MALE_NAMES })),
+    ...female_names.map((x) => ({ value: x, category: FEMALE_NAMES })),
+    ...actions_past.map((x) => ({ value: x, category: ACTIONS_PAST })),
+    ...actions_present.map((x) => ({ value: x, category: ACTIONS_PRESENT })),
+    ...statements.map((x) => ({ value: x, category: STATEMENTS })),
+  ];
+  SuggestionModel.create(suggestions);
+
+  if (seed === null) {
+    seed = new SeedModel({ table: 'Suggestion', isSeeded: true });
+  } else {
+    seed.isSeeded = true;
+  }
+  await seed.save();
+  updated.push(seed);
+};
+
 router.post('/', async (req: Request, res: Response) => {
   try {
     const suggestion = new SuggestionModel({
@@ -25,58 +47,21 @@ router.post('/', async (req: Request, res: Response) => {
     });
 
     await suggestion.save();
-    return res.status(201).send(suggestion);
+    return res
+      .status(201)
+      .send({ value: suggestion.value, category: suggestion.category });
   } catch (err) {
     console.error(err);
     return res.sendStatus(500);
   }
 });
 
-router.post('/seed', async (req: Request, res: Response) => {
+router.get('/', async (req: Request, res: Response) => {
   try {
-    let seed: Seed | null = await SeedModel.findOne({ table: 'Suggestion' });
-    if (seed?.isSeeded) return res.sendStatus(200);
-
-    const suggestions: ISuggestion[] = [
-      ...male_names.map((x) => ({ value: x, category: MALE_NAMES })),
-      ...female_names.map((x) => ({ value: x, category: FEMALE_NAMES })),
-      ...actions_past.map((x) => ({ value: x, category: ACTIONS_PAST })),
-      ...actions_present.map((x) => ({ value: x, category: ACTIONS_PRESENT })),
-      ...statements.map((x) => ({ value: x, category: STATEMENTS })),
-    ];
-    SuggestionModel.create(suggestions);
-
-    if (seed === null) {
-      seed = new SeedModel({ table: 'Suggestion', isSeeded: true });
-    } else {
-      seed.isSeeded = true;
-    }
-    await seed.save();
-    return res.sendStatus(201);
-  } catch (err) {
-    console.error(err);
-    return res.sendStatus(500);
-  }
-});
-
-router.get('/seed', async (req: Request, res: Response) => {
-  try {
-    const seed = await SeedModel.findOne({ table: 'Suggestion' });
-    if (seed != null && seed != undefined && seed.isSeeded) {
-      return res.send({ table: seed.table, isSeeded: seed.isSeeded });
-    } else {
-      return res.sendStatus(404);
-    }
-  } catch (err) {
-    console.error(err);
-    return res.sendStatus(500);
-  }
-});
-
-router.get('/', async(req: Request, res: Response) => {
-try {
     const suggestions: ISuggestion[] = await SuggestionModel.find();
-    return res.send(suggestions.map(x => ({value: x.value, category: x.category})));
+    return res.send(
+      suggestions.map((x) => ({ value: x.value, category: x.category }))
+    );
   } catch (err) {
     console.error(err);
     return res.sendStatus(500);

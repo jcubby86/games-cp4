@@ -1,32 +1,41 @@
-version: '3'
 services:
   app:
-    container_name: games-app
-    build:
-      context: ./front-end
-      tags:
-        # - 'ghcr.io/jcubby86/games-app:latest'
-        - 'ghcr.io/jcubby86/games-app:2.2.0'
-    image: ghcr.io/jcubby86/games-app:latest
+    image: ghcr.io/jcubby86/games-app:${DOCKER_TAG:-latest}
     ports:
-      - '3020:80'
+      - ${WEB_PORT:-80}:80
     environment:
-      - NGINX_BACKEND_ADDRESS=http://games-backend:3000
+      - NGINX_BACKEND_ADDRESS=http://backend:${NODE_PORT:-3000}
+    restart: unless-stopped
+    depends_on: 
+      - backend
+      - db
 
   backend:
-    container_name: games-backend
-    build:
-      context: ./back-end
-      tags:
-        # - 'ghcr.io/jcubby86/games-backend:latest'
-        - 'ghcr.io/jcubby86/games-backend:2.2.0'
-    image: ghcr.io/jcubby86/games-backend:latest
+    image: ghcr.io/jcubby86/games-backend:${DOCKER_TAG:-latest}
     environment:
-      - MONGO_DB_CONN_STR=mongodb://mongo/games-cp4
-      - NODE_PORT=3000
-
+      - MONGO_DB_CONN_STR=mongodb://db/games
+      - NODE_PORT=${NODE_PORT:-3000}
+    restart: unless-stopped
+    depends_on: 
+      - db
+    healthcheck:
+      test:  wget --spider --tries=1 --no-verbose http://localhost:${NODE_PORT:-3000}/api/health
+      interval: 5s
+      retries: 5
+      start_period: 5s
+      timeout: 10s
+      
   db:
-    container_name: mongo
-    image: mongo
+    image: mongo:latest
     volumes:
-      - /data/mongo:/data/db
+    - /portainer/mongo-games-${ENV:-test}:/data/db
+    restart: unless-stopped
+    
+  db-seed:
+    image: byrnedo/alpine-curl
+    command: "-X POST http://backend:${NODE_PORT:-3000}/api/seed"
+    depends_on:
+      backend:
+        condition: service_healthy
+      db:
+        condition: service_started
