@@ -7,7 +7,12 @@ import { router as gameRoutes } from './games.js';
 import { router as userRoutes } from './users.js';
 import { router as storyRoutes } from './story.js';
 import { router as namesRoutes } from './names.js';
-import { router as suggestionRoutes } from './suggestions.js';
+import {
+  router as suggestionRoutes,
+  seed as seedSuggestions,
+} from './suggestions.js';
+import { Seed } from './types';
+import { SeedModel } from './models.js';
 
 dotenv.config();
 
@@ -30,20 +35,39 @@ app.use(
   })
 );
 
-// app.use((req, res, next) => {
-//   console.log(req.originalUrl);
-//   next();
-// });
-
 app.use('/api/game', gameRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/story', storyRoutes);
 app.use('/api/names', namesRoutes);
 app.use('/api/suggestions', suggestionRoutes);
 
-app.get('/api/health', (req, res) => {
+app.get('/api/health', async (req, res) => {
   res.sendStatus(200);
-})
+});
 
-const runPort = process.env.NODE_PORT || 3001;
+app.post('/api/seed', async (req, res) => {
+  try {
+    const updated: Seed[] = [];
+    await seedSuggestions(updated);
+    return res
+      .status(updated.length ? 201 : 200)
+      .send(updated.map((x) => ({ table: x.table, isSeeded: x.isSeeded })));
+  } catch (err) {
+    console.error(err);
+    return res.sendStatus(500);
+  }
+});
+
+app.get('/api/seed', async (req, res) => {
+  try {
+    const seeds = await SeedModel.find();
+    return res
+      .send(seeds.map((x) => ({ table: x.table, isSeeded: x.isSeeded })));
+  } catch (err) {
+    console.error(err);
+    return res.sendStatus(500);
+  }
+});
+
+const runPort = process.env.NODE_PORT || 3000;
 app.listen(runPort, () => console.info(`Server listening on port ${runPort}!`));
