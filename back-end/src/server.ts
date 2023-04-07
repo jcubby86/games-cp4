@@ -35,6 +35,13 @@ app.use(
   })
 );
 
+app.use((req, res, next) => {
+  res.on('finish', () => {
+    console.log(`${new Date().toISOString()} ${req.method} ${req.originalUrl} ${res.statusCode}`);
+  });
+  next();
+});
+
 app.use('/api/game', gameRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/story', storyRoutes);
@@ -61,8 +68,9 @@ app.post('/api/seed', async (req, res) => {
 app.get('/api/seed', async (req, res) => {
   try {
     const seeds = await SeedModel.find();
-    return res
-      .send(seeds.map((x) => ({ table: x.table, isSeeded: x.isSeeded })));
+    return res.send(
+      seeds.map((x) => ({ table: x.table, isSeeded: x.isSeeded }))
+    );
   } catch (err) {
     console.error(err);
     return res.sendStatus(500);
