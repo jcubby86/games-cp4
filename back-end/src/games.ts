@@ -10,6 +10,7 @@ import {
   PostGameReqBody,
   UpdateGameReqBody,
   Recreate,
+  GameResBody,
 } from './types';
 import { getUsersInGame } from './utils.js';
 import { JOIN } from './helpers/constants.js';
@@ -88,7 +89,7 @@ async function createGame(type: string, host?: string): Promise<Game> {
 /**
  * Get a Game object and title.
  */
-router.get('/:code', async (req: Request<Params>, res: Response<Game>) => {
+router.get('/:code', async (req: Request<Params>, res: Response<GameResBody>) => {
   try {
     const game: Game | null = await GameModel.findOne({
       code: req.params.code,
@@ -96,9 +97,15 @@ router.get('/:code', async (req: Request<Params>, res: Response<Game>) => {
     if (!game) {
       return res.sendStatus(404);
     }
-    game.title = gameTitles[game.type];
 
-    res.send(game);
+    res.send({
+      type: game.type,
+      code: game.code,
+      phase: game.phase,
+      createdAt: game.createdAt,
+      host: game.host,
+      title: gameTitles[game.type],
+    });
   } catch (err) {
     console.error(err);
     return res.sendStatus(500);
