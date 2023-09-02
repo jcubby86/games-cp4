@@ -145,3 +145,12 @@ export interface StoryResBody extends JoinResBody {
 export interface StoryReqBody {
   part: string;
 }
+
+export interface GameResBody {
+  type: string;
+  code: string;
+  phase: string;
+  createdAt: Date;
+  host?: string;
+  title: string;
+}
