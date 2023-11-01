@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 import { StoryModel } from './models.js';
 import { getAllEntries } from './utils.js';
 import { upperFirst, lowerFirst } from './utils.js';
-import { getSuggestion } from './suggestion/utils.js';
+import { getSuggestion, randomNumber } from './suggestion/utils.js';
 import { joinPhase, loadStory, loadUser } from './middleware.js';
 import {
   Entry,
@@ -89,7 +89,12 @@ async function checkRoundCompletion(
   if (waitingOnUsers.length > 0) return waitingOnUsers;
 
   story.round += 1;
-  if (story.round >= fillers.length) await finishGame(game, story);
+  if (story.round >= fillers.length && game.phase !== READ) {
+    game.phase = READ;
+    await game.save();
+
+    story.finalEntries = getFinalEntries(game, story)
+  }
 
   await story.save();
   return [];
@@ -100,26 +105,25 @@ async function checkRoundCompletion(
  *
  * @param {Game} game
  * @param {StoryDocument} story
- * @return {*}  {Promise<void>}
+ * @return {*}  {Entry<string>[]}
  */
-async function finishGame(game: Game, story: StoryDocument): Promise<void> {
-  if (game.phase === READ) return;
-  game.phase = READ;
-  await game.save();
-
+function getFinalEntries(game: Game, story: StoryDocument): Entry<string>[] {
   const stories = story.entries;
+  const finalEntries: Entry<string>[] = [];
+  const salt = randomNumber(stories.length);
   for (let i = 0; i < stories.length; i++) {
     const s = [];
-    for (let j = 0; j < 6; j++) {
+    for (let j = 0; j < prefixes.length; j++) {
       s.push(prefixes[j]);
-      s.push(stories[(i + j) % stories.length].value[j]);
+      s.push(stories[(i + j + salt) % stories.length].value[j]);
       s.push(suffixes[j]);
     }
-    story.finalEntries.push({
+    finalEntries.push({
       user: stories[i].user,
       value: s.join(''),
     });
   }
+  return finalEntries;
 }
 
 export const router = Router();
