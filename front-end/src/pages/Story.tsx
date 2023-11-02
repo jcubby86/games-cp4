@@ -6,6 +6,7 @@ import axios from 'axios';
 import { JOIN, PLAY, READ, WAIT } from '../helpers/constants';
 import Recreate from '../components/Recreate';
 import { useAppState } from '../contexts/AppContext';
+import { Tooltip } from 'react-tooltip';
 
 interface StoryState {
   phase: string;
@@ -40,13 +41,17 @@ const Story = (): JSX.Element => {
 
   // const navigate = useNavigate();
 
-  const pollStatus = async () => {
+  const pollStatus = async (resetPlaceholder = false) => {
     try {
       const response = await axios.get('/api/story');
       setState(
         (prev): StoryState => ({
           ...response.data,
-          placeholder: prev.placeholder || response.data.placeholder
+          placeholder: getPlaceholder(
+            resetPlaceholder,
+            prev.placeholder,
+            response.data.placeholder
+          )
         })
       );
     } catch (error) {
@@ -54,6 +59,9 @@ const Story = (): JSX.Element => {
       // navigate('/');
     }
   };
+
+  const getPlaceholder = (reset: boolean, old: string, new_: string): string =>
+    reset || !old ? new_ : old;
 
   const reset = (newPhase: string, nickname: string) => {
     setState((prev) => ({
@@ -107,6 +115,15 @@ const Story = (): JSX.Element => {
     }
   };
 
+  const resetPlaceholder = async (_e: React.MouseEvent) => {
+    try {
+      _e.stopPropagation();
+      pollStatus(true);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   useEffect(() => {
     if (!state.phase) pollStatus();
     const timer = setInterval(() => {
@@ -143,11 +160,29 @@ const Story = (): JSX.Element => {
           rows={3}
         />
         <p className="form-label">{state.suffix}</p>
-        <input
-          type="submit"
-          value="Send"
-          className="form-control btn btn-success mt-3"
-        />
+        <div className="container-fluid mt-4">
+          <div className="row gap-4">
+            <input
+              type="submit"
+              value="Send"
+              className="btn btn-success col-9"
+            />
+            <button
+              type="button"
+              className="btn btn-outline-secondary col"
+              // STYLE="--bs-btn-font-size: .6rem;"
+              onClick={resetPlaceholder}
+              data-tooltip-id="my-tooltip"
+              data-tooltip-content="New Suggestion"
+              data-tooltip-place="bottom"
+            >
+              <span className="icon flex-grow-1">
+                <i className="nf-fa-refresh" />
+              </span>
+            </button>
+          </div>
+        </div>
+        <Tooltip id="my-tooltip" />
       </form>
     );
   } else if (state.phase === READ) {

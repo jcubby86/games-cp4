@@ -16,7 +16,8 @@
     "axios": "^1.3.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-router-dom": "^6.8.2"
+    "react-router-dom": "^6.8.2",
+    "react-tooltip": "^5.22.0"
   },
   "devDependencies": {
     "@types/jest": "^29.4.0",
