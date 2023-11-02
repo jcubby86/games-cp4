@@ -21,27 +21,45 @@ Using docker compose:
 version: "3"
 services:
   app:
-    container_name: games-app
     image: ghcr.io/jcubby86/games-app:latest
     ports:
       - "3020:80"
     environment:
-      - NGINX_BACKEND_ADDRESS=http://games-backend:3000
+      - NGINX_BACKEND_ADDRESS=http://backend:3000
+    restart: unless-stopped
+    depends_on: 
+      - backend
+      - db
 
   backend:
-    container_name: games-backend
     image: ghcr.io/jcubby86/games-backend:latest
     environment:
-      - MONGO_DB_CONN_STR=mongodb://mongo/games-cp4
+      - MONGO_DB_CONN_STR=mongodb://db/games
       - NODE_PORT=3000
-    depends_on:
-      - "db"
-
+    depends_on: 
+      - db
+    healthcheck:
+      test:  wget --spider --tries=1 --no-verbose http://localhost:3000/api/health
+      interval: 5s
+      retries: 5
+      start_period: 5s
+      timeout: 10s
+    restart: unless-stopped
+      
   db:
-    container_name: mongo
-    image: mongo
+    image: mongo:latest
     volumes:
-      - /data/mongo:/data/db
+    - /data/mongo:/data/db
+    restart: unless-stopped
+    
+  db-seed:
+    image: byrnedo/alpine-curl
+    command: "-X POST --silent http://backend:3000/api/seed"
+    depends_on:
+      backend:
+        condition: service_healthy
+      db:
+        condition: service_started
 ```
 
 Environment variables for each container can be configured for each service to run on different ports
