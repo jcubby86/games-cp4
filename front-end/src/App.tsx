@@ -1,6 +1,4 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import './App.css';
-import 'react-tooltip/dist/react-tooltip.css';
 import Layout from './pages/Layout';
 import Home from './pages/Home';
 import Story from './pages/Story';
@@ -10,6 +8,10 @@ import Names from './pages/Names';
 import { AppContextProvider } from './contexts/AppContext';
 import { NAMES, STORY } from './helpers/constants';
 import StoryArchive from './pages/StoryArchive';
+import './App.css';
+import 'react-tooltip/dist/react-tooltip.css';
+import 'bootstrap/dist/css/bootstrap.css'
+import 'bootstrap/dist/js/bootstrap.min.js'
 
 function App(): JSX.Element {
   return (
