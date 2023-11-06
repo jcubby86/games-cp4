@@ -5,7 +5,7 @@ import List from '../components/List';
 import axios, { AxiosError } from 'axios';
 import { useAppState } from '../contexts/AppContext';
 import { END, JOIN, PLAY, READ, WAIT } from '../helpers/constants';
-import Recreate from '../components/Recreate';
+import RecreateButton from '../components/RecreateButton';
 
 interface NamesState {
   phase: string;
@@ -87,11 +87,11 @@ const Names = (): JSX.Element => {
     return () => clearInterval(timer);
   });
 
-  const reset = (newPhase: string, nickname: string) => {
+  const reset = () => {
     setState((prev) => ({
       ...prev,
-      phase: newPhase,
-      users: [nickname],
+      phase: JOIN,
+      users: [appState.nickname],
       isHost: false
     }));
   };
@@ -143,7 +143,7 @@ const Names = (): JSX.Element => {
       <div className="w-100">
         <h3 className="w-100 text-center pb-3">Enjoy the game!</h3>
         <div className="d-flex justify-content-center">
-          <Recreate reset={reset} />
+          <RecreateButton reset={reset} className="btn btn-success" />
         </div>
       </div>
     );

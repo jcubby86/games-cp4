@@ -1,6 +1,8 @@
 import axios from 'axios';
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import ShareButton from '../components/ShareButton';
+import RecreateButton from '../components/RecreateButton';
 
 interface Story {
   value: string;
@@ -18,6 +20,7 @@ export default function StoryArchive(): JSX.Element {
   const [{ stories, showAll }, setState] = useState<StoryArchiveState>({
     showAll: false
   });
+  const navigate = useNavigate();
 
   const pollStatus = async () => {
     try {
@@ -27,7 +30,14 @@ export default function StoryArchive(): JSX.Element {
       // navigate('/');
     }
   };
+
   const nicknameFilter = (i: Story) => !user || showAll || user === i.user.id;
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const toggleAll = (_e: React.MouseEvent) =>
+    setState((prev) => ({ ...prev, showAll: !prev.showAll }));
+
+  const reset = () => navigate('/story');
 
   useEffect(() => {
     pollStatus();
@@ -50,18 +60,25 @@ export default function StoryArchive(): JSX.Element {
             </li>
           ))}
         </ul>
-
-        {user && (
-          <button
-            className={'btn btn-outline-success'}
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            onClick={(_e) =>
-              setState((prev) => ({ ...prev, showAll: !prev.showAll }))
-            }
-          >
-            {showAll ? 'hide' : 'show all'}
-          </button>
-        )}
+        <div className="container-fluid">
+          <div className="row">
+            {user && (
+              <button className="btn btn-success col" onClick={toggleAll}>
+                {showAll ? 'hide' : 'show all'}
+              </button>
+            )}
+            <RecreateButton
+              reset={reset}
+              className="btn btn-outline-success col"
+            ></RecreateButton>
+            <ShareButton
+              className="btn col-2"
+              path={`/story/${id}/${user ?? ''}`}
+              title="Games: He Said She Said"
+              text="Read my hilarious story!"
+            ></ShareButton>
+          </div>
+        </div>
       </div>
     </>
   );
