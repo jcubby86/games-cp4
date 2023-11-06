@@ -2,6 +2,7 @@ import { Outlet, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAppState } from '../contexts/AppContext';
 import { AppState } from '../contexts/AppContextTypes';
+import Icon from '../components/Icon';
 
 const Layout = (): JSX.Element => {
   const navigate = useNavigate();
@@ -36,9 +37,7 @@ const Layout = (): JSX.Element => {
                 className="d-flex justify-content-start"
               >
                 <button className="btn btn-outline-danger" type="submit">
-                  <span className="icon pe-2">
-                    <i className="nf-mdi-account_off" />
-                  </span>
+                  <Icon icon="nf-mdi-account_off" className="pe-2"></Icon>
                   Leave Game
                 </button>
               </form>
@@ -60,9 +59,7 @@ const Layout = (): JSX.Element => {
           target="_blank"
           rel="noreferrer"
         >
-          <span className="icon">
-            <i className="nf-cod-github_inverted"></i>
-          </span>
+          <Icon icon="nf-cod-github_inverted"></Icon>
         </a>
         <a
           href="https://www.linkedin.com/in/jacob-bastian-643033206/"
@@ -70,9 +67,7 @@ const Layout = (): JSX.Element => {
           target="_blank"
           rel="noreferrer"
         >
-          <span className="icon">
-            <i className="nf-fa-linkedin_square"></i>
-          </span>
+          <Icon icon="nf-fa-linkedin_square"></Icon>
         </a>
         <a
           href="mailto:games@jmbastian.com?&subject=Hello!&body=I'm reaching out about"
@@ -80,9 +75,7 @@ const Layout = (): JSX.Element => {
           target="_blank"
           rel="noreferrer"
         >
-          <span className="icon">
-            <i className="nf-mdi-email_variant"></i>
-          </span>
+          <Icon icon="nf-mdi-email_variant"></Icon>
         </a>
       </footer>
     </>

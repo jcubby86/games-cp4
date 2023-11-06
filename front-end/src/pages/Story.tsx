@@ -1,12 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
-// import { useNavigate } from 'react-router-dom';
 import StartGame from '../components/StartGame';
 import List from '../components/List';
 import axios from 'axios';
 import { JOIN, PLAY, READ, WAIT } from '../helpers/constants';
-import Recreate from '../components/Recreate';
+import RecreateButton from '../components/RecreateButton';
 import { useAppState } from '../contexts/AppContext';
 import { Tooltip } from 'react-tooltip';
+import ShareButton from '../components/ShareButton';
+import Icon from '../components/Icon';
+import { Link } from 'react-router-dom';
 
 interface StoryState {
   phase: string;
@@ -39,8 +41,6 @@ const Story = (): JSX.Element => {
   const [state, setState] = useState<StoryState>(initialState);
   const partRef = useRef<HTMLTextAreaElement>(null);
 
-  // const navigate = useNavigate();
-
   const pollStatus = async (resetPlaceholder = false) => {
     try {
       const response = await axios.get('/api/story');
@@ -56,18 +56,17 @@ const Story = (): JSX.Element => {
       );
     } catch (error) {
       alert('An error has occurred');
-      // navigate('/');
     }
   };
 
   const getPlaceholder = (reset: boolean, old: string, new_: string): string =>
     reset || !old ? new_ : old;
 
-  const reset = (newPhase: string, nickname: string) => {
+  const reset = () => {
     setState((prev) => ({
       ...prev,
-      phase: newPhase,
-      users: [nickname],
+      phase: JOIN,
+      users: [appState.nickname],
       isHost: false
     }));
   };
@@ -94,24 +93,6 @@ const Story = (): JSX.Element => {
       }
     } catch (error) {
       alert('An error has occurred');
-      // navigate('/');
-    }
-  };
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const share = async (_e: React.MouseEvent) => {
-    try {
-      if (navigator.share) {
-        await navigator.share({
-          title: 'Games: He Said She Said',
-          text: 'Read my hilarious story!',
-          url:
-            document.querySelector<HTMLAnchorElement>('.navbar-brand')?.href +
-            `story/${state.id}/${appState.userId}`
-        });
-      }
-    } catch (err) {
-      console.error(err);
     }
   };
 
@@ -135,16 +116,14 @@ const Story = (): JSX.Element => {
 
   if (state.phase === JOIN) {
     return (
-      <>
-        <StartGame
-          users={state.users}
-          isHost={state.isHost}
-          title={'He Said She Said'}
-          setPhase={(newPhase) =>
-            setState((prev) => ({ ...prev, phase: newPhase }))
-          }
-        ></StartGame>
-      </>
+      <StartGame
+        users={state.users}
+        isHost={state.isHost}
+        title="He Said She Said"
+        setPhase={(newPhase) =>
+          setState((prev) => ({ ...prev, phase: newPhase }))
+        }
+      ></StartGame>
     );
   } else if (state.phase === PLAY) {
     return (
@@ -170,15 +149,12 @@ const Story = (): JSX.Element => {
             <button
               type="button"
               className="btn btn-outline-secondary col"
-              // STYLE="--bs-btn-font-size: .6rem;"
               onClick={resetPlaceholder}
               data-tooltip-id="my-tooltip"
               data-tooltip-content="New Suggestion"
               data-tooltip-place="bottom"
             >
-              <span className="icon flex-grow-1">
-                <i className="nf-fa-refresh" />
-              </span>
+              <Icon icon="nf-fa-refresh" className="flex-grow-1"></Icon>
             </button>
           </div>
         </div>
@@ -189,15 +165,22 @@ const Story = (): JSX.Element => {
     return (
       <div className="w-100">
         <p className="lh-lg fs-5 px-2 w-100">{state.story}</p>
-        <div>
-          <Recreate reset={reset} />
-          {navigator['share'] && (
-            <button onClick={share} className={'btn'}>
-              <span className="icon py-1">
-                <i className="nf-fa-share_square_o" />
-              </span>
-            </button>
-          )}
+        <div className="container-fluid">
+          <div className="row gap-4">
+            <RecreateButton reset={reset} className="col btn btn-success" />
+            <Link
+              to={`/story/${state.id}`}
+              className="col btn btn-outline-success"
+            >
+              See all
+            </Link>
+            <ShareButton
+              className="btn col-2"
+              path={`/story/${state.id}/${appState.userId}`}
+              title="Games: He Said She Said"
+              text="Read my hilarious story!"
+            ></ShareButton>
+          </div>
         </div>
       </div>
     );

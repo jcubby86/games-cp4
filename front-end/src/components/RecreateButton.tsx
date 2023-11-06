@@ -1,13 +1,13 @@
 import { useAppState } from '../contexts/AppContext';
 import { Game } from '../helpers/types';
 import axios, { AxiosResponse } from 'axios';
-import { JOIN } from '../helpers/constants';
 
 interface RecreateProps {
-  reset: (newPhase: string, nickname: string) => void;
+  reset: () => void;
+  className?: string;
 }
 
-const Recreate = ({ reset }: RecreateProps): JSX.Element => {
+const RecreateButton = ({ reset, className }: RecreateProps): JSX.Element => {
   const { appState, setAppState } = useAppState();
 
   const recreateGame = async (e: React.MouseEvent) => {
@@ -27,20 +27,21 @@ const Recreate = ({ reset }: RecreateProps): JSX.Element => {
         gameCode: gameResponse.data.code,
         gameType: gameResponse.data.type
       });
-      reset(JOIN, userResponse.data.nickname);
+      reset();
     } catch (err) {
       alert('Unable to create game. Please try again in a little bit.');
     }
   };
 
-  return (
-    <button
-      className={'btn opacity-75 btn-outline-success'}
-      onClick={recreateGame}
-    >
-      Play Again
-    </button>
-  );
+  if (appState.gameCode) {
+    return (
+      <button className={className} onClick={recreateGame}>
+        Play Again
+      </button>
+    );
+  } else {
+    return <></>;
+  }
 };
 
-export default Recreate;
+export default RecreateButton;

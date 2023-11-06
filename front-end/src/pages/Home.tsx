@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useAppState } from '../contexts/AppContext';
+import Icon from '../components/Icon';
 
 const Home = (): JSX.Element => {
   const { appState } = useAppState();
@@ -13,9 +14,7 @@ const Home = (): JSX.Element => {
             to={appState.gameType}
             className="btn btn-lg btn-success d-flex flex-column fw-bold px-5 col-12"
           >
-            <span className="icon py-1">
-              <i className="nf-mdi-account_convert" />
-            </span>
+            <Icon icon="nf-mdi-account_convert" className="py-1"></Icon>
             Return to Game
           </Link>
         )}
@@ -27,9 +26,7 @@ const Home = (): JSX.Element => {
             (appState.gameCode ? 'btn-outline-success' : 'btn-success')
           }
         >
-          <span className="icon flex-grow-1">
-            <i className="nf-mdi-account_check" />{' '}
-          </span>
+          <Icon icon="nf-mdi-account_check" className="flex-grow-1"></Icon>
           Join a Game
         </Link>
         <Link
@@ -40,9 +37,10 @@ const Home = (): JSX.Element => {
             (appState.gameCode ? 'btn-outline-success' : 'btn-success')
           }
         >
-          <span className="icon flex-grow-1">
-            <i className="nf-mdi-account_multiple_plus" />
-          </span>
+          <Icon
+            icon="nf-mdi-account_multiple_plus"
+            className="flex-grow-1"
+          ></Icon>
           Create a Game
         </Link>
       </div>
