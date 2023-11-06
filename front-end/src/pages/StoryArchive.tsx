@@ -44,42 +44,40 @@ export default function StoryArchive(): JSX.Element {
   }, []);
 
   return (
-    <>
-      <div className="d-flex flex-column w-100">
-        <div className="text-center">
-          <h1 className="text-nowrap">He Said She Said</h1>
-        </div>
+    <div className="d-flex flex-column w-100">
+      <div className="text-center">
+        <h1 className="text-nowrap">He Said She Said</h1>
+      </div>
 
-        <ul className="list-group list-group-flush my-3 w-100">
-          {stories?.filter(nicknameFilter).map((item: Story, index: number) => (
-            <li key={index} className="list-group-item bg-light">
-              <div className="ms-2 me-auto">
-                <div className="fw-bold mb-1">{item.user.nickname}</div>
-                {item.value}
-              </div>
-            </li>
-          ))}
-        </ul>
-        <div className="container-fluid">
-          <div className="row">
-            {user && (
-              <button className="btn btn-success col" onClick={toggleAll}>
-                {showAll ? 'hide' : 'show all'}
-              </button>
-            )}
-            <RecreateButton
-              reset={reset}
-              className="btn btn-outline-success col"
-            ></RecreateButton>
-            <ShareButton
-              className="btn col-2"
-              path={`/story/${id}/${user ?? ''}`}
-              title="Games: He Said She Said"
-              text="Read my hilarious story!"
-            ></ShareButton>
-          </div>
+      <ul className="list-group list-group-flush my-3 w-100">
+        {stories?.filter(nicknameFilter).map((item: Story, index: number) => (
+          <li key={index} className="list-group-item bg-light">
+            <div className="ms-2 me-auto">
+              <div className="fw-bold mb-1">{item.user.nickname}</div>
+              {item.value}
+            </div>
+          </li>
+        ))}
+      </ul>
+      <div className="container-fluid">
+        <div className="row">
+          {user && (
+            <button className="btn btn-success col" onClick={toggleAll}>
+              {showAll ? 'hide' : 'show all'}
+            </button>
+          )}
+          <RecreateButton
+            reset={reset}
+            className="btn btn-outline-success col"
+          ></RecreateButton>
+          <ShareButton
+            className="btn col-2"
+            path={`/story/${id}/${user ?? ''}`}
+            title="Games: He Said She Said"
+            text="Read my hilarious story!"
+          ></ShareButton>
         </div>
       </div>
-    </>
+    </div>
   );
 }

@@ -26,7 +26,7 @@ const Home = (): JSX.Element => {
             (appState.gameCode ? 'btn-outline-success' : 'btn-success')
           }
         >
-          <Icon icon="nf-mdi-account_check" className='flex-grow-1'></Icon>
+          <Icon icon="nf-mdi-account_check" className="flex-grow-1"></Icon>
           Join a Game
         </Link>
         <Link
@@ -37,7 +37,10 @@ const Home = (): JSX.Element => {
             (appState.gameCode ? 'btn-outline-success' : 'btn-success')
           }
         >
-          <Icon icon="nf-mdi-account_multiple_plus" className='flex-grow-1'></Icon>
+          <Icon
+            icon="nf-mdi-account_multiple_plus"
+            className="flex-grow-1"
+          ></Icon>
           Create a Game
         </Link>
       </div>

@@ -10,8 +10,8 @@ import { NAMES, STORY } from './helpers/constants';
 import StoryArchive from './pages/StoryArchive';
 import './App.css';
 import 'react-tooltip/dist/react-tooltip.css';
-import 'bootstrap/dist/css/bootstrap.css'
-import 'bootstrap/dist/js/bootstrap.min.js'
+import 'bootstrap/dist/css/bootstrap.css';
+import 'bootstrap/dist/js/bootstrap.min.js';
 
 function App(): JSX.Element {
   return (

@@ -116,16 +116,14 @@ const Story = (): JSX.Element => {
 
   if (state.phase === JOIN) {
     return (
-      <>
-        <StartGame
-          users={state.users}
-          isHost={state.isHost}
-          title={'He Said She Said'}
-          setPhase={(newPhase) =>
-            setState((prev) => ({ ...prev, phase: newPhase }))
-          }
-        ></StartGame>
-      </>
+      <StartGame
+        users={state.users}
+        isHost={state.isHost}
+        title="He Said She Said"
+        setPhase={(newPhase) =>
+          setState((prev) => ({ ...prev, phase: newPhase }))
+        }
+      ></StartGame>
     );
   } else if (state.phase === PLAY) {
     return (

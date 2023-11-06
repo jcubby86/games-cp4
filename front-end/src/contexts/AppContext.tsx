@@ -51,7 +51,7 @@ export const AppContextProvider = ({ children }: AppContextProviderProps) => {
 export const useAppState = () => {
   const context = React.useContext(AppContext);
   if (context === undefined) {
-    throw new Error('useAuthState must be used within an AppContextProvider');
+    throw new Error('useAppState must be used within an AppContextProvider');
   }
   return context;
 };

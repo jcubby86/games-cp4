@@ -101,7 +101,7 @@ const Names = (): JSX.Element => {
       <StartGame
         users={state.users}
         isHost={state.isHost}
-        title={'The Name Game'}
+        title="The Name Game"
         setPhase={(newPhase) =>
           setState((prev) => ({ ...prev, phase: newPhase }))
         }
