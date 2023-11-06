@@ -32,15 +32,12 @@ const Layout = (): JSX.Element => {
             </Link>
 
             {appState.gameCode && (
-              <form
-                onSubmit={leaveGame}
-                className="d-flex justify-content-start"
-              >
-                <button className="btn btn-outline-danger" type="submit">
+              <div className="d-flex justify-content-start">
+                <button className="btn btn-outline-danger" onClick={leaveGame}>
                   <Icon icon="nf-mdi-account_off" className="pe-2"></Icon>
                   Leave Game
                 </button>
-              </form>
+              </div>
             )}
           </div>
         </nav>
