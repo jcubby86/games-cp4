@@ -31,17 +31,40 @@ export default function StoryArchive(): JSX.Element {
     }
   };
 
-  const nicknameFilter = (i: Story) => !user || showAll || user === i.user.id;
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const toggleAll = (_e: React.MouseEvent) =>
-    setState((prev) => ({ ...prev, showAll: !prev.showAll }));
-
-  const reset = () => navigate('/story');
-
   useEffect(() => {
     pollStatus();
   }, []);
+
+  const nicknameFilter = (i: Story) => !user || showAll || user === i.user.id;
+
+  const ToggleButton = () => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const toggleAll = (_e: React.MouseEvent) =>
+      setState((prev) => ({ ...prev, showAll: !prev.showAll }));
+
+    if (user) {
+      return (
+        <button className="btn btn-success col" onClick={toggleAll}>
+          {showAll ? 'hide' : 'show all'}
+        </button>
+      );
+    } else {
+      return <></>;
+    }
+  };
+
+  const ListItem = (props: { item: Story; index: number }): JSX.Element => {
+    return (
+      <li key={props.index} className="list-group-item bg-light">
+        <div className="ms-2 me-auto">
+          <p className="fw-bold mb-1">{props.item.user.nickname}</p>
+          <p>{props.item.value}</p>
+        </div>
+      </li>
+    );
+  };
+
+  const getPath = () => `/story/${id}` + (user ? `/${user}` : '');
 
   return (
     <div className="d-flex flex-column w-100">
@@ -50,29 +73,20 @@ export default function StoryArchive(): JSX.Element {
       </div>
 
       <ul className="list-group list-group-flush my-3 w-100">
-        {stories?.filter(nicknameFilter).map((item: Story, index: number) => (
-          <li key={index} className="list-group-item bg-light">
-            <div className="ms-2 me-auto">
-              <div className="fw-bold mb-1">{item.user.nickname}</div>
-              {item.value}
-            </div>
-          </li>
-        ))}
+        {stories?.filter(nicknameFilter).map((item: Story, index: number) => {
+          return <ListItem item={item} index={index} />;
+        })}
       </ul>
       <div className="container-fluid">
-        <div className="row">
-          {user && (
-            <button className="btn btn-success col" onClick={toggleAll}>
-              {showAll ? 'hide' : 'show all'}
-            </button>
-          )}
+        <div className="row gap-4">
+          <ToggleButton />
           <RecreateButton
-            reset={reset}
+            reset={() => navigate('/story')}
             className="btn btn-outline-success col"
           ></RecreateButton>
           <ShareButton
             className="btn col-2"
-            path={`/story/${id}/${user ?? ''}`}
+            path={getPath()}
             title="Games: He Said She Said"
             text="Read my hilarious story!"
           ></ShareButton>

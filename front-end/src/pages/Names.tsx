@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from 'react';
-// import { useNavigate } from 'react-router-dom';
 import StartGame from '../components/StartGame';
 import List from '../components/List';
 import axios, { AxiosError } from 'axios';
@@ -26,8 +25,6 @@ const Names = (): JSX.Element => {
   });
   const entryRef = useRef<HTMLInputElement>(null);
 
-  // const navigate = useNavigate();
-
   const pollStatus = async () => {
     try {
       const response = await axios.get('/api/names');
@@ -37,44 +34,7 @@ const Names = (): JSX.Element => {
       }));
     } catch (error) {
       alert('An error has occurred');
-      // navigate('/');
     }
-  };
-
-  const sendEntry = async (e: React.FormEvent) => {
-    try {
-      e.preventDefault();
-      if (!entryRef.current?.value) {
-        alert('Please enter a name');
-        return;
-      }
-
-      await axios.put('/api/names', {
-        text: entryRef.current.value
-      });
-      setState((prev) => ({
-        ...prev,
-        phase: '',
-        placeholder: ''
-      }));
-    } catch (e: unknown) {
-      const err = e as AxiosError;
-      if (err?.response?.status === 400) {
-        alert(err.response.data);
-      } else {
-        alert('An error has occurred');
-        // navigate('/');
-      }
-    }
-  };
-
-  const endGame = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    await axios.put(`/api/game/${appState.gameCode}`, { phase: END });
-    setState((prev) => ({
-      ...prev,
-      phase: END
-    }));
   };
 
   useEffect(() => {
@@ -87,27 +47,33 @@ const Names = (): JSX.Element => {
     return () => clearInterval(timer);
   });
 
-  const reset = () => {
-    setState((prev) => ({
-      ...prev,
-      phase: JOIN,
-      users: [appState.nickname],
-      isHost: false
-    }));
-  };
-
-  if (state.phase === JOIN) {
-    return (
-      <StartGame
-        users={state.users}
-        isHost={state.isHost}
-        title="The Name Game"
-        setPhase={(newPhase) =>
-          setState((prev) => ({ ...prev, phase: newPhase }))
+  const Play = (): JSX.Element => {
+    const sendEntry = async (e: React.FormEvent) => {
+      try {
+        e.preventDefault();
+        if (!entryRef.current?.value) {
+          alert('Please enter a name');
+          return;
         }
-      ></StartGame>
-    );
-  } else if (state.phase === PLAY) {
+
+        await axios.put('/api/names', {
+          text: entryRef.current.value
+        });
+        setState((prev) => ({
+          ...prev,
+          phase: '',
+          placeholder: ''
+        }));
+      } catch (e: unknown) {
+        const err = e as AxiosError;
+        if (err?.response?.status === 400) {
+          alert(err.response.data);
+        } else {
+          alert('An error has occurred');
+        }
+      }
+    };
+
     return (
       <form className="w-100" onSubmit={sendEntry}>
         <h3 className="text-center w-100">Enter a name:</h3>
@@ -123,7 +89,18 @@ const Names = (): JSX.Element => {
         />
       </form>
     );
-  } else if (state.phase === READ) {
+  };
+
+  const Read = (): JSX.Element => {
+    const endGame = async (e: React.MouseEvent) => {
+      e.preventDefault();
+      await axios.put(`/api/game/${appState.gameCode}`, { phase: END });
+      setState((prev) => ({
+        ...prev,
+        phase: END
+      }));
+    };
+
     return (
       <div className="w-100 d-flex flex-column">
         <div className="w-100">
@@ -138,7 +115,18 @@ const Names = (): JSX.Element => {
         )}
       </div>
     );
-  } else if (state.phase === END) {
+  };
+
+  const End = (): JSX.Element => {
+    const reset = () => {
+      setState((prev) => ({
+        ...prev,
+        phase: JOIN,
+        users: [appState.nickname],
+        isHost: false
+      }));
+    };
+
     return (
       <div className="w-100">
         <h3 className="w-100 text-center pb-3">Enjoy the game!</h3>
@@ -147,13 +135,36 @@ const Names = (): JSX.Element => {
         </div>
       </div>
     );
-  } else {
+  };
+
+  const Wait = (): JSX.Element => {
     return (
       <div className="w-100">
         <h3 className="text-center w-100">Waiting for other players...</h3>
         {state.phase === WAIT && <List items={state.users}></List>}
       </div>
     );
+  };
+
+  if (state.phase === JOIN) {
+    return (
+      <StartGame
+        users={state.users}
+        isHost={state.isHost}
+        title="The Name Game"
+        setPhase={(newPhase) =>
+          setState((prev) => ({ ...prev, phase: newPhase }))
+        }
+      ></StartGame>
+    );
+  } else if (state.phase === PLAY) {
+    return <Play />;
+  } else if (state.phase === READ) {
+    return <Read />;
+  } else if (state.phase === END) {
+    return <End />;
+  } else {
+    return <Wait />;
   }
 };
 

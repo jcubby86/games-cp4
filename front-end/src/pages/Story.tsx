@@ -59,52 +59,6 @@ const Story = (): JSX.Element => {
     }
   };
 
-  const getPlaceholder = (reset: boolean, old: string, new_: string): string =>
-    reset || !old ? new_ : old;
-
-  const reset = () => {
-    setState((prev) => ({
-      ...prev,
-      phase: JOIN,
-      users: [appState.nickname],
-      isHost: false
-    }));
-  };
-
-  const sendPart = async (e: React.FormEvent) => {
-    try {
-      e.preventDefault();
-      if (!partRef.current?.value) {
-        if (
-          !window.confirm(
-            "You haven't typed anything in! Do you want to use the placeholder text?"
-          )
-        )
-          return;
-      }
-
-      await axios.put('/api/story', {
-        part: partRef.current?.value || state.placeholder
-      });
-      setState((prev) => ({ ...prev, phase: '', placeholder: '' }));
-
-      if (partRef.current) {
-        partRef.current.value = '';
-      }
-    } catch (error) {
-      alert('An error has occurred');
-    }
-  };
-
-  const resetPlaceholder = async (_e: React.MouseEvent) => {
-    try {
-      _e.stopPropagation();
-      pollStatus(true);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
   useEffect(() => {
     if (!state.phase) pollStatus();
     const timer = setInterval(() => {
@@ -114,20 +68,46 @@ const Story = (): JSX.Element => {
     return () => clearInterval(timer);
   });
 
-  if (state.phase === JOIN) {
-    return (
-      <StartGame
-        users={state.users}
-        isHost={state.isHost}
-        title="He Said She Said"
-        setPhase={(newPhase) =>
-          setState((prev) => ({ ...prev, phase: newPhase }))
+  const getPlaceholder = (reset: boolean, old: string, new_: string): string =>
+    reset || !old ? new_ : old;
+
+  const Play = (): JSX.Element => {
+    const submit = async (e: React.FormEvent) => {
+      try {
+        e.preventDefault();
+        if (!partRef.current?.value) {
+          if (
+            !window.confirm(
+              "You haven't typed anything in! Do you want to use the placeholder text?"
+            )
+          )
+            return;
         }
-      ></StartGame>
-    );
-  } else if (state.phase === PLAY) {
+
+        await axios.put('/api/story', {
+          part: partRef.current?.value || state.placeholder
+        });
+        setState((prev) => ({ ...prev, phase: '', placeholder: '' }));
+
+        if (partRef.current) {
+          partRef.current.value = '';
+        }
+      } catch (error) {
+        alert('An error has occurred');
+      }
+    };
+
+    const resetPlaceholder = async (_e: React.MouseEvent) => {
+      try {
+        _e.stopPropagation();
+        pollStatus(true);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
     return (
-      <form className="w-100" onSubmit={sendPart}>
+      <form className="w-100" onSubmit={submit}>
         <h3 className="text-center w-100">{state.prompt}</h3>
         <p className="form-label">
           {state.filler} {state.prefix}
@@ -161,7 +141,18 @@ const Story = (): JSX.Element => {
         <Tooltip id="my-tooltip" />
       </form>
     );
-  } else if (state.phase === READ) {
+  };
+
+  const Read = (): JSX.Element => {
+    const reset = () => {
+      setState((prev) => ({
+        ...prev,
+        phase: JOIN,
+        users: [appState.nickname],
+        isHost: false
+      }));
+    };
+
     return (
       <div className="w-100">
         <p className="lh-lg fs-5 px-2 w-100">{state.story}</p>
@@ -184,13 +175,34 @@ const Story = (): JSX.Element => {
         </div>
       </div>
     );
-  } else {
+  };
+
+  const Wait = (): JSX.Element => {
     return (
       <div className="w-100">
         <h3 className="text-center w-100">Waiting for other players...</h3>
         {state.phase === WAIT && <List items={state.users}></List>}
       </div>
     );
+  };
+
+  if (state.phase === JOIN) {
+    return (
+      <StartGame
+        users={state.users}
+        isHost={state.isHost}
+        title="He Said She Said"
+        setPhase={(newPhase) =>
+          setState((prev) => ({ ...prev, phase: newPhase }))
+        }
+      ></StartGame>
+    );
+  } else if (state.phase === PLAY) {
+    return <Play />;
+  } else if (state.phase === READ) {
+    return <Read />;
+  } else {
+    return <Wait />;
   }
 };
 
