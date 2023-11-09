@@ -1,0 +1,108 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Game {
+  id        Int       @id @default(autoincrement())
+  code      String    @unique
+  type      GameType
+  phase     GamePhase @default(JOIN)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  hostId Int?  @unique
+  host   User? @relation("GameHost", fields: [hostId], references: [id])
+
+  successorId Int?  @unique
+  successor   Game? @relation("RecreateHistory", fields: [successorId], references: [id])
+  predecessor Game? @relation("RecreateHistory")
+
+  nameEntries  NameEntry[]
+  storyEntries StoryEntry[]
+
+  users User[] @relation("GameUsers")
+
+  @@index([code])
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  nickname  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  gameId Int?
+  game   Game? @relation("GameUsers", fields: [gameId], references: [id])
+
+  hosting Game? @relation("GameHost")
+
+  nameEntries  NameEntry[]
+  storyEntries StoryEntry[]
+
+  @@unique([gameId, nickname])
+}
+
+model NameEntry {
+  id         Int    @id @default(autoincrement())
+  name       String
+  normalized String
+
+  gameId Int
+  game   Game @relation(fields: [gameId], references: [id])
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id])
+
+  @@unique([gameId, normalized])
+  @@unique([gameId, userId])
+}
+
+model StoryEntry {
+  id         Int      @id @default(autoincrement())
+  values     String[]
+  finalValue String
+
+  gameId Int
+  game   Game @relation(fields: [gameId], references: [id])
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id])
+  
+  @@unique([gameId, userId])
+}
+
+model Suggestion {
+  id       Int      @id @default(autoincrement())
+  category Category
+  value    String
+
+  @@unique([category, value])
+}
+
+enum GamePhase {
+  JOIN
+  PLAY
+  READ
+  END
+}
+
+enum GameType {
+  STORY
+  NAME
+}
+
+enum Category {
+  FEMALE_NAME
+  MALE_NAME
+  ACTIONS_PAST
+  ACTIONS_PRESENT
+  STATEMENTS
+}
