@@ -1,90 +1,35 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-unused-vars */
-import { HydratedDocument, Types } from 'mongoose';
+import {
+  NameEntry,
+  Game as PrismaGame,
+  User as PrismaUser,
+  StoryEntry,
+} from '@prisma/client';
 
 /*
  
-                                                    
-   _ __ ___   ___  _ __   __ _  ___   ___  ___  ___ 
-  | '_ ` _ \ / _ \| '_ \ / _` |/ _ \ / _ \/ __|/ _ \
-  | | | | | | (_) | | | | (_| | (_) | (_) \__ \  __/
-  |_| |_| |_|\___/|_| |_|\__, |\___/ \___/|___/\___|
-                         |___/                      
+              _                     
+   _ __  _ __(_)___ _ __ ___   __ _ 
+  | '_ \| '__| / __| '_ ` _ \ / _` |
+  | |_) | |  | \__ \ | | | | | (_| |
+  | .__/|_|  |_|___/_| |_| |_|\__,_|
+  |_|                               
  
 */
 
-export interface IGame {
-  type: string;
-  code: string;
-  phase: string;
-  createdAt: Date;
-  host?: string;
-}
-export type Game = HydratedDocument<IGame> & {
+export type Game = PrismaGame & {
   title?: string;
 };
 
-export interface IUser {
-  game?: HydratedDocument<IGame>;
-  nickname: string;
-}
-export type User = HydratedDocument<IUser> & {
-  isHost?: boolean;
+export type User = PrismaUser & {
+  game?: Game | null;
 };
 
 export interface Entry<Type> {
-  user: HydratedDocument<IUser>;
+  user: PrismaUser;
   value: Type;
-}
-
-export interface IStory {
-  game: HydratedDocument<IGame>;
-  entries: Entry<string[]>[];
-  finalEntries: Entry<string>[];
-  round: number;
-}
-export type StoryDocument = HydratedDocument<IStory>;
-
-export interface INames {
-  game: HydratedDocument<IGame>;
-  entries: Entry<string>[];
-}
-export type NamesDocument = HydratedDocument<INames>;
-
-export interface IRecreate {
-  oldGame: HydratedDocument<IGame>;
-  newGame: HydratedDocument<IGame>;
-}
-export type Recreate = HydratedDocument<IRecreate>;
-
-export interface ISuggestion {
-  value: string;
-  category: string;
-}
-export type Suggestion = HydratedDocument<ISuggestion>;
-
-export interface ISeed {
-  table: string;
-  isSeeded: boolean;
-}
-export type Seed = HydratedDocument<ISeed>;
-
-/*
- 
-         _   _               
-    ___ | |_| |__   ___ _ __ 
-   / _ \| __| '_ \ / _ \ '__|
-  | (_) | |_| | | |  __/ |   
-   \___/ \__|_| |_|\___|_|   
-                             
- 
-*/
-
-export type CreateGameFunction = (game: Game) => Promise<void>;
-
-export interface Session {
-  userID?: Types.ObjectId;
-  nowInMinutes: number;
 }
 
 /*
@@ -146,11 +91,41 @@ export interface StoryReqBody {
   part: string;
 }
 
-export interface GameResBody {
-  type: string;
-  code: string;
-  phase: string;
-  createdAt: Date;
-  host?: string;
-  title: string;
+/*
+ 
+                                     
+    _____  ___ __  _ __ ___  ___ ___ 
+   / _ \ \/ / '_ \| '__/ _ \/ __/ __|
+  |  __/>  <| |_) | | |  __/\__ \__ \
+   \___/_/\_\ .__/|_|  \___||___/___/
+            |_|                      
+ 
+*/
+declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  namespace Express {
+    interface Request {
+      user?: User | null | undefined;
+      game?: Game | null | undefined;
+      names?: NameEntry[] | null | undefined;
+      story?: StoryEntry[] | null | undefined;
+      session?: Session | null | undefined;
+    }
+  }
+}
+
+/*
+ 
+         _   _               
+    ___ | |_| |__   ___ _ __ 
+   / _ \| __| '_ \ / _ \ '__|
+  | (_) | |_| | | |  __/ |   
+   \___/ \__|_| |_|\___|_|   
+                             
+ 
+*/
+
+export interface Session {
+  userID?: string;
+  nowInMinutes: number;
 }

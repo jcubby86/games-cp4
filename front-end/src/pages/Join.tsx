@@ -44,7 +44,7 @@ const Join = (): JSX.Element => {
         gameType: response.data.game.type
       });
 
-      navigate('/' + response.data.game.type);
+      navigate('/' + response.data.type.toLowerCase());
     } catch (e: unknown) {
       const err = e as AxiosError;
       if (err?.response?.status === 400) {

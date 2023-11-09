@@ -1,26 +1,15 @@
 import { Router, Request, Response } from 'express';
-import { GameModel, RecreateModel } from './models.js';
-import { createStory } from './story.js';
-import { createNames } from './names.js';
 import {
-  CreateGameFunction,
-  Game,
-  User,
   Params,
   PostGameReqBody,
   UpdateGameReqBody,
-  Recreate,
-  GameResBody,
+  Game,
 } from './types';
-import { getUsersInGame } from './utils.js';
-import { JOIN } from './helpers/constants.js';
+import prisma from './server.js';
+import { Prisma, GameType, GamePhase, User } from '@prisma/client';
 
 export const router = Router();
 
-const validGameTypes: { [key: string]: CreateGameFunction } = {
-  story: createStory,
-  names: createNames,
-};
 const gameTitles: { [key: string]: string } = {
   story: 'He Said She Said',
   names: 'The Name Game',
@@ -32,17 +21,27 @@ const gameTitles: { [key: string]: string } = {
  *
  * @return {*}  {Promise<string>}
  */
-async function getCode(): Promise<string> {
-  while (true) {
-    const c = Math.random()
-      .toString(36)
-      .replace(/[^a-z]+/g, '')
-      .substring(0, 4);
-    const search = await GameModel.findOne({ code: c });
-    if (!search) {
-      return c;
-    }
-  }
+function getCode(): string {
+  //TODO: check to make sure the code isn't used
+  const c = Math.random()
+    .toString(36)
+    .replace(/[^a-z]+/g, '')
+    .substring(0, 4);
+  return c;
+}
+
+/**
+ *
+ */
+function getGameType(s: string): GameType {
+  return s.toUpperCase() as GameType;
+}
+
+/**
+ *
+ */
+function getGamePhase(s: string): GamePhase {
+  return s.toUpperCase() as GamePhase;
 }
 
 /**
@@ -55,8 +54,15 @@ router.post(
     res: Response<Game>
   ) => {
     try {
-      const game = await createGame(req.body.type);
-      return res.status(201).send(game);
+      const game = await prisma.game.create({
+        data: {
+          code: getCode(),
+          type: getGameType(req.body.type),
+        },
+      });
+    
+      console.info('Game created:', JSON.stringify(game));
+      return res.status(201).send({ ...game, title: gameTitles[game.type] });
     } catch (err) {
       console.error(err);
       return res.sendStatus(500);
@@ -64,53 +70,20 @@ router.post(
   }
 );
 
-async function createGame(type: string, host?: string): Promise<Game> {
-  const createType: CreateGameFunction = validGameTypes[type];
-
-  if (!createType) {
-    throw `Invalid game type: ${type}`;
-  }
-
-  const newCode = await getCode();
-  const game: Game = new GameModel({
-    type: type,
-    code: newCode,
-    host: host,
-    phase: JOIN,
-  });
-
-  await game.save();
-  createType(game);
-  console.info('Game created:', JSON.stringify(game));
-  game.title = gameTitles[game.type];
-  return game;
-}
-
 /**
  * Get a Game object and title.
  */
-router.get('/:code', async (req: Request<Params>, res: Response<GameResBody>) => {
-  try {
-    const game: Game | null = await GameModel.findOne({
-      code: req.params.code,
+router.get(
+  '/:code',
+  async (req: Request<Params>, res: Response<Game>) => {
+    const game = await prisma.game.findUnique({
+      where: { code: req.params.code },
     });
-    if (!game) {
-      return res.sendStatus(404);
-    }
+    if (!game) return res.sendStatus(404);
 
-    res.send({
-      type: game.type,
-      code: game.code,
-      phase: game.phase,
-      createdAt: game.createdAt,
-      host: game.host,
-      title: gameTitles[game.type],
-    });
-  } catch (err) {
-    console.error(err);
-    return res.sendStatus(500);
+    return res.send({ ...game, title: gameTitles[game.type] });
   }
-});
+);
 
 /**
  * Update the phase of a Game.
@@ -121,21 +94,14 @@ router.put(
     req: Request<Params, unknown, UpdateGameReqBody>,
     res: Response<Game>
   ) => {
-    try {
-      const game = await GameModel.findOne({ code: req.params.code });
-      if (!game) {
-        return res.sendStatus(404);
-      }
+    const game = await prisma.game.update({
+      where: { code: req.params.code },
+      data: { phase: getGamePhase(req.body.phase) },
+    });
+    if (!game) return res.sendStatus(404);
 
-      game.phase = req.body.phase;
-      await game.save();
-
-      console.info('Game updated:', JSON.stringify(game));
-      res.send(game);
-    } catch (err) {
-      console.error(err);
-      return res.sendStatus(500);
-    }
+    console.info('Game updated:', JSON.stringify(game));
+    res.send(game);
   }
 );
 
@@ -145,15 +111,14 @@ router.put(
 router.get(
   '/:code/users',
   async (req: Request<Params, unknown, unknown>, res: Response<User[]>) => {
-    try {
-      const game = await GameModel.findOne({ code: req.params.code });
-      if (!game) return res.sendStatus(404);
-      const users = await getUsersInGame(game);
-      res.send(users);
-    } catch (err) {
-      console.error(err);
-      return res.sendStatus(500);
-    }
+    const users = await prisma.user.findMany({
+      where: {
+        game: {
+          code: req.params.code,
+        },
+      },
+    });
+    return res.send(users);
   }
 );
 
@@ -162,30 +127,42 @@ router.get(
  */
 router.post(
   '/:code/recreate',
-  async (req: Request<Params, unknown, unknown>, res: Response<Game>) => {
+  async (
+    req: Request<Params, unknown, unknown>,
+    res: Response<Game>
+  ) => {
     try {
-      const oldGame = await GameModel.findOne({ code: req.params.code });
-      if (!oldGame) return res.sendStatus(400);
-
-      const recreate = await RecreateModel.findOne({ oldGame: oldGame });
-      if (!recreate) {
-        const newGame = await createGame(oldGame.type);
-        const recreate: Recreate = new RecreateModel({
-          oldGame: oldGame,
-          newGame: newGame,
-        });
-        await recreate.save();
-
-        res.send(newGame);
-      } else {
-        const newGame: Game | null = await GameModel.findOne({
-          _id: recreate.newGame._id,
-        });
-        if (!newGame) return res.sendStatus(500);
-        newGame.title = gameTitles[newGame.type];
-        res.send(newGame);
+      const oldGame = await prisma.game.findUniqueOrThrow({
+        where: {
+          code: req.params.code,
+        },
+        include: {
+          successor: true,
+        },
+      });
+      if (oldGame.successor) {
+        return res.send(oldGame.successor);
       }
+
+      const newGame = await prisma.game.create({
+        data: {
+          code: getCode(),
+          type: oldGame.type,
+          predecessor: {
+            connect: {
+              id: oldGame.id,
+            },
+          },
+        },
+      });
+      return res.send(newGame);
     } catch (err) {
+      if (
+        err instanceof Prisma.PrismaClientKnownRequestError &&
+        err.code === 'P2025'
+      ) {
+        return res.sendStatus(404);
+      }
       console.error(err);
       return res.sendStatus(500);
     }

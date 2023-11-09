@@ -46,7 +46,7 @@ const Create = (): JSX.Element => {
         gameCode: gameResponse.data.code,
         gameType: gameResponse.data.type
       });
-      navigate('/' + gameResponse.data.type);
+      navigate('/' + gameResponse.data.type.toLowerCase());
     } catch (err) {
       alert('Unable to create game. Please try again in a little bit.');
     }

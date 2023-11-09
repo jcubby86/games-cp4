@@ -1,32 +1,10 @@
-import { Router, Request, Response } from 'express';
-import { Types } from 'mongoose';
-import { JOIN } from './helpers/constants.js';
+import { Request, Router, Response } from 'express';
 import { loadUser } from './middleware.js';
-import { GameModel, UserModel } from './models.js';
-import { Game, User, JoinReqBody } from './types.js';
-import { gameExists, getUsersInGame } from './utils.js';
+import { JoinReqBody, User } from './types.js';
+import prisma from './server.js';
+import { GamePhase } from '@prisma/client';
 
 export const router = Router();
-
-/**
- * Check if a username is unique across all players in the same game instance.
- *
- * @param {string} name
- * @param {Game} game
- * @param {Types.ObjectId} [id]
- * @return {*}  {Promise<boolean>}
- */
-async function isUniqueUsername(
-  name: string,
-  game: Game,
-  id?: Types.ObjectId
-): Promise<boolean> {
-  const user = await UserModel.findOne({
-    nickname: name,
-    game: game,
-  });
-  return !user || (id != null && user._id.equals(id));
-}
 
 /**
  * Join a game.
@@ -41,11 +19,12 @@ router.post(
     res: Response<string | User>
   ) => {
     try {
-      const game = await GameModel.findOne({ code: req.body.code });
+      const game = await prisma.game.findUnique({
+        where: { code: req.body.code },
+      });
       if (
         !game ||
-        !gameExists(game) ||
-        !(game?.phase === JOIN || req.user?.game?.equals(game))
+        !(game?.phase === GamePhase.JOIN || req.user?.gameId === game.id)
       ) {
         console.warn(
           `Game with code ${req.body.code} does not exist or can no longer be joined.`
@@ -57,44 +36,50 @@ router.post(
           );
       }
 
-      const isUnique = await isUniqueUsername(
-        req.body.nickname,
-        game,
-        req.user?._id
-      );
-      if (!isUnique) {
-        console.warn(`The nickname ${req.body.nickname} is already taken`);
-        return res
-          .status(400)
-          .send(`The nickname ${req.body.nickname} is already taken`);
-      }
-
       let statusCode = 201;
       if (!req.user) {
-        req.user = new UserModel({
-          game: game,
-          nickname: req.body.nickname,
+        req.user = await prisma.user.create({
+          data: {
+            nickname: req.body.nickname,
+            game: {
+              connect: {
+                id: game.id,
+              },
+            },
+          },
         });
         console.info('User created:', JSON.stringify(req.user));
       } else {
-        req.user.nickname = req.body.nickname;
-        req.user.game = game;
+        req.user = await prisma.user.update({
+          where: { id: req.user.id },
+          data: {
+            nickname: req.body.nickname,
+            game: {
+              connect: {
+                id: game.id,
+              },
+            },
+          },
+        });
+
         statusCode = 200;
       }
+      req.game = game;
 
-      await req.user.save();
       req.session = {
         ...req.session,
-        userID: req.user._id,
+        userID: req.user.uuid,
         nowInMinutes: Math.floor(Date.now() / 60e3), //refresh cookie so it won't expire for another 2 hours
       };
 
-      if (!game.host) {
-        game.host = req.user.id;
-        await game.save();
+      if (!game.hostId) {
+        await prisma.game.update({
+          where: { id: game.id },
+          data: { host: { connect: { id: req.user.id } } },
+        });
       }
 
-      res.status(statusCode).send(req.user);
+      res.status(statusCode).send({ ...req.user, game: req.game });
     } catch (err) {
       console.error(err);
       return res.sendStatus(500);
@@ -127,13 +112,26 @@ router.delete(
       const game = req.game;
 
       if (req.user) {
-        req.user.game = undefined;
-        await req.user.save();
+        await prisma.user.update({
+          where: { id: req.user.id },
+          data: { game: { disconnect: true } },
+        });
       }
-      if (game !== null && game !== undefined && game.host === req.user?.id) {
-        const users = await getUsersInGame(game);
-        game.host = users[0]?.id;
-        await game.save();
+      if (game !== null && game !== undefined && game.hostId === req.user?.id) {
+        const users = await prisma.user.findMany({
+          where: { gameId: game.id },
+        });
+        if (users.length > 0) {
+          await prisma.game.update({
+            where: { id: game.id },
+            data: { host: { connect: { id: users[0].id } } },
+          });
+        } else {
+          await prisma.game.update({
+            where: { id: game.id },
+            data: { host: { disconnect: true } },
+          });
+        }
       }
 
       res.sendStatus(200);

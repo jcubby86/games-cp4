@@ -1,28 +1,7 @@
-import { NamesModel, StoryModel, UserModel } from './models.js';
-import {
-  Game,
-  NamesDocument,
-  StoryDocument,
-  User,
-  Session,
-  JoinResBody,
-} from './types.js';
-import { gameExists, getUsersInGame } from './utils.js';
+import { JoinResBody } from './types.js';
 import type { Request, Response, NextFunction } from 'express';
-import { JOIN, NAMES, STORY } from './helpers/constants.js';
-
-declare global {
-  // eslint-disable-next-line @typescript-eslint/no-namespace
-  namespace Express {
-    interface Request {
-      user?: User | null | undefined;
-      game?: Game | null | undefined;
-      names?: NamesDocument | null | undefined;
-      story?: StoryDocument | null | undefined;
-      session?: Session | null | undefined;
-    }
-  }
-}
+import prisma from './server.js';
+import { User, GamePhase, GameType } from '@prisma/client';
 
 /**
  * Middleware for loading in a user from the session.
@@ -40,23 +19,58 @@ export const loadUser = async (
   try {
     if (!req.session?.userID) return next();
 
-    const user = await UserModel.findOne({ _id: req.session.userID }).populate(
-      'game'
-    );
+    const user = await prisma.user.findUniqueOrThrow({
+      where: { uuid: req.session.userID },
+      include: { game: true },
+    });
+
     if (!user) return next();
 
-    if (!user.game || !gameExists(user.game)) {
-      user.game = undefined;
-      await user.save();
-    }
-
     req.user = user;
-    req.user.isHost = user.game?.host === user.id;
     req.game = user.game;
     next();
   } catch (error) {
     console.error(error);
     return res.sendStatus(500);
+  }
+};
+
+/**
+ * Middleware for handling a game if it's in the join phase.
+ * Used by Story and Names types.
+ *
+ * @param req
+ * @param res
+ * @param next
+ * @returns
+ */
+export const joinPhase = async (
+  req: Request,
+  res: Response<JoinResBody>,
+  next: NextFunction
+) => {
+  try {
+    if (req.game?.phase === GamePhase.JOIN) {
+      const users = await prisma.user.findMany({
+        where: {
+          game: {
+            id: req.game.id,
+          },
+        },
+      });
+      return res.send({
+        phase: GamePhase.JOIN,
+        users: users.map((user: User) => user.nickname),
+        code: req.game.code,
+        nickname: req.user?.nickname,
+        isHost: req.game.hostId === req.user?.id,
+      });
+    }
+
+    next();
+  } catch (err) {
+    console.error(err);
+    res.sendStatus(500);
   }
 };
 
@@ -74,11 +88,12 @@ export const loadNames = async (
   next: NextFunction
 ) => {
   if (!req.user || !req.game) return res.sendStatus(401);
-  if (req.game.type !== NAMES) return res.sendStatus(400);
+  if (req.game.type !== GameType.NAME) return res.sendStatus(400);
 
-  req.names = await NamesModel.findOne({ game: req.game._id }).populate(
-    'entries.user'
-  );
+  req.names = await prisma.nameEntry.findMany({
+    where: { gameId: req.game.id, user: { gameId: req.game.id } },
+  });
+
   if (!req.names) return res.sendStatus(400);
   next();
 };
@@ -97,44 +112,11 @@ export const loadStory = async (
   next: NextFunction
 ) => {
   if (!req.user || !req.game) return res.sendStatus(401);
-  if (req.game.type !== STORY) return res.sendStatus(400);
+  if (req.game.type !== GameType.STORY) return res.sendStatus(400);
 
-  req.story = await StoryModel.findOne({ game: req.game._id }).populate(
-    'entries.user'
-  );
+  req.story = await prisma.storyEntry.findMany({
+    where: { gameId: req.game.id, user: { gameId: req.game.id } },
+  });
   if (!req.story) return res.sendStatus(400);
   next();
-};
-
-/**
- * Middleware for handling a game if it's in the join phase.
- * Used by Story and Names types.
- *
- * @param req
- * @param res
- * @param next
- * @returns
- */
-export const joinPhase = async (
-  req: Request,
-  res: Response<JoinResBody>,
-  next: NextFunction
-) => {
-  try {
-    if (req.game?.phase === JOIN) {
-      const users = await getUsersInGame(req.game);
-      return res.send({
-        phase: JOIN,
-        users: users.map((user: User) => user.nickname),
-        code: req.game.code,
-        nickname: req.user?.nickname,
-        isHost: req.user?.isHost,
-      });
-    }
-
-    next();
-  } catch (err) {
-    console.error(err);
-    res.sendStatus(500);
-  }
 };

@@ -12,6 +12,7 @@ datasource db {
 
 model Game {
   id        Int       @id @default(autoincrement())
+  uuid      String    @unique @default(uuid())
   code      String    @unique
   type      GameType
   phase     GamePhase @default(JOIN)
@@ -31,10 +32,12 @@ model Game {
   users User[] @relation("GameUsers")
 
   @@index([code])
+  @@index([uuid])
 }
 
 model User {
   id        Int      @id @default(autoincrement())
+  uuid      String   @unique @default(uuid())
   nickname  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -48,6 +51,7 @@ model User {
   storyEntries StoryEntry[]
 
   @@unique([gameId, nickname])
+  @@index([uuid])
 }
 
 model NameEntry {
@@ -75,7 +79,7 @@ model StoryEntry {
 
   userId Int
   user   User @relation(fields: [userId], references: [id])
-  
+
   @@unique([gameId, userId])
 }
 

@@ -20,9 +20,9 @@ function App(): JSX.Element {
             <Route index element={<Home />} />
             <Route path="join" element={<Join />} />
             <Route path="create" element={<Create />} />
-            <Route path={STORY} element={<Story />} />
-            <Route path={`${STORY}/:id/:user?`} element={<StoryArchive />} />
-            <Route path={NAMES} element={<Names />} />
+            <Route path={STORY.toLowerCase()} element={<Story />} />
+            <Route path={`${STORY.toLowerCase()}/:id/:user?`} element={<StoryArchive />} />
+            <Route path={NAMES.toLowerCase()} element={<Names />} />
             <Route path="*" element={<Home />} />
           </Route>
         </Routes>
