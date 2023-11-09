@@ -1,30 +1,11 @@
 import { Router, Request, Response } from 'express';
-import { StoryModel } from './models.js';
-import { getAllEntries } from './utils.js';
-import { upperFirst, lowerFirst } from './utils.js';
+import { upperFirst, lowerFirst, getEntryForGame } from './utils.js';
 import { getSuggestion, randomNumber } from './suggestion/utils.js';
 import { joinPhase, loadStory, loadUser } from './middleware.js';
-import {
-  Entry,
-  Game,
-  StoryDocument,
-  User,
-  StoryReqBody,
-  StoryResBody,
-  Params,
-} from './types.js';
-import {
-  ACTIONS_PAST,
-  ACTIONS_PRESENT,
-  FEMALE_NAMES,
-  MALE_NAMES,
-  PLAY,
-  punctRegex,
-  quoteRegex,
-  READ,
-  STATEMENTS,
-  WAIT,
-} from './helpers/constants.js';
+import { StoryReqBody, StoryResBody, Params } from './types.js';
+import { punctRegex, quoteRegex, WAIT } from './helpers/constants.js';
+import prisma from './server.js';
+import { StoryEntry, Category, Game, GamePhase } from '@prisma/client';
 
 const fillers = ['', '(Man) ', '(Man) and (Woman) ', '', '', ''];
 const prefixes = ['', 'and ', 'were ', 'He said, "', 'She said, "', 'So they '];
@@ -38,28 +19,25 @@ const prompts = [
   'Activity:',
 ];
 const categories = [
-  MALE_NAMES,
-  FEMALE_NAMES,
-  ACTIONS_PRESENT,
-  STATEMENTS,
-  STATEMENTS,
-  ACTIONS_PAST,
+  Category.MALE_NAME,
+  Category.FEMALE_NAME,
+  Category.ACTIONS_PRESENT,
+  Category.STATEMENTS,
+  Category.STATEMENTS,
+  Category.ACTIONS_PAST,
 ];
 
-/**
- * Create a Story Document for a game.
- *
- * @export
- * @param {Game} game
- * @return {*}  {Promise<void>}
- */
-export async function createStory(game: Game): Promise<void> {
-  const story = new StoryModel({
-    game: game._id,
-    entries: [],
-    round: 0,
-  });
-  await story.save();
+function getRoundNumber(entries: StoryEntry[], users: unknown[]) {
+  if (entries.length < users.length) {
+    return 0;
+  } else {
+    return Math.min(...entries.map((e) => e.values.length));
+  }
+}
+
+function isBehind(entry: StoryEntry | undefined, round: number) {
+  if (entry === undefined) return true;
+  return entry.values.length <= round;
 }
 
 /**
@@ -67,63 +45,72 @@ export async function createStory(game: Game): Promise<void> {
  * Once all rounds are complete, marks the game as complete.
  *
  * @param {Game} game
- * @param {StoryDocument} story
- * @return {*}  {Promise<string[]>}
+ * @param {StoryEntry[]} entries
+ * @return {Promise<{ round: number; waitingOnUsers: string[] }>}
  */
 async function checkRoundCompletion(
   game: Game,
-  story: StoryDocument
-): Promise<string[]> {
-  if (game.phase !== PLAY) return [];
+  entries: StoryEntry[]
+): Promise<{ round: number; waitingOnUsers: string[] }> {
+  if (game.phase !== GamePhase.PLAY) return { round: 0, waitingOnUsers: [] };
 
-  const createStoryEntry = (user: User): Entry<string[]> => ({
-    user: user,
-    value: [],
+  const users = await prisma.user.findMany({
+    where: { gameId: game.id },
+    include: { storyEntries: true },
   });
-  story.entries = await getAllEntries(game, story.entries, createStoryEntry);
 
-  const waitingOnUsers = story.entries
-    .filter((elem) => elem.value.length <= story.round)
-    .map((elem) => elem.user?.nickname);
+  const round = getRoundNumber(entries, users);
+  const waitingOnUsers = users
+    .filter((u) => {
+      const entry = getEntryForGame(game.id, u.storyEntries);
+      return isBehind(entry, round);
+    })
+    .map((u) => u.nickname);
 
-  if (waitingOnUsers.length > 0) return waitingOnUsers;
-
-  story.round += 1;
-  if (story.round >= fillers.length && game.phase !== READ) {
-    game.phase = READ;
-    await game.save();
-
-    story.finalEntries = getFinalEntries(game, story)
+  if (waitingOnUsers.length > 0 && round < fillers.length) {
+    return { round, waitingOnUsers };
   }
 
-  await story.save();
-  return [];
+  if (round >= fillers.length && (game.phase as GamePhase) !== GamePhase.READ) {
+    game.phase = GamePhase.READ;
+    await prisma.game.update({
+      where: { id: game.id },
+      data: { phase: GamePhase.READ },
+    });
+
+    const finalEntries = getFinalEntries(entries);
+    await prisma.$transaction(
+      finalEntries.map((e) =>
+        prisma.storyEntry.update({
+          where: { id: e.id },
+          data: { finalValue: e.finalValue },
+        })
+      )
+    );
+  }
+
+  return { round, waitingOnUsers };
 }
 
 /**
  * Generates the completed stories at the end of the game.
  *
- * @param {Game} game
- * @param {StoryDocument} story
- * @return {*}  {Entry<string>[]}
+ * @param {StoryDocument} entries
+ * @return {StoryEntry[]}
  */
-function getFinalEntries(game: Game, story: StoryDocument): Entry<string>[] {
-  const stories = story.entries;
-  const finalEntries: Entry<string>[] = [];
-  const salt = randomNumber(stories.length);
-  for (let i = 0; i < stories.length; i++) {
+function getFinalEntries(entries: StoryEntry[]): StoryEntry[] {
+  const salt = randomNumber(entries.length);
+  for (let i = 0; i < entries.length; i++) {
     const s = [];
     for (let j = 0; j < prefixes.length; j++) {
       s.push(prefixes[j]);
-      s.push(stories[(i + j + salt) % stories.length].value[j]);
+      s.push(entries[(i + j + salt) % entries.length].values[j]);
       s.push(suffixes[j]);
     }
-    finalEntries.push({
-      user: stories[i].user,
-      value: s.join(''),
-    });
+
+    entries[i].finalValue = s.join('');
   }
-  return finalEntries;
+  return entries;
 }
 
 export const router = Router();
@@ -132,14 +119,17 @@ router.get(
   '/:id',
   async (req: Request<Params, unknown, unknown>, res: Response<unknown>) => {
     try {
-      const story: StoryDocument | null = await StoryModel.findOne({
-        _id: req.params.id,
-      }).populate('finalEntries.user');
-      if (!story) return res.status(404);
+      const entries = await prisma.storyEntry.findMany({
+        where: {
+          game: { uuid: req.params.id },
+        },
+        include: { user: true },
+      });
+
+      if (!entries) return res.status(404);
       return res.send({
-        id: story.id,
-        stories: story.finalEntries.map((entry) => ({
-          value: entry.value,
+        stories: entries.map((entry) => ({
+          value: entry.finalValue,
           user: { nickname: entry.user.nickname, id: entry.user.id },
         })),
       });
@@ -165,37 +155,34 @@ router.get(
     try {
       if (!req.game || !req.user || !req.story) return res.sendStatus(500);
 
-      const story = req.story;
-      const userId = req.user._id;
-      const waitingOnUsers = await checkRoundCompletion(req.game, story);
+      const entries = req.story;
+      const { round, waitingOnUsers } = await checkRoundCompletion(
+        req.game,
+        entries
+      );
 
-      if (req.game.phase === PLAY) {
-        const round = story.round;
-        const userElem = story.entries.find((elem) =>
-          elem.user._id.equals(userId)
-        );
+      if (req.game.phase === GamePhase.PLAY) {
+        const userElem = entries.find((elem) => elem.userId === req.user?.id);
 
-        const canPlay = !userElem || userElem.value.length <= round;
         const category = categories[round];
         const suggestion = await getSuggestion(category);
         return res.send({
-          phase: canPlay ? PLAY : WAIT,
+          phase: isBehind(userElem, round) ? GamePhase.PLAY : WAIT,
           round: round,
           filler: fillers[round],
           prompt: prompts[round],
           prefix: prefixes[round],
           suffix: suffixes[round],
-          placeholder: canPlay ? suggestion : '',
+          placeholder: suggestion,
           users: waitingOnUsers,
         });
       } else {
         return res.send({
-          phase: READ,
-          story: story.finalEntries.find((element) =>
-            element.user._id.equals(userId)
-          )?.value,
-          id: story.id,
-          isHost: req.user.isHost,
+          phase: GamePhase.READ,
+          story: entries.find((element) => element.userId === req.user?.id)
+            ?.finalValue,
+          id: req.game.uuid,
+          isHost: req.game.hostId === req.user.id,
         });
       }
     } catch (error) {
@@ -213,33 +200,38 @@ router.put(
   async (req: Request<unknown, unknown, StoryReqBody>, res: Response) => {
     try {
       if (!req.game || !req.user || !req.story) return res.sendStatus(500);
+      if (req.game.phase !== GamePhase.PLAY) return res.sendStatus(403);
 
-      if (req.game.phase !== PLAY) return res.sendStatus(403);
-
-      const story = req.story;
-      const userId = req.user._id;
-
-      let userIndex = story.entries.findIndex((element) =>
-        element.user._id.equals(userId)
-      );
-      if (userIndex === -1) {
-        userIndex = story.entries.length;
-        story.entries.push({ user: req.user, value: [] });
-      }
-      if (story.entries[userIndex].value.length > story.round)
-        return res.sendStatus(403);
-
+      const entries = req.story;
+      const { round } = await checkRoundCompletion(req.game, entries);
       let part = req.body.part.replace(quoteRegex, '').trim();
-      if (story.round > 1 && !punctRegex.test(part)) part += '.';
-      if (story.round === 2 || story.round === 5) {
+      if (round > 1 && !punctRegex.test(part)) part += '.';
+      if (round === 2 || round === 5) {
         part = lowerFirst(part);
       } else {
         part = upperFirst(part);
       }
 
-      story.entries[userIndex].value.push(part);
-
-      await story.save();
+      const entry = entries.find((element) => element.userId === req.user?.id);
+      if (!entry) {
+        await prisma.storyEntry.create({
+          data: {
+            user: { connect: { id: req.user.id } },
+            game: { connect: { id: req.game.id } },
+            values: [part],
+            finalValue: '',
+          },
+        });
+      } else if (entry.values.length > round) {
+        return res.sendStatus(403);
+      } else {
+        await prisma.storyEntry.update({
+          where: { id: entry.id },
+          data: {
+            values: [...entry.values, part],
+          },
+        });
+      }
       return res.sendStatus(201);
     } catch (err) {
       console.error(err);

@@ -1,6 +1,5 @@
-import { PLAY } from './helpers/constants';
-import { UserModel } from './models';
-import { Entry, Game, User } from './types';
+import prisma from './server';
+import { Game } from '@prisma/client';
 
 /**
  * Randomly reorder an array in place.
@@ -46,43 +45,6 @@ export function upperFirst(part: string): string {
 }
 
 /**
- * Get all entries for all users in a game.
- * Clears out entries for users that have left,
- * and adds entries for those who do not have one yet.
- *
- * @export
- * @template Type
- * @param {Game} game
- * @param {Entry<Type>[]} entries
- * @param {(user: User) => Entry<Type>} createEntry
- * @return {*}  {Promise<Entry<Type>[]>}
- */
-export async function getAllEntries<Type>(
-  game: Game,
-  entries: Entry<Type>[],
-  // eslint-disable-next-line no-unused-vars
-  createEntry: (user: User) => Entry<Type>
-): Promise<Entry<Type>[]> {
-  if (game.phase !== PLAY) return [];
-
-  const users = await getUsersInGame(game);
-
-  const allUsers = new Set(users.map((user) => user._id.valueOf()));
-  const usersWithEntries = new Set(
-    entries.map((item) => item.user._id.valueOf())
-  );
-
-  const filteredEntries = entries.filter((elem) =>
-    allUsers.has(elem.user._id.valueOf())
-  );
-  const newEntries = users
-    .filter((user) => !usersWithEntries.has(user._id.valueOf()))
-    .map(createEntry);
-
-  return [...filteredEntries, ...newEntries];
-}
-
-/**
  * Check if the game has ended.
  *
  * @export
@@ -95,13 +57,15 @@ export function gameExists(game: Game): boolean {
   return new Date().getTime() - twoHours < game.createdAt.getTime();
 }
 
-/**
- * Get all the users in a game.
- *
- * @export
- * @param {Game} game
- * @return {*}  {Promise<User[]>}
- */
-export async function getUsersInGame(game: Game): Promise<User[]> {
-  return await UserModel.find({ game: game._id });
+export async function getUsersByGameId(gameId: number) {
+  return prisma.user.findMany({
+    where: { gameId: gameId },
+  });
+}
+
+export function getEntryForGame<E extends { gameId: number }>(
+  gameId: number,
+  entries: E[]
+): E | undefined {
+  return entries.find((e) => e.gameId === gameId);
 }

@@ -1,7 +1,7 @@
-export const STORY = 'story';
-export const NAMES = 'names';
-export const END = 'end';
-export const JOIN = 'join';
-export const WAIT = 'wait';
-export const READ = 'read';
-export const PLAY = 'play';
+export const STORY = 'STORY';
+export const NAMES = 'NAME';
+export const END = 'END';
+export const JOIN = 'JOIN';
+export const WAIT = 'WAIT';
+export const READ = 'READ';
+export const PLAY = 'PLAY';

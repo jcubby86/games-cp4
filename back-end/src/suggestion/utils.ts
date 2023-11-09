@@ -1,5 +1,5 @@
-import { SuggestionModel } from '../models';
-import { Suggestion } from '../types';
+import prisma from '../server';
+import { Suggestion, Category } from '@prisma/client';
 
 /**
  * Generate a random number between 0 and the limit, exclusive.
@@ -20,9 +20,9 @@ export function randomElement<Type>(arr: Type[]): Type {
   return arr[randomNumber(arr.length)];
 }
 
-export async function getSuggestion(category: string): Promise<string> {
-  const suggestions: Suggestion[] = await SuggestionModel.find({
-    category: category,
+export async function getSuggestion(category: Category): Promise<string> {
+  const suggestions: Suggestion[] = await prisma.suggestion.findMany({
+    where: { category },
   });
   return randomElement(suggestions.map((x) => x.value));
 }

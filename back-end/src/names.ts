@@ -1,72 +1,41 @@
 import { Router, Request, Response } from 'express';
-import { NamesModel } from './models.js';
-import { getAllEntries } from './utils.js';
-import { shuffleArray, upperFirst } from './utils.js';
-
+import { getEntryForGame, shuffleArray, upperFirst } from './utils.js';
 import { getSuggestion, randomElement } from './suggestion/utils.js';
 import { joinPhase, loadNames, loadUser } from './middleware.js';
-import {
-  Entry,
-  Game,
-  NamesDocument,
-  User,
-  NamesReqBody,
-  NamesResBody,
-} from './types.js';
-import {
-  END,
-  FEMALE_NAMES,
-  MALE_NAMES,
-  PLAY,
-  quoteRegex,
-  READ,
-  WAIT,
-} from './helpers/constants.js';
-
-/**
- * Create a Names Document for a game.
- *
- * @export
- * @param {Game} game
- */
-export async function createNames(game: Game) {
-  const names = new NamesModel({
-    game: game._id,
-    entries: [],
-  });
-  await names.save();
-}
-
+import { NamesReqBody, NamesResBody } from './types.js';
+import { quoteRegex, WAIT } from './helpers/constants.js';
+import prisma from './server.js';
+import { Game, GamePhase, Category } from '@prisma/client';
 /**
  * Check if all players have submitted an entry.
  *
  * @param {Game} game
- * @param {NamesDocument} names
  * @return {*}  {Promise<string[]>}
  */
-async function checkCompletion(
-  game: Game,
-  names: NamesDocument
-): Promise<string[]> {
-  if (game.phase !== PLAY) return [];
+async function checkCompletion(game: Game): Promise<string[]> {
+  if (game.phase !== GamePhase.PLAY) return [];
 
-  const createNamesEntry = (user: User): Entry<string> => ({
-    user: user,
-    value: '',
+  const users = await prisma.user.findMany({
+    where: { gameId: game.id },
+    include: { nameEntries: true },
   });
-  names.entries = await getAllEntries(game, names.entries, createNamesEntry);
 
-  const waitingOnUsers = names.entries
-    .filter((elem) => elem.value === '')
-    .map((elem) => elem.user?.nickname);
+  const waitingOnUsers = users
+    .filter((u) => getEntryForGame(game.id, u.nameEntries) === undefined)
+    .map((u) => u.nickname);
 
-  if (waitingOnUsers.length > 0) return waitingOnUsers;
+  if (waitingOnUsers.length > 0) {
+    return waitingOnUsers;
+  }
 
-  shuffleArray(names.entries);
-  await names.save();
+  if ((game.phase as GamePhase) !== GamePhase.READ) {
+    game.phase = GamePhase.READ;
+    await prisma.game.update({
+      where: { id: game.id },
+      data: { phase: GamePhase.READ },
+    });
+  }
 
-  game.phase = READ;
-  await game.save();
   return [];
 }
 
@@ -86,34 +55,35 @@ router.get(
     try {
       if (!req.game || !req.user || !req.names) return res.sendStatus(500);
 
-      const names = req.names;
-      const userId = req.user._id;
-      const waitingOnUsers = await checkCompletion(req.game, names);
+      const entries = req.names;
+      const waitingOnUsers = await checkCompletion(req.game);
+      const isHost = req.game.hostId === req.user.id;
 
-      if (req.game.phase === PLAY) {
-        const userElem = names.entries.find((elem) =>
-          elem.user._id.equals(userId)
-        );
+      if (req.game.phase === GamePhase.PLAY) {
+        const userElem = entries.find((elem) => elem.userId === req.user?.id);
 
-        const waiting = userElem?.value !== '';
-        const category = randomElement([MALE_NAMES, FEMALE_NAMES]);
+        const category = randomElement([
+          Category.MALE_NAME,
+          Category.FEMALE_NAME,
+        ]);
         const suggestion = await getSuggestion(category);
         return res.send({
-          phase: waiting ? WAIT : PLAY,
+          phase: !userElem ? GamePhase.PLAY : WAIT,
           users: waitingOnUsers,
-          text: userElem?.value,
+          text: userElem?.name,
           placeholder: suggestion,
         });
-      } else if (req.game.phase === READ) {
+      } else if (req.game.phase === GamePhase.READ) {
+        shuffleArray(entries);
         return res.send({
-          phase: READ,
-          names: names.entries.map((elem) => elem.value),
-          isHost: req.user.isHost,
+          phase: GamePhase.READ,
+          names: entries.map((elem) => elem.name),
+          isHost: isHost,
         });
       } else {
         return res.send({
-          phase: END,
-          isHost: req.user.isHost,
+          phase: GamePhase.END,
+          isHost: isHost,
         });
       }
     } catch (err) {
@@ -134,38 +104,26 @@ router.put(
   ) => {
     if (!req.game || !req.user || !req.names) return res.sendStatus(500);
 
-    if (req.game.phase !== PLAY) return res.sendStatus(403);
+    if (req.game.phase !== GamePhase.PLAY) return res.sendStatus(403);
 
     const names = req.names;
-    const userId = req.user._id;
-    let statusCode = 200;
 
-    let userIndex = names.entries.findIndex((elem) =>
-      elem.user._id.equals(userId)
-    );
+    const userIndex = names.findIndex((elem) => elem.userId === req.user?.id);
     if (userIndex === -1) {
-      statusCode = 201;
-      userIndex = names.entries.length;
-      names.entries.push({ user: req.user, value: '' });
+      const name = upperFirst(req.body.text.replace(quoteRegex, '').trim());
+      const normalized = name.toUpperCase();
+
+      await prisma.nameEntry.create({
+        data: {
+          name: name,
+          normalized: normalized,
+          user: { connect: { id: req.user.id } },
+          game: { connect: { id: req.game.id } },
+        },
+      });
+      return res.sendStatus(201);
+    } else {
+      res.sendStatus(200);
     }
-
-    const text = upperFirst(req.body.text.replace(quoteRegex, '').trim());
-    if (
-      names.entries.find(
-        (elem, index) =>
-          elem.value.toLowerCase() === text.toLowerCase() && index != userIndex
-      )
-    ) {
-      return res
-        .status(400)
-        .send(
-          'That name has already been entered. Please choose something else!'
-        );
-    }
-
-    names.entries[userIndex].value = text;
-
-    await names.save();
-    return res.sendStatus(statusCode);
   }
 );
