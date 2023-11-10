@@ -1,7 +1,7 @@
 import { GamePhase, GameType, User } from './.generated/prisma';
-import { JoinPhaseResponseBody } from './domain/types.js';
+import { JoinResBody as JoinRes } from './domain/types.js';
 import prisma from './server.js';
-import { RequestBody, RequestHandler } from './utils/types.js';
+import { ReqHandler as Handler, ReqBody as ReqBody } from './utils/types.js';
 
 /**
  * Middleware for loading in a user from the session.
@@ -10,7 +10,7 @@ import { RequestBody, RequestHandler } from './utils/types.js';
  * @param next
  * @returns
  */
-export const loadUser: RequestHandler = async (req, res, next) => {
+export const loadUser: Handler = async (req, res, next) => {
   try {
     if (!req.session?.userID) return next();
 
@@ -37,10 +37,7 @@ export const loadUser: RequestHandler = async (req, res, next) => {
  * @param next
  * @returns
  */
-export const joinPhase: RequestHandler<
-  RequestBody,
-  JoinPhaseResponseBody
-> = async (req, res, next) => {
+export const joinPhase: Handler<ReqBody, JoinRes> = async (req, res, next) => {
   try {
     if (req.game?.phase === GamePhase.JOIN) {
       const users = await prisma.user.findMany({
@@ -72,7 +69,7 @@ export const joinPhase: RequestHandler<
  * @param next
  * @returns
  */
-export const loadNames: RequestHandler = async (req, res, next) => {
+export const loadNames: Handler = async (req, res, next) => {
   try {
     if (!req.user || !req.game) return res.sendStatus(401);
     if (req.game.type !== GameType.NAME) return res.sendStatus(400);
@@ -95,7 +92,7 @@ export const loadNames: RequestHandler = async (req, res, next) => {
  * @param next
  * @returns
  */
-export const loadStory: RequestHandler = async (req, res, next) => {
+export const loadStory: Handler = async (req, res, next) => {
   try {
     if (!req.user || !req.game) return res.sendStatus(401);
     if (req.game.type !== GameType.STORY) return res.sendStatus(400);
@@ -117,7 +114,7 @@ export const loadStory: RequestHandler = async (req, res, next) => {
  * @param res
  * @param next
  */
-export const accessLogger: RequestHandler = async (req, res, next) => {
+export const accessLogger: Handler = async (req, res, next) => {
   res.on('finish', () => {
     if (req.originalUrl.endsWith('/health')) return;
     console.log(
