@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+
+import { useAppState } from '../contexts/AppContext';
 import axios, { AxiosError } from '../utils/axiosWrapper';
 import generateNickname from '../utils/nicknameGeneration';
-import { useAppState } from '../contexts/AppContext';
 import { GameDto, JoinGameRequestBody, UserDto } from '../utils/types';
 
 interface GameType {
@@ -33,10 +34,13 @@ const Join = (): JSX.Element => {
         return;
       }
 
-      const response = await axios.post<JoinGameRequestBody, UserDto>('/api/user', {
-        nickname: state.nickname.toLowerCase() || suggestion.current,
-        code: state.gameCode.toLowerCase()
-      });
+      const response = await axios.post<JoinGameRequestBody, UserDto>(
+        '/api/user',
+        {
+          nickname: state.nickname.toLowerCase() || suggestion.current,
+          code: state.gameCode.toLowerCase()
+        }
+      );
 
       setAppState({
         nickname: response.data.nickname,

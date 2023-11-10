@@ -1,7 +1,7 @@
-import axios from '../utils/axiosWrapper';
-import { useAppState } from '../contexts/AppContext';
-import { PLAY } from '../utils/constants';
 import List from './List';
+import { useAppState } from '../contexts/AppContext';
+import axios from '../utils/axiosWrapper';
+import { PLAY } from '../utils/constants';
 
 interface StartGameProps {
   setPhase: () => unknown;
