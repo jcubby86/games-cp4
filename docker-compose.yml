@@ -16,14 +16,15 @@ services:
       - DATABASE_URL=postgresql://postgres:${PG_PASS}@db:5432/prisma?schema=public
       - NODE_PORT=${NODE_PORT:-3000}
     restart: unless-stopped
-    depends_on: 
-      - db
     healthcheck:
-      test:  wget --spider --tries=1 --no-verbose http://localhost:${NODE_PORT:-3000}/api/health
+      test:  wget --spider --tries=1 --no-verbose http://localhost:${NODE_PORT:-3000}/health
       interval: 5s
+      timeout: 10s
       retries: 5
       start_period: 5s
-      timeout: 10s
+    depends_on:
+      db:
+        condition: service_healthy
       
   db:
     image: postgres
