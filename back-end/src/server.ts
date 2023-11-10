@@ -6,7 +6,7 @@ import { router as gameRoutes } from './games.js';
 import { router as userRoutes } from './users.js';
 import { router as storyRoutes } from './story.js';
 import { router as namesRoutes } from './names.js';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from './.generated/prisma';
 
 dotenv.config();
 const prisma = new PrismaClient({

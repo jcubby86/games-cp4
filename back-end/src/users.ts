@@ -2,7 +2,7 @@ import { Request, Router, Response } from 'express';
 import { loadUser } from './middleware.js';
 import { JoinReqBody, User } from './types.js';
 import prisma from './server.js';
-import { GamePhase } from '@prisma/client';
+import { GamePhase } from './.generated/prisma';
 
 export const router = Router();
 

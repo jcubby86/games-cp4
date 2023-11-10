@@ -1,5 +1,5 @@
 import prisma from './server';
-import { Game } from '@prisma/client';
+import { Game } from './.generated/prisma';
 
 /**
  * Randomly reorder an array in place.

@@ -13,7 +13,7 @@ services:
   backend:
     image: ghcr.io/jcubby86/games-backend:${DOCKER_TAG:-latest}
     environment:
-      - DATABASE_URL="postgresql://postgres:12345@db:5432/prisma?schema=public"
+      - DATABASE_URL=postgresql://postgres:${PG_PASS}@db:5432/prisma?schema=public
       - NODE_PORT=${NODE_PORT:-3000}
     restart: unless-stopped
     depends_on: 
@@ -31,12 +31,17 @@ services:
     environment:
       POSTGRES_PASSWORD: ${PG_PASS}
     volumes:
-      - /portainer/postgres/games:/var/lib/postgresql/data
+      - /portainer/postgres/games-test:/var/lib/postgresql/data
+    healthcheck:
+      test: /usr/bin/pg_isready
+      interval: 5s
+      timeout: 10s
+      retries: 120
     
   db-seed:
     image: ghcr.io/jcubby86/games-seed:${DOCKER_TAG:-latest}
     environment:
-      - DATABASE_URL="postgresql://postgres:${PG_PASS}@db:5432/prisma?schema=public"
+      - DATABASE_URL=postgresql://postgres:${PG_PASS}@db:5432/prisma?schema=public
     depends_on:
       db:
         condition: service_healthy

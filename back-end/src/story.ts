@@ -5,7 +5,7 @@ import { joinPhase, loadStory, loadUser } from './middleware.js';
 import { StoryReqBody, StoryResBody, Params } from './types.js';
 import { punctRegex, quoteRegex, WAIT } from './helpers/constants.js';
 import prisma from './server.js';
-import { StoryEntry, Category, Game, GamePhase } from '@prisma/client';
+import { StoryEntry, Category, Game, GamePhase } from './.generated/prisma';
 
 const fillers = ['', '(Man) ', '(Man) and (Woman) ', '', '', ''];
 const prefixes = ['', 'and ', 'were ', 'He said, "', 'She said, "', 'So they '];

@@ -33,3 +33,4 @@ coverage
 .DS_Store
 
 front-end/build
+.generated

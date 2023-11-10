@@ -1,4 +1,4 @@
-import { PrismaClient, Category, Prisma } from '@prisma/client';
+import { PrismaClient, Category, Prisma } from '../src/.generated/prisma';
 import actions_past from '../src/suggestion/actions_past';
 import actions_present from '../src/suggestion/actions_present';
 import female_names from '../src/suggestion/female_names';
