@@ -4,10 +4,10 @@ import { Game, GamePhase, Category } from './.generated/prisma';
 import { quoteRegex, WAIT } from './utils/constants.js';
 import { joinPhase, loadNames, loadUser } from './middleware.js';
 import {
-  Middleware,
+  RequestBody,
   NamesRequestBody,
   NamesResponseBody,
-  RequestBody,
+  RequestHandler,
 } from './types.js';
 import {
   getEntryForGame,
@@ -52,7 +52,7 @@ async function checkCompletion(game: Game): Promise<string[]> {
   return [];
 }
 
-const getGameState: Middleware<RequestBody, NamesResponseBody> = async (
+const getGameState: RequestHandler<RequestBody, NamesResponseBody> = async (
   req,
   res,
   next
@@ -93,7 +93,7 @@ const getGameState: Middleware<RequestBody, NamesResponseBody> = async (
   }
 };
 
-const saveEntry: Middleware<NamesRequestBody> = async (req, res, next) => {
+const saveEntry: RequestHandler<NamesRequestBody> = async (req, res, next) => {
   try {
     if (!req.game || !req.user || !req.nameEntries) return res.sendStatus(500);
 

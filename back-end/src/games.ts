@@ -2,11 +2,11 @@ import { Router } from 'express';
 import prisma from './server.js';
 import { GameType, GamePhase, User } from './.generated/prisma';
 import {
+  Game,
+  RequestBody,
   CreateGameRequestBody,
   UpdateGameRequestBody,
-  Game,
-  Middleware,
-  RequestBody,
+  RequestHandler,
 } from './types';
 
 const gameTitles: { [key: string]: string } = {
@@ -37,7 +37,7 @@ function getGamePhase(s: string): GamePhase {
   return s.toUpperCase() as GamePhase;
 }
 
-const createGame: Middleware<CreateGameRequestBody, Game> = async (
+const createGame: RequestHandler<CreateGameRequestBody, Game> = async (
   req,
   res,
   next
@@ -57,7 +57,7 @@ const createGame: Middleware<CreateGameRequestBody, Game> = async (
   }
 };
 
-const getGame: Middleware<RequestBody, Game> = async (req, res, next) => {
+const getGame: RequestHandler<RequestBody, Game> = async (req, res, next) => {
   try {
     const game = await prisma.game.findUnique({
       where: { code: req.params.code },
@@ -70,7 +70,7 @@ const getGame: Middleware<RequestBody, Game> = async (req, res, next) => {
   }
 };
 
-const updateGamePhase: Middleware<UpdateGameRequestBody, Game> = async (
+const updateGamePhase: RequestHandler<UpdateGameRequestBody, Game> = async (
   req,
   res,
   next
@@ -89,7 +89,11 @@ const updateGamePhase: Middleware<UpdateGameRequestBody, Game> = async (
   }
 };
 
-const getUsers: Middleware<RequestBody, User[]> = async (req, res, next) => {
+const getUsers: RequestHandler<RequestBody, User[]> = async (
+  req,
+  res,
+  next
+) => {
   try {
     const users = await prisma.user.findMany({
       where: {
@@ -104,7 +108,11 @@ const getUsers: Middleware<RequestBody, User[]> = async (req, res, next) => {
   }
 };
 
-const recreateGame: Middleware<RequestBody, Game> = async (req, res, next) => {
+const recreateGame: RequestHandler<RequestBody, Game> = async (
+  req,
+  res,
+  next
+) => {
   try {
     const oldGame = await prisma.game.findUniqueOrThrow({
       where: {
