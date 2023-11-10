@@ -5,6 +5,7 @@ ENV PATH /app/node_modules/.bin:$PATH
 COPY package*.json ./
 COPY tsconfig*.json ./
 RUN npm ci
+RUN npx prisma generate
 COPY . ./
 RUN npm run build
 
