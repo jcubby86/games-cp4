@@ -2,14 +2,14 @@ import { Router } from 'express';
 
 import { Category, Game, GamePhase, StoryEntry } from './.generated/prisma';
 import {
-  StoryArchiveResponseBody,
-  StoryRequestBody,
-  StoryResponseBody,
+  StoryArchiveResBody as ArchiveRes,
+  StoryReqBody,
+  StoryResBody,
 } from './domain/types.js';
 import { joinPhase, loadStory, loadUser } from './middleware.js';
 import prisma from './server.js';
 import { WAIT, punctRegex, quoteRegex } from './utils/constants.js';
-import { RequestBody, RequestHandler } from './utils/types.js';
+import { ReqHandler as Handler, ReqBody as ReqBody } from './utils/types.js';
 import {
   getEntryForGame,
   getSuggestion,
@@ -118,10 +118,7 @@ function getFinalEntries(entries: StoryEntry[]): StoryEntry[] {
   return entries;
 }
 
-const getArchive: RequestHandler<
-  RequestBody,
-  StoryArchiveResponseBody
-> = async (req, res, next) => {
+const getArchive: Handler<ReqBody, ArchiveRes> = async (req, res, next) => {
   try {
     const entries = await prisma.storyEntry.findMany({
       where: {
@@ -142,11 +139,7 @@ const getArchive: RequestHandler<
   }
 };
 
-const getGame: RequestHandler<RequestBody, StoryResponseBody> = async (
-  req,
-  res,
-  next
-) => {
+const getGame: Handler<ReqBody, StoryResBody> = async (req, res, next) => {
   try {
     if (!req.game || !req.user || !req.storyEntries) return res.sendStatus(500);
 
@@ -185,7 +178,7 @@ const getGame: RequestHandler<RequestBody, StoryResponseBody> = async (
   }
 };
 
-const saveEntry: RequestHandler<StoryRequestBody> = async (req, res, next) => {
+const saveEntry: Handler<StoryReqBody> = async (req, res, next) => {
   try {
     if (!req.game || !req.user || !req.storyEntries) return res.sendStatus(500);
     if (req.game.phase !== GamePhase.PLAY) return res.sendStatus(403);

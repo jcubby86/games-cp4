@@ -2,12 +2,12 @@ import { Router } from 'express';
 
 import { GamePhase, GameType, User } from './.generated/prisma';
 import {
-  CreateGameRequestBody,
-  GameDto,
-  UpdateGameRequestBody,
+  CreateGameReqBody as CreateReq,
+  GameDto as Game,
+  UpdateGameReqBody as UpdateReq,
 } from './domain/types.js';
 import prisma from './server.js';
-import { RequestBody, RequestHandler } from './utils/types.js';
+import { ReqBody, ReqHandler as ReqHandler } from './utils/types.js';
 
 const gameTitles: { [key: string]: string } = {
   story: 'He Said She Said',
@@ -18,7 +18,7 @@ const gameTitles: { [key: string]: string } = {
  * Generate a 4 letter string as game code,
  * and make sure that it is not already in use.
  *
- * @return {*}  {Promise<string>}
+ * @return {string}
  */
 function getCode(): string {
   //TODO: check to make sure the code isn't used
@@ -37,11 +37,7 @@ function getGamePhase(s: string): GamePhase {
   return s.toUpperCase() as GamePhase;
 }
 
-const createGame: RequestHandler<CreateGameRequestBody, GameDto> = async (
-  req,
-  res,
-  next
-) => {
+const createGame: ReqHandler<CreateReq, Game> = async (req, res, next) => {
   try {
     const game = await prisma.game.create({
       data: {
@@ -57,11 +53,7 @@ const createGame: RequestHandler<CreateGameRequestBody, GameDto> = async (
   }
 };
 
-const getGame: RequestHandler<RequestBody, GameDto> = async (
-  req,
-  res,
-  next
-) => {
+const getGame: ReqHandler<ReqBody, Game> = async (req, res, next) => {
   try {
     const game = await prisma.game.findUnique({
       where: { code: req.params.code },
@@ -74,11 +66,7 @@ const getGame: RequestHandler<RequestBody, GameDto> = async (
   }
 };
 
-const updateGamePhase: RequestHandler<UpdateGameRequestBody, GameDto> = async (
-  req,
-  res,
-  next
-) => {
+const updateGamePhase: ReqHandler<UpdateReq, Game> = async (req, res, next) => {
   try {
     const game = await prisma.game.update({
       where: { code: req.params.code },
@@ -93,11 +81,7 @@ const updateGamePhase: RequestHandler<UpdateGameRequestBody, GameDto> = async (
   }
 };
 
-const getUsers: RequestHandler<RequestBody, User[]> = async (
-  req,
-  res,
-  next
-) => {
+const getUsers: ReqHandler<ReqBody, User[]> = async (req, res, next) => {
   try {
     const users = await prisma.user.findMany({
       where: {
@@ -112,11 +96,7 @@ const getUsers: RequestHandler<RequestBody, User[]> = async (
   }
 };
 
-const recreateGame: RequestHandler<RequestBody, GameDto> = async (
-  req,
-  res,
-  next
-) => {
+const recreateGame: ReqHandler<ReqBody, Game> = async (req, res, next) => {
   try {
     const oldGame = await prisma.game.findUniqueOrThrow({
       where: {

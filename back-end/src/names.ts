@@ -1,11 +1,11 @@
 import { Router } from 'express';
 
 import { Category, Game, GamePhase } from './.generated/prisma';
-import { NamesRequestBody, NamesResponseBody } from './domain/types.js';
+import { NamesReqBody, NamesResBody as ResBody } from './domain/types.js';
 import { joinPhase, loadNames, loadUser } from './middleware.js';
 import prisma from './server.js';
 import { WAIT, quoteRegex } from './utils/constants.js';
-import { RequestBody, RequestHandler } from './utils/types.js';
+import { ReqBody as ReqBody, ReqHandler as ReqHandler } from './utils/types.js';
 import {
   getEntryForGame,
   getSuggestion,
@@ -49,11 +49,7 @@ async function checkCompletion(game: Game): Promise<string[]> {
   return [];
 }
 
-const getGameState: RequestHandler<RequestBody, NamesResponseBody> = async (
-  req,
-  res,
-  next
-) => {
+const getGameState: ReqHandler<ReqBody, ResBody> = async (req, res, next) => {
   try {
     if (!req.game || !req.user || !req.nameEntries) return res.sendStatus(500);
 
@@ -90,7 +86,7 @@ const getGameState: RequestHandler<RequestBody, NamesResponseBody> = async (
   }
 };
 
-const saveEntry: RequestHandler<NamesRequestBody> = async (req, res, next) => {
+const saveEntry: ReqHandler<NamesReqBody> = async (req, res, next) => {
   try {
     if (!req.game || !req.user || !req.nameEntries) return res.sendStatus(500);
 
