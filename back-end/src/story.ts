@@ -21,10 +21,10 @@ const prompts = [
 const categories = [
   Category.MALE_NAME,
   Category.FEMALE_NAME,
-  Category.ACTIONS_PRESENT,
-  Category.STATEMENTS,
-  Category.STATEMENTS,
-  Category.ACTIONS_PAST,
+  Category.PRESENT_ACTION,
+  Category.STATEMENT,
+  Category.STATEMENT,
+  Category.PAST_ACTION,
 ];
 
 function getRoundNumber(entries: StoryEntry[], users: unknown[]) {
