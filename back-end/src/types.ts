@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-unused-vars */
+import { Request, Response, NextFunction } from 'express';
 import {
   NameEntry,
   Game as PrismaGame,
@@ -19,13 +20,13 @@ import {
  
 */
 
-export type Game = PrismaGame & {
+export interface Game extends PrismaGame {
   title?: string;
-};
+}
 
-export type User = PrismaUser & {
+export interface User extends PrismaUser {
   game?: Game | null;
-};
+}
 
 /*
  
@@ -38,40 +39,36 @@ export type User = PrismaUser & {
  
 */
 
-export interface PostGameReqBody {
+export interface CreateGameRequestBody {
   type: string;
 }
-
-export interface UpdateGameReqBody {
+export interface UpdateGameRequestBody {
   phase: string;
 }
-
-export type Params = { [key: string]: string };
-
-export interface JoinReqBody {
+export interface JoinGameRequestBody {
   code: string;
   nickname: string;
 }
+export interface NamesRequestBody {
+  text: string;
+}
+export interface StoryRequestBody {
+  part: string;
+}
 
-export interface JoinResBody {
+export interface JoinPhaseResponseBody {
   phase: string;
   users?: string[];
   code?: string;
   nickname?: string;
   isHost?: boolean;
 }
-
-export interface NamesResBody extends JoinResBody {
+export interface NamesResponseBody extends JoinPhaseResponseBody {
   text?: string;
   placeholder?: string;
   names?: string[];
 }
-
-export interface NamesReqBody {
-  text: string;
-}
-
-export interface StoryResBody extends JoinResBody {
+export interface StoryResponseBody extends JoinPhaseResponseBody {
   prompt?: string;
   placeholder?: string;
   prefix?: string;
@@ -81,9 +78,11 @@ export interface StoryResBody extends JoinResBody {
   round?: number;
   id?: string;
 }
-
-export interface StoryReqBody {
-  part: string;
+export interface StoryArchiveResponseBody {
+  stories: {
+    value: string;
+    user: { nickname: string; id: string };
+  }[];
 }
 
 /*
@@ -100,11 +99,11 @@ declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Express {
     interface Request {
-      user?: User | null | undefined;
-      game?: Game | null | undefined;
-      nameEntries?: NameEntry[] | null | undefined;
-      storyEntries?: StoryEntry[] | null | undefined;
-      session?: Session | null | undefined;
+      user?: User | null;
+      game?: Game | null;
+      nameEntries?: NameEntry[] | null;
+      storyEntries?: StoryEntry[] | null;
+      session?: Session | null;
     }
   }
 }
@@ -113,3 +112,24 @@ export interface Session {
   userID: string;
   nowInMinutes: number;
 }
+
+export type RequestBody = never;
+
+export interface ErrorResponseBody {
+  error?: string;
+}
+
+export type Params = { [key: string]: string };
+
+export type Middleware<Req = never, Res = never> = (
+  req: Request<Params, Res, Req>,
+  res: Response<Res | ErrorResponseBody>,
+  next: NextFunction
+) => Promise<unknown>;
+
+export type ErrorMiddleware<Req = never, Res = never> = (
+  err: Error,
+  req: Request<Params, Res, Req>,
+  res: Response<Res | ErrorResponseBody>,
+  next: NextFunction
+) => Promise<unknown>;

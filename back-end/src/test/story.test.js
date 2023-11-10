@@ -146,7 +146,9 @@ describe('play game with multiple users', () => {
         headers: { Cookie: users[i].cookie },
       });
 
-      expect(response.data.story).toMatch(/TestUser\d test0 and TestUser\d test1 were testUser\d test2\. He said, "TestUser\d test3\." She said, "TestUser\d test4." So they testUser\d test5. /);
+      expect(response.data.story).toMatch(
+        /TestUser\d test0 and TestUser\d test1 were testUser\d test2\. He said, "TestUser\d test3\." She said, "TestUser\d test4." So they testUser\d test5. /
+      );
     }
   });
 });
@@ -243,7 +245,9 @@ describe('play game with one user leaving partway through', () => {
         headers: { Cookie: users[i].cookie },
       });
 
-      expect(response.data.story).toMatch(/TestUser\d test0 and TestUser\d test1 were testUser\d test2\. He said, "TestUser\d test3\." She said, "TestUser\d test4." So they testUser\d test5. /);
+      expect(response.data.story).toMatch(
+        /TestUser\d test0 and TestUser\d test1 were testUser\d test2\. He said, "TestUser\d test3\." She said, "TestUser\d test4." So they testUser\d test5. /
+      );
     }
   });
 });

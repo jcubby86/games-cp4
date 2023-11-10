@@ -1,4 +1,15 @@
-import { Router, Request, Response } from 'express';
+import { Router } from 'express';
+import prisma from './server.js';
+import { StoryEntry, Category, Game, GamePhase } from './.generated/prisma';
+import { joinPhase, loadStory, loadUser } from './middleware.js';
+import { punctRegex, quoteRegex, WAIT } from './utils/constants.js';
+import {
+  StoryRequestBody,
+  StoryResponseBody,
+  Middleware,
+  StoryArchiveResponseBody,
+  RequestBody,
+} from './types.js';
 import {
   getEntryForGame,
   getSuggestion,
@@ -6,11 +17,6 @@ import {
   randomNumber,
   upperFirst,
 } from './utils/utils.js';
-import { joinPhase, loadStory, loadUser } from './middleware.js';
-import { StoryReqBody, StoryResBody, Params } from './types.js';
-import { punctRegex, quoteRegex, WAIT } from './utils/constants.js';
-import prisma from './server.js';
-import { StoryEntry, Category, Game, GamePhase } from './.generated/prisma';
 
 const fillers = ['', '(Man) ', '(Man) and (Woman) ', '', '', ''];
 const prefixes = ['', 'and ', 'were ', 'He said, "', 'She said, "', 'So they '];
@@ -97,12 +103,6 @@ async function checkRoundCompletion(
   return { round, waitingOnUsers };
 }
 
-/**
- * Generates the completed stories at the end of the game.
- *
- * @param {StoryDocument} entries
- * @return {StoryEntry[]}
- */
 function getFinalEntries(entries: StoryEntry[]): StoryEntry[] {
   const salt = randomNumber(entries.length);
   for (let i = 0; i < entries.length; i++) {
@@ -118,131 +118,117 @@ function getFinalEntries(entries: StoryEntry[]): StoryEntry[] {
   return entries;
 }
 
-export const router = Router();
+const getArchive: Middleware<RequestBody, StoryArchiveResponseBody> = async (
+  req,
+  res,
+  next
+) => {
+  try {
+    const entries = await prisma.storyEntry.findMany({
+      where: {
+        game: { uuid: req.params.id },
+      },
+      include: { user: true },
+    });
 
-router.get(
-  '/:id',
-  async (req: Request<Params, unknown, unknown>, res: Response<unknown>) => {
-    try {
-      const entries = await prisma.storyEntry.findMany({
-        where: {
-          game: { uuid: req.params.id },
-        },
-        include: { user: true },
-      });
+    if (!entries) return res.status(404);
+    return res.send({
+      stories: entries.map((entry) => ({
+        value: entry.finalValue,
+        user: { nickname: entry.user.nickname, id: entry.user.uuid },
+      })),
+    });
+  } catch (err) {
+    return next(err);
+  }
+};
 
-      if (!entries) return res.status(404);
+const getGame: Middleware<RequestBody, StoryResponseBody> = async (
+  req,
+  res,
+  next
+) => {
+  try {
+    if (!req.game || !req.user || !req.storyEntries) return res.sendStatus(500);
+
+    const entries = req.storyEntries;
+    const { round, waitingOnUsers } = await checkRoundCompletion(
+      req.game,
+      entries
+    );
+
+    if (req.game.phase === GamePhase.PLAY) {
+      const userElem = entries.find((elem) => elem.userId === req.user?.id);
+
+      const category = categories[round];
+      const suggestion = await getSuggestion(category);
       return res.send({
-        stories: entries.map((entry) => ({
-          value: entry.finalValue,
-          user: { nickname: entry.user.nickname, id: entry.user.uuid },
-        })),
+        phase: isBehind(userElem, round) ? GamePhase.PLAY : WAIT,
+        round: round,
+        filler: fillers[round],
+        prompt: prompts[round],
+        prefix: prefixes[round],
+        suffix: suffixes[round],
+        placeholder: suggestion,
+        users: waitingOnUsers,
       });
-    } catch (err) {
-      console.error(err);
-      res.sendStatus(500);
+    } else {
+      return res.send({
+        phase: GamePhase.READ,
+        story: entries.find((element) => element.userId === req.user?.id)
+          ?.finalValue,
+        id: req.game.uuid,
+        isHost: req.game.hostId === req.user.id,
+      });
     }
+  } catch (err) {
+    return next(err);
   }
-);
+};
 
+const saveEntry: Middleware<StoryRequestBody> = async (req, res, next) => {
+  try {
+    if (!req.game || !req.user || !req.storyEntries) return res.sendStatus(500);
+    if (req.game.phase !== GamePhase.PLAY) return res.sendStatus(403);
+
+    const entries = req.storyEntries;
+    const { round } = await checkRoundCompletion(req.game, entries);
+    let part = req.body.part.replace(quoteRegex, '').trim();
+    if (round > 1 && !punctRegex.test(part)) part += '.';
+    if (round === 2 || round === 5) {
+      part = lowerFirst(part);
+    } else {
+      part = upperFirst(part);
+    }
+
+    const entry = entries.find((element) => element.userId === req.user?.id);
+    if (!entry) {
+      await prisma.storyEntry.create({
+        data: {
+          user: { connect: { id: req.user.id } },
+          game: { connect: { id: req.game.id } },
+          values: [part],
+          finalValue: '',
+        },
+      });
+    } else if (entry.values.length > round) {
+      return res.sendStatus(403);
+    } else {
+      await prisma.storyEntry.update({
+        where: { id: entry.id },
+        data: {
+          values: [...entry.values, part],
+        },
+      });
+    }
+    return res.sendStatus(201);
+  } catch (err) {
+    return next(err);
+  }
+};
+
+export const router = Router();
+router.get('/:id', getArchive);
 router.use(loadUser, loadStory);
-
-/**
- * Get the state of the game.
- */
-router.get(
-  '/',
-  joinPhase,
-  async (
-    req: Request<unknown, unknown, unknown>,
-    res: Response<StoryResBody>
-  ) => {
-    try {
-      if (!req.game || !req.user || !req.storyEntries)
-        return res.sendStatus(500);
-
-      const entries = req.storyEntries;
-      const { round, waitingOnUsers } = await checkRoundCompletion(
-        req.game,
-        entries
-      );
-
-      if (req.game.phase === GamePhase.PLAY) {
-        const userElem = entries.find((elem) => elem.userId === req.user?.id);
-
-        const category = categories[round];
-        const suggestion = await getSuggestion(category);
-        return res.send({
-          phase: isBehind(userElem, round) ? GamePhase.PLAY : WAIT,
-          round: round,
-          filler: fillers[round],
-          prompt: prompts[round],
-          prefix: prefixes[round],
-          suffix: suffixes[round],
-          placeholder: suggestion,
-          users: waitingOnUsers,
-        });
-      } else {
-        return res.send({
-          phase: GamePhase.READ,
-          story: entries.find((element) => element.userId === req.user?.id)
-            ?.finalValue,
-          id: req.game.uuid,
-          isHost: req.game.hostId === req.user.id,
-        });
-      }
-    } catch (error) {
-      console.error(error);
-      return res.sendStatus(500);
-    }
-  }
-);
-
-/**
- * Save a user's entry.
- */
-router.put(
-  '/',
-  async (req: Request<unknown, unknown, StoryReqBody>, res: Response) => {
-    try {
-      if (!req.game || !req.user || !req.storyEntries)
-        return res.sendStatus(500);
-      if (req.game.phase !== GamePhase.PLAY) return res.sendStatus(403);
-
-      const entries = req.storyEntries;
-      const { round } = await checkRoundCompletion(req.game, entries);
-      let part = req.body.part.replace(quoteRegex, '').trim();
-      if (round > 1 && !punctRegex.test(part)) part += '.';
-      if (round === 2 || round === 5) {
-        part = lowerFirst(part);
-      } else {
-        part = upperFirst(part);
-      }
-
-      const entry = entries.find((element) => element.userId === req.user?.id);
-      if (!entry) {
-        await prisma.storyEntry.create({
-          data: {
-            user: { connect: { id: req.user.id } },
-            game: { connect: { id: req.game.id } },
-            values: [part],
-            finalValue: '',
-          },
-        });
-      } else if (entry.values.length > round) {
-        return res.sendStatus(403);
-      } else {
-        await prisma.storyEntry.update({
-          where: { id: entry.id },
-          data: {
-            values: [...entry.values, part],
-          },
-        });
-      }
-      return res.sendStatus(201);
-    } catch (err) {
-      console.error(err);
-      res.sendStatus(500);
-    }
-  }
-);
+router.get('/', joinPhase, getGame);
+router.put('/', saveEntry);

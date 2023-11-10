@@ -1,14 +1,13 @@
-import { Router, Request, Response } from 'express';
-import {
-  Params,
-  PostGameReqBody,
-  UpdateGameReqBody,
-  Game,
-} from './types';
+import { Router } from 'express';
 import prisma from './server.js';
-import { Prisma, GameType, GamePhase, User } from './.generated/prisma';
-
-export const router = Router();
+import { GameType, GamePhase, User } from './.generated/prisma';
+import {
+  CreateGameRequestBody,
+  UpdateGameRequestBody,
+  Game,
+  Middleware,
+  RequestBody,
+} from './types';
 
 const gameTitles: { [key: string]: string } = {
   story: 'He Said She Said',
@@ -30,70 +29,53 @@ function getCode(): string {
   return c;
 }
 
-/**
- *
- */
 function getGameType(s: string): GameType {
   return s.toUpperCase() as GameType;
 }
 
-/**
- *
- */
 function getGamePhase(s: string): GamePhase {
   return s.toUpperCase() as GamePhase;
 }
 
-/**
- * Create a new Game.
- */
-router.post(
-  '/',
-  async (
-    req: Request<unknown, unknown, PostGameReqBody>,
-    res: Response<Game>
-  ) => {
-    try {
-      const game = await prisma.game.create({
-        data: {
-          code: getCode(),
-          type: getGameType(req.body.type),
-        },
-      });
-    
-      console.info('Game created:', JSON.stringify(game));
-      return res.status(201).send({ ...game, title: gameTitles[game.type] });
-    } catch (err) {
-      console.error(err);
-      return res.sendStatus(500);
-    }
-  }
-);
+const createGame: Middleware<CreateGameRequestBody, Game> = async (
+  req,
+  res,
+  next
+) => {
+  try {
+    const game = await prisma.game.create({
+      data: {
+        code: getCode(),
+        type: getGameType(req.body.type),
+      },
+    });
 
-/**
- * Get a Game object and title.
- */
-router.get(
-  '/:code',
-  async (req: Request<Params>, res: Response<Game>) => {
+    console.info('Game created:', JSON.stringify(game));
+    return res.status(201).send({ ...game, title: gameTitles[game.type] });
+  } catch (err) {
+    return next(err);
+  }
+};
+
+const getGame: Middleware<RequestBody, Game> = async (req, res, next) => {
+  try {
     const game = await prisma.game.findUnique({
       where: { code: req.params.code },
     });
     if (!game) return res.sendStatus(404);
 
     return res.send({ ...game, title: gameTitles[game.type] });
+  } catch (err) {
+    return next(err);
   }
-);
+};
 
-/**
- * Update the phase of a Game.
- */
-router.put(
-  '/:code',
-  async (
-    req: Request<Params, unknown, UpdateGameReqBody>,
-    res: Response<Game>
-  ) => {
+const updateGamePhase: Middleware<UpdateGameRequestBody, Game> = async (
+  req,
+  res,
+  next
+) => {
+  try {
     const game = await prisma.game.update({
       where: { code: req.params.code },
       data: { phase: getGamePhase(req.body.phase) },
@@ -102,15 +84,13 @@ router.put(
 
     console.info('Game updated:', JSON.stringify(game));
     res.send(game);
+  } catch (err) {
+    return next(err);
   }
-);
+};
 
-/**
- * Get all the users in a game.
- */
-router.get(
-  '/:code/users',
-  async (req: Request<Params, unknown, unknown>, res: Response<User[]>) => {
+const getUsers: Middleware<RequestBody, User[]> = async (req, res, next) => {
+  try {
     const users = await prisma.user.findMany({
       where: {
         game: {
@@ -119,52 +99,45 @@ router.get(
       },
     });
     return res.send(users);
+  } catch (err) {
+    return next(err);
   }
-);
+};
 
-/**
- * Create a new game/join a game that was created
- */
-router.post(
-  '/:code/recreate',
-  async (
-    req: Request<Params, unknown, unknown>,
-    res: Response<Game>
-  ) => {
-    try {
-      const oldGame = await prisma.game.findUniqueOrThrow({
-        where: {
-          code: req.params.code,
-        },
-        include: {
-          successor: true,
-        },
-      });
-      if (oldGame.successor) {
-        return res.send(oldGame.successor);
-      }
+const recreateGame: Middleware<RequestBody, Game> = async (req, res, next) => {
+  try {
+    const oldGame = await prisma.game.findUniqueOrThrow({
+      where: {
+        code: req.params.code,
+      },
+      include: {
+        successor: true,
+      },
+    });
+    if (oldGame.successor) {
+      return res.send(oldGame.successor);
+    }
 
-      const newGame = await prisma.game.create({
-        data: {
-          code: getCode(),
-          type: oldGame.type,
-          predecessor: {
-            connect: {
-              id: oldGame.id,
-            },
+    const newGame = await prisma.game.create({
+      data: {
+        code: getCode(),
+        type: oldGame.type,
+        predecessor: {
+          connect: {
+            id: oldGame.id,
           },
         },
-      });
-      return res.send(newGame);
-    } catch (err) {
-      if (
-        err instanceof Prisma.PrismaClientKnownRequestError &&
-        err.code === 'P2025'
-      ) {
-        return res.sendStatus(404);
-      }
-      console.error(err);
-      return res.sendStatus(500);
-    }
+      },
+    });
+    return res.send(newGame);
+  } catch (err) {
+    return next(err);
   }
-);
+};
+
+export const router = Router();
+router.post('/', createGame);
+router.get('/:code', getGame);
+router.put('/:code', updateGamePhase);
+router.get('/:code/users', getUsers);
+router.post('/:code/recreate', recreateGame);
