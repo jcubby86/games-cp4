@@ -16,7 +16,7 @@ interface StoryArchiveState {
 }
 
 export default function StoryArchive(): JSX.Element {
-  const { id, user } = useParams();
+  const { id, userId } = useParams();
   const [{ stories, showAll }, setState] = useState<StoryArchiveState>({
     showAll: false
   });
@@ -35,14 +35,29 @@ export default function StoryArchive(): JSX.Element {
     pollStatus();
   }, []);
 
-  const nicknameFilter = (i: Story) => !user || showAll || user === i.user.id;
+  const userItem = stories?.find(
+    (i: Story) => !userId || showAll || userId === i.user.id
+  );
+  const Items = (): JSX.Element => {
+    if (userItem) {
+      return <ListItem item={userItem} index={0} />;
+    } else {
+      return (
+        <>
+          {stories?.map((item: Story, index: number) => {
+            return <ListItem item={item} index={index} />;
+          })}
+        </>
+      );
+    }
+  };
 
   const ToggleButton = () => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const toggleAll = (_e: React.MouseEvent) =>
       setState((prev) => ({ ...prev, showAll: !prev.showAll }));
 
-    if (user) {
+    if (userItem) {
       return (
         <button className="btn btn-success col" onClick={toggleAll}>
           {showAll ? 'hide' : 'show all'}
@@ -64,7 +79,7 @@ export default function StoryArchive(): JSX.Element {
     );
   };
 
-  const getPath = () => `/story/${id}` + (user ? `/${user}` : '');
+  const getPath = () => `/story/${id}` + (userId ? `/${userId}` : '');
 
   return (
     <div className="d-flex flex-column w-100">
@@ -73,9 +88,7 @@ export default function StoryArchive(): JSX.Element {
       </div>
 
       <ul className="list-group list-group-flush my-3 w-100">
-        {stories?.filter(nicknameFilter).map((item: Story, index: number) => {
-          return <ListItem item={item} index={index} />;
-        })}
+        <Items />
       </ul>
       <div className="container-fluid">
         <div className="row gap-4">

@@ -21,7 +21,7 @@ function App(): JSX.Element {
             <Route path="join" element={<Join />} />
             <Route path="create" element={<Create />} />
             <Route path={STORY.toLowerCase()} element={<Story />} />
-            <Route path={`${STORY.toLowerCase()}/:id/:user?`} element={<StoryArchive />} />
+            <Route path={`${STORY.toLowerCase()}/:id/:userId?`} element={<StoryArchive />} />
             <Route path={NAMES.toLowerCase()} element={<Names />} />
             <Route path="*" element={<Home />} />
           </Route>
