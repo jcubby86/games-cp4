@@ -130,7 +130,7 @@ router.get(
       return res.send({
         stories: entries.map((entry) => ({
           value: entry.finalValue,
-          user: { nickname: entry.user.nickname, id: entry.user.id },
+          user: { nickname: entry.user.nickname, id: entry.user.uuid },
         })),
       });
     } catch (err) {
