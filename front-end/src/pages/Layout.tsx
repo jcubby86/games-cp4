@@ -1,5 +1,5 @@
 import { Outlet, Link, useNavigate } from 'react-router-dom';
-import axios from '../helpers/axiosWrapper';
+import axios from '../utils/axiosWrapper';
 import { useAppState } from '../contexts/AppContext';
 import { AppState } from '../contexts/AppContextTypes';
 import Icon from '../components/Icon';

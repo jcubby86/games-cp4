@@ -1,13 +1,13 @@
-import axios from '../helpers/axiosWrapper';
+import axios from '../utils/axiosWrapper';
 import { useAppState } from '../contexts/AppContext';
-import { PLAY } from '../helpers/constants';
+import { PLAY } from '../utils/constants';
 import List from './List';
 
 interface StartGameProps {
   setPhase: () => unknown;
   title: string;
-  users: string[];
-  isHost: boolean;
+  users?: string[];
+  isHost?: boolean;
 }
 
 const StartGame = ({
@@ -53,7 +53,7 @@ const StartGame = ({
             <input
               className="form-control"
               type="text"
-              value={users.length}
+              value={users?.length ?? 0}
               aria-label="player count"
               readOnly
               id="playerCount"

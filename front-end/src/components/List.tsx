@@ -1,5 +1,5 @@
 interface ListProps {
-  items: string[];
+  items?: string[];
 }
 
 const List = ({ items }: ListProps): JSX.Element => {

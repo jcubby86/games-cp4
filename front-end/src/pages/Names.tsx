@@ -1,29 +1,19 @@
 import { useState, useEffect, useRef } from 'react';
 import StartGame from '../components/StartGame';
 import List from '../components/List';
-import axios, { AxiosError } from '../helpers/axiosWrapper';
+import axios, { AxiosError } from '../utils/axiosWrapper';
 import { useAppState } from '../contexts/AppContext';
-import { END, JOIN, PLAY, READ, WAIT } from '../helpers/constants';
+import { END, JOIN, PLAY, READ, WAIT } from '../utils/constants';
 import RecreateButton from '../components/RecreateButton';
-import { NamesResponseBody } from '../helpers/types';
+import { NamesResponseBody } from '../utils/types';
 
-interface NamesState {
-  phase: string;
-  users: string[];
-  names: string[];
-  placeholder: string;
-  isHost: boolean;
-}
+const initialState = {
+  phase: ''
+};
 
 const Names = (): JSX.Element => {
   const { appState } = useAppState();
-  const [state, setState] = useState<NamesState>({
-    phase: '',
-    users: [],
-    names: [],
-    placeholder: '',
-    isHost: false
-  });
+  const [state, setState] = useState<NamesResponseBody>(initialState);
   const entryRef = useRef<HTMLInputElement>(null);
 
   const pollStatus = async () => {
@@ -109,7 +99,7 @@ const Names = (): JSX.Element => {
       <div className="w-100 d-flex flex-column">
         <div className="w-100">
           <h3 className="text-center w-100">Names:</h3>
-          <List items={state.names}></List>
+          <List items={state.names ?? []}></List>
         </div>
 
         {state.isHost && (

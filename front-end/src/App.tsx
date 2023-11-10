@@ -6,7 +6,7 @@ import Join from './pages/Join';
 import Create from './pages/Create';
 import Names from './pages/Names';
 import { AppContextProvider } from './contexts/AppContext';
-import { NAMES, STORY } from './helpers/constants';
+import { NAMES, STORY } from './utils/constants';
 import StoryArchive from './pages/StoryArchive';
 import './App.scss';
 import 'react-tooltip/dist/react-tooltip.css';
