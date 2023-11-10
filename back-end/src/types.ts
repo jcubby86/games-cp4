@@ -128,8 +128,8 @@ export type Middleware<Req = never, Res = never> = (
 ) => Promise<unknown>;
 
 export type ErrorMiddleware<Req = never, Res = never> = (
-  err: Error,
+  err: unknown,
   req: Request<Params, Res, Req>,
   res: Response<Res | ErrorResponseBody>,
   next: NextFunction
-) => Promise<unknown>;
+) => unknown;

@@ -88,7 +88,7 @@ const getGameState: Middleware<RequestBody, NamesResponseBody> = async (
         isHost: isHost,
       });
     }
-  } catch (err) {
+  } catch (err: unknown) {
     return next(err);
   }
 };
@@ -118,7 +118,7 @@ const saveEntry: Middleware<NamesRequestBody> = async (req, res, next) => {
     } else {
       res.sendStatus(200);
     }
-  } catch (err) {
+  } catch (err: unknown) {
     return next(err);
   }
 };

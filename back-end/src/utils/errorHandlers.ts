@@ -14,7 +14,7 @@ export const notFoundHandler: ErrorMiddleware = (err, req, res, next) => {
   return next();
 };
 
-export const serverErrorHandler: ErrorMiddleware = (err, req, res, next) => {
+export const serverErrorHandler: ErrorMiddleware = (err, req, res, n) => {
   console.error(err);
   return res.sendStatus(500);
 };
