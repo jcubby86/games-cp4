@@ -9,7 +9,8 @@
     "typecheck": "tsc --noEmit",
     "test": "jest",
     "lint": "eslint .",
-    "format": "prettier --config .prettierrc --write ."
+    "format": "prettier --config .prettierrc --write .",
+    "prisma-deploy": "prisma migrate deploy && prisma db seed"
   },
   "prisma": {
     "seed": "ts-node --transpile-only prisma/seed.ts"
