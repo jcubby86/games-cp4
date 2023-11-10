@@ -1,8 +1,9 @@
-import { Outlet, Link, useNavigate } from 'react-router-dom';
-import axios from '../utils/axiosWrapper';
+import { Link, Outlet, useNavigate } from 'react-router-dom';
+
+import Icon from '../components/Icon';
 import { useAppState } from '../contexts/AppContext';
 import { AppState } from '../contexts/AppContextTypes';
-import Icon from '../components/Icon';
+import axios from '../utils/axiosWrapper';
 
 const Layout = (): JSX.Element => {
   const navigate = useNavigate();

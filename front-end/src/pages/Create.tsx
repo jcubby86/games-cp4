@@ -1,15 +1,16 @@
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import generateNickname from '../utils/nicknameGeneration';
+
 import { useAppState } from '../contexts/AppContext';
+import axios from '../utils/axiosWrapper';
 import { NAMES, STORY } from '../utils/constants';
+import generateNickname from '../utils/nicknameGeneration';
 import {
   CreateGameRequestBody,
   GameDto,
   JoinGameRequestBody,
   UserDto
 } from '../utils/types';
-import axios from '../utils/axiosWrapper';
 
 interface CreateState {
   nickname: string;

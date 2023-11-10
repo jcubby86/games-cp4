@@ -1,14 +1,15 @@
-import { useState, useEffect, useRef } from 'react';
-import StartGame from '../components/StartGame';
+import { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { Tooltip } from 'react-tooltip';
+
+import Icon from '../components/Icon';
 import List from '../components/List';
+import RecreateButton from '../components/RecreateButton';
+import ShareButton from '../components/ShareButton';
+import StartGame from '../components/StartGame';
+import { useAppState } from '../contexts/AppContext';
 import axios from '../utils/axiosWrapper';
 import { JOIN, PLAY, READ, WAIT } from '../utils/constants';
-import RecreateButton from '../components/RecreateButton';
-import { useAppState } from '../contexts/AppContext';
-import { Tooltip } from 'react-tooltip';
-import ShareButton from '../components/ShareButton';
-import Icon from '../components/Icon';
-import { Link } from 'react-router-dom';
 import { StoryResponseBody } from '../utils/types';
 
 const initialState = {

@@ -1,11 +1,11 @@
+import { createContext, useContext, useEffect, useState } from 'react';
 
-import axios from '../utils/axiosWrapper';
-import React, { createContext, useEffect, useState } from 'react';
 import {
   AppContextProps,
   AppContextProviderProps,
   AppState
 } from './AppContextTypes';
+import axios from '../utils/axiosWrapper';
 import { UserDto } from '../utils/types';
 
 const initialAppState: AppState = {
@@ -17,7 +17,6 @@ const initialAppState: AppState = {
 
 export const AppContext = createContext<AppContextProps>({
   appState: initialAppState,
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
   setAppState: () => {}
 });
 
@@ -51,7 +50,7 @@ export const AppContextProvider = ({ children }: AppContextProviderProps) => {
 };
 
 export const useAppState = () => {
-  const context = React.useContext(AppContext);
+  const context = useContext(AppContext);
   if (context === undefined) {
     throw new Error('useAppState must be used within an AppContextProvider');
   }

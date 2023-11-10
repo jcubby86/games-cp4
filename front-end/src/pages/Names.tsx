@@ -1,10 +1,11 @@
-import { useState, useEffect, useRef } from 'react';
-import StartGame from '../components/StartGame';
+import { useEffect, useRef, useState } from 'react';
+
 import List from '../components/List';
-import axios, { AxiosError } from '../utils/axiosWrapper';
-import { useAppState } from '../contexts/AppContext';
-import { END, JOIN, PLAY, READ, WAIT } from '../utils/constants';
 import RecreateButton from '../components/RecreateButton';
+import StartGame from '../components/StartGame';
+import { useAppState } from '../contexts/AppContext';
+import axios, { AxiosError } from '../utils/axiosWrapper';
+import { END, JOIN, PLAY, READ, WAIT } from '../utils/constants';
 import { NamesResponseBody } from '../utils/types';
 
 const initialState = {

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
-import { useAppState } from '../contexts/AppContext';
+
 import Icon from '../components/Icon';
+import { useAppState } from '../contexts/AppContext';
 
 const Home = (): JSX.Element => {
   const { appState } = useAppState();
