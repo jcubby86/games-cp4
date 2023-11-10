@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 import { RequestHandler as ExpressRequestHandler } from 'express';
+
 import { NameEntry, StoryEntry } from '../.generated/prisma';
 import { ErrorResponseBody, GameDto, UserDto } from '../domain/types';
 

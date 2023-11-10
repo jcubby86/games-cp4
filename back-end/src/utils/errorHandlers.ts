@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
 import { ErrorRequestHandler } from 'express';
+
 import { Prisma } from '../.generated/prisma';
 
 export const notFoundHandler: ErrorRequestHandler = (err, req, res, next) => {

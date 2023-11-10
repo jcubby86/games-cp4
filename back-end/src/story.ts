@@ -1,8 +1,14 @@
 import { Router } from 'express';
-import prisma from './server.js';
-import { StoryEntry, Category, Game, GamePhase } from './.generated/prisma';
+
+import { Category, Game, GamePhase, StoryEntry } from './.generated/prisma';
+import {
+  StoryArchiveResponseBody,
+  StoryRequestBody,
+  StoryResponseBody,
+} from './domain/types.js';
 import { joinPhase, loadStory, loadUser } from './middleware.js';
-import { punctRegex, quoteRegex, WAIT } from './utils/constants.js';
+import prisma from './server.js';
+import { WAIT, punctRegex, quoteRegex } from './utils/constants.js';
 import { RequestBody, RequestHandler } from './utils/types.js';
 import {
   getEntryForGame,
@@ -11,11 +17,6 @@ import {
   randomNumber,
   upperFirst,
 } from './utils/utils.js';
-import {
-  StoryRequestBody,
-  StoryResponseBody,
-  StoryArchiveResponseBody,
-} from './domain/types.js';
 
 const fillers = ['', '(Man) ', '(Man) and (Woman) ', '', '', ''];
 const prefixes = ['', 'and ', 'were ', 'He said, "', 'She said, "', 'So they '];

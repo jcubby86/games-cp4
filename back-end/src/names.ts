@@ -1,10 +1,11 @@
 import { Router } from 'express';
-import prisma from './server.js';
-import { Game, GamePhase, Category } from './.generated/prisma';
-import { quoteRegex, WAIT } from './utils/constants.js';
-import { joinPhase, loadNames, loadUser } from './middleware.js';
-import { RequestBody, RequestHandler } from './utils/types.js';
+
+import { Category, Game, GamePhase } from './.generated/prisma';
 import { NamesRequestBody, NamesResponseBody } from './domain/types.js';
+import { joinPhase, loadNames, loadUser } from './middleware.js';
+import prisma from './server.js';
+import { WAIT, quoteRegex } from './utils/constants.js';
+import { RequestBody, RequestHandler } from './utils/types.js';
 import {
   getEntryForGame,
   getSuggestion,
