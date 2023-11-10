@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-unused-vars */
-import { Request, Response, NextFunction } from 'express';
+import { RequestHandler as ExpressRequestHandler } from 'express';
 import {
-  NameEntry,
   Game as PrismaGame,
   User as PrismaUser,
+  NameEntry,
   StoryEntry,
 } from './.generated/prisma';
 
@@ -121,15 +121,8 @@ export interface ErrorResponseBody {
 
 export type Params = { [key: string]: string };
 
-export type Middleware<Req = never, Res = never> = (
-  req: Request<Params, Res, Req>,
-  res: Response<Res | ErrorResponseBody>,
-  next: NextFunction
-) => Promise<unknown>;
-
-export type ErrorMiddleware<Req = never, Res = never> = (
-  err: unknown,
-  req: Request<Params, Res, Req>,
-  res: Response<Res | ErrorResponseBody>,
-  next: NextFunction
-) => unknown;
+export type RequestHandler<Req = never, Res = never> = ExpressRequestHandler<
+  Params,
+  Res | ErrorResponseBody,
+  Req
+>;

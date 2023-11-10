@@ -1,10 +1,10 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
+import { ErrorRequestHandler } from 'express';
 import { Prisma } from '../.generated/prisma';
-import { ErrorMiddleware } from '../types';
 
-export const notFoundHandler: ErrorMiddleware = (err, req, res, next) => {
+export const notFoundHandler: ErrorRequestHandler = (err, req, res, next) => {
   if (
     err instanceof Prisma.PrismaClientKnownRequestError &&
     err.code === 'P2025'
@@ -14,7 +14,7 @@ export const notFoundHandler: ErrorMiddleware = (err, req, res, next) => {
   return next();
 };
 
-export const serverErrorHandler: ErrorMiddleware = (err, req, res, n) => {
+export const serverErrorHandler: ErrorRequestHandler = (err, req, res, n) => {
   console.error(err);
   return res.sendStatus(500);
 };

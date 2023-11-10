@@ -4,11 +4,11 @@ import { StoryEntry, Category, Game, GamePhase } from './.generated/prisma';
 import { joinPhase, loadStory, loadUser } from './middleware.js';
 import { punctRegex, quoteRegex, WAIT } from './utils/constants.js';
 import {
+  RequestBody,
   StoryRequestBody,
   StoryResponseBody,
-  Middleware,
   StoryArchiveResponseBody,
-  RequestBody,
+  RequestHandler,
 } from './types.js';
 import {
   getEntryForGame,
@@ -118,11 +118,10 @@ function getFinalEntries(entries: StoryEntry[]): StoryEntry[] {
   return entries;
 }
 
-const getArchive: Middleware<RequestBody, StoryArchiveResponseBody> = async (
-  req,
-  res,
-  next
-) => {
+const getArchive: RequestHandler<
+  RequestBody,
+  StoryArchiveResponseBody
+> = async (req, res, next) => {
   try {
     const entries = await prisma.storyEntry.findMany({
       where: {
@@ -143,7 +142,7 @@ const getArchive: Middleware<RequestBody, StoryArchiveResponseBody> = async (
   }
 };
 
-const getGame: Middleware<RequestBody, StoryResponseBody> = async (
+const getGame: RequestHandler<RequestBody, StoryResponseBody> = async (
   req,
   res,
   next
@@ -186,7 +185,7 @@ const getGame: Middleware<RequestBody, StoryResponseBody> = async (
   }
 };
 
-const saveEntry: Middleware<StoryRequestBody> = async (req, res, next) => {
+const saveEntry: RequestHandler<StoryRequestBody> = async (req, res, next) => {
   try {
     if (!req.game || !req.user || !req.storyEntries) return res.sendStatus(500);
     if (req.game.phase !== GamePhase.PLAY) return res.sendStatus(403);
