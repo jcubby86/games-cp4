@@ -4,6 +4,6 @@ WORKDIR /app
 ENV PATH /app/node_modules/.bin:$PATH
 COPY package*.json ./
 COPY tsconfig*.json ./
-RUN npm ci
 COPY . ./
-RUN npx prisma migrate deploy
+RUN npm ci
+CMD ["npm", "run", "prisma-deploy"]
