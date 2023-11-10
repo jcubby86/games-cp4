@@ -102,14 +102,14 @@ declare global {
     interface Request {
       user?: User | null | undefined;
       game?: Game | null | undefined;
-      names?: NameEntry[] | null | undefined;
-      story?: StoryEntry[] | null | undefined;
+      nameEntries?: NameEntry[] | null | undefined;
+      storyEntries?: StoryEntry[] | null | undefined;
       session?: Session | null | undefined;
     }
   }
 }
 
 export interface Session {
-  userID?: string;
+  userID: string;
   nowInMinutes: number;
 }
