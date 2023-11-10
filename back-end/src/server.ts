@@ -9,7 +9,9 @@ import { router as namesRoutes } from './names.js';
 import { PrismaClient } from '@prisma/client';
 
 dotenv.config();
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({
+  log: ['info', 'warn', 'error'],
+});
 
 const app = express();
 app.use(bodyParser.json());

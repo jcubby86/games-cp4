@@ -27,11 +27,6 @@ export type User = PrismaUser & {
   game?: Game | null;
 };
 
-export interface Entry<Type> {
-  user: PrismaUser;
-  value: Type;
-}
-
 /*
  
    ____ _____ ___  
@@ -113,17 +108,6 @@ declare global {
     }
   }
 }
-
-/*
- 
-         _   _               
-    ___ | |_| |__   ___ _ __ 
-   / _ \| __| '_ \ / _ \ '__|
-  | (_) | |_| | | |  __/ |   
-   \___/ \__|_| |_|\___|_|   
-                             
- 
-*/
 
 export interface Session {
   userID?: string;
