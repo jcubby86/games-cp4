@@ -10,7 +10,8 @@
     "test": "jest",
     "lint": "eslint .",
     "format": "prettier --config .prettierrc --write .",
-    "prisma-deploy": "prisma migrate deploy && prisma db seed"
+    "prisma:deploy": "prisma migrate deploy && prisma db seed",
+    "prod:deploy": "prisma migrate deploy && prisma db seed && node server.js"
   },
   "prisma": {
     "seed": "ts-node --transpile-only prisma/seed.ts"
