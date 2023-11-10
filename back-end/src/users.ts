@@ -129,6 +129,7 @@ const leaveGame: RequestHandler = async (req, res, next) => {
 };
 
 export const router = Router();
-router.post('/', loadUser, upsertUser);
-router.get('/', loadUser, getUser);
-router.delete('/', loadUser, leaveGame);
+router.use(loadUser);
+router.post('/', upsertUser);
+router.get('/', getUser);
+router.delete('/', leaveGame);
