@@ -16,10 +16,9 @@ export const loadUser = async (
   res: Response,
   next: NextFunction
 ) => {
-  try {
     if (!req.session?.userID) return next();
 
-    const user = await prisma.user.findUniqueOrThrow({
+    const user = await prisma.user.findUnique({
       where: { uuid: req.session.userID },
       include: { game: true },
     });
@@ -29,10 +28,6 @@ export const loadUser = async (
     req.user = user;
     req.game = user.game;
     next();
-  } catch (error) {
-    console.error(error);
-    return res.sendStatus(500);
-  }
 };
 
 /**
