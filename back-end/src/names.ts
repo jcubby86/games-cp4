@@ -3,12 +3,8 @@ import prisma from './server.js';
 import { Game, GamePhase, Category } from './.generated/prisma';
 import { quoteRegex, WAIT } from './utils/constants.js';
 import { joinPhase, loadNames, loadUser } from './middleware.js';
-import {
-  RequestBody,
-  NamesRequestBody,
-  NamesResponseBody,
-  RequestHandler,
-} from './types.js';
+import { RequestBody, RequestHandler } from './utils/types.js';
+import { NamesRequestBody, NamesResponseBody } from './domain/types.js';
 import {
   getEntryForGame,
   getSuggestion,
