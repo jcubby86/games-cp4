@@ -6,7 +6,7 @@ import {
   Game,
 } from './types';
 import prisma from './server.js';
-import { Prisma, GameType, GamePhase, User } from '@prisma/client';
+import { Prisma, GameType, GamePhase, User } from './.generated/prisma';
 
 export const router = Router();
 

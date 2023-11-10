@@ -6,7 +6,7 @@ import {
   Game as PrismaGame,
   User as PrismaUser,
   StoryEntry,
-} from '@prisma/client';
+} from './.generated/prisma';
 
 /*
  

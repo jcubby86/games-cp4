@@ -5,7 +5,7 @@ import { joinPhase, loadNames, loadUser } from './middleware.js';
 import { NamesReqBody, NamesResBody } from './types.js';
 import { quoteRegex, WAIT } from './helpers/constants.js';
 import prisma from './server.js';
-import { Game, GamePhase, Category } from '@prisma/client';
+import { Game, GamePhase, Category } from './.generated/prisma';
 /**
  * Check if all players have submitted an entry.
  *

@@ -1,7 +1,7 @@
 import { JoinResBody } from './types.js';
 import type { Request, Response, NextFunction } from 'express';
 import prisma from './server.js';
-import { User, GamePhase, GameType } from '@prisma/client';
+import { User, GamePhase, GameType } from './.generated/prisma';
 
 /**
  * Middleware for loading in a user from the session.
