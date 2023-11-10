@@ -6,6 +6,7 @@ import { router as gameRoutes } from './games.js';
 import { router as userRoutes } from './users.js';
 import { router as storyRoutes } from './story.js';
 import { router as namesRoutes } from './names.js';
+import { accessLogger } from './middleware.js';
 import { PrismaClient } from './.generated/prisma';
 
 dotenv.config();
@@ -23,18 +24,7 @@ app.use(
     maxAge: 2 * 60 * 60 * 1000, // 2 hours
   })
 );
-
-app.use((req, res, next) => {
-  res.on('finish', () => {
-    if (req.originalUrl.endsWith('/health')) return;
-    console.log(
-      `${new Date().toISOString()} ${req.method} ${req.originalUrl} ${
-        res.statusCode
-      }`
-    );
-  });
-  next();
-});
+app.use(accessLogger);
 
 app.use('/api/game', gameRoutes);
 app.use('/api/user', userRoutes);

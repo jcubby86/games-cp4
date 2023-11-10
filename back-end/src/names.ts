@@ -1,11 +1,19 @@
 import { Router, Request, Response } from 'express';
-import { getEntryForGame, shuffleArray, upperFirst } from './utils.js';
-import { getSuggestion, randomElement } from './suggestion/utils.js';
+import {
+  getEntryForGame,
+  getSuggestion,
+  randomElement,
+  shuffleArray,
+  upperFirst,
+} from './utils/utils.js';
 import { joinPhase, loadNames, loadUser } from './middleware.js';
 import { NamesReqBody, NamesResBody } from './types.js';
-import { quoteRegex, WAIT } from './helpers/constants.js';
+import { quoteRegex, WAIT } from './utils/constants.js';
 import prisma from './server.js';
 import { Game, GamePhase, Category } from './.generated/prisma';
+
+const categories = [Category.MALE_NAME, Category.FEMALE_NAME];
+
 /**
  * Check if all players have submitted an entry.
  *
@@ -53,19 +61,17 @@ router.get(
     res: Response<NamesResBody>
   ) => {
     try {
-      if (!req.game || !req.user || !req.names) return res.sendStatus(500);
+      if (!req.game || !req.user || !req.nameEntries)
+        return res.sendStatus(500);
 
-      const entries = req.names;
+      const entries = req.nameEntries;
       const waitingOnUsers = await checkCompletion(req.game);
       const isHost = req.game.hostId === req.user.id;
 
       if (req.game.phase === GamePhase.PLAY) {
         const userElem = entries.find((elem) => elem.userId === req.user?.id);
 
-        const category = randomElement([
-          Category.MALE_NAME,
-          Category.FEMALE_NAME,
-        ]);
+        const category = randomElement(categories);
         const suggestion = await getSuggestion(category);
         return res.send({
           phase: !userElem ? GamePhase.PLAY : WAIT,
@@ -102,11 +108,11 @@ router.put(
     req: Request<unknown, unknown, NamesReqBody>,
     res: Response<string>
   ) => {
-    if (!req.game || !req.user || !req.names) return res.sendStatus(500);
+    if (!req.game || !req.user || !req.nameEntries) return res.sendStatus(500);
 
     if (req.game.phase !== GamePhase.PLAY) return res.sendStatus(403);
 
-    const names = req.names;
+    const names = req.nameEntries;
 
     const userIndex = names.findIndex((elem) => elem.userId === req.user?.id);
     if (userIndex === -1) {

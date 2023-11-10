@@ -1,9 +1,14 @@
 import { Router, Request, Response } from 'express';
-import { upperFirst, lowerFirst, getEntryForGame } from './utils.js';
-import { getSuggestion, randomNumber } from './suggestion/utils.js';
+import {
+  getEntryForGame,
+  getSuggestion,
+  lowerFirst,
+  randomNumber,
+  upperFirst,
+} from './utils/utils.js';
 import { joinPhase, loadStory, loadUser } from './middleware.js';
 import { StoryReqBody, StoryResBody, Params } from './types.js';
-import { punctRegex, quoteRegex, WAIT } from './helpers/constants.js';
+import { punctRegex, quoteRegex, WAIT } from './utils/constants.js';
 import prisma from './server.js';
 import { StoryEntry, Category, Game, GamePhase } from './.generated/prisma';
 
@@ -153,9 +158,10 @@ router.get(
     res: Response<StoryResBody>
   ) => {
     try {
-      if (!req.game || !req.user || !req.story) return res.sendStatus(500);
+      if (!req.game || !req.user || !req.storyEntries)
+        return res.sendStatus(500);
 
-      const entries = req.story;
+      const entries = req.storyEntries;
       const { round, waitingOnUsers } = await checkRoundCompletion(
         req.game,
         entries
@@ -199,10 +205,11 @@ router.put(
   '/',
   async (req: Request<unknown, unknown, StoryReqBody>, res: Response) => {
     try {
-      if (!req.game || !req.user || !req.story) return res.sendStatus(500);
+      if (!req.game || !req.user || !req.storyEntries)
+        return res.sendStatus(500);
       if (req.game.phase !== GamePhase.PLAY) return res.sendStatus(403);
 
-      const entries = req.story;
+      const entries = req.storyEntries;
       const { round } = await checkRoundCompletion(req.game, entries);
       let part = req.body.part.replace(quoteRegex, '').trim();
       if (round > 1 && !punctRegex.test(part)) part += '.';

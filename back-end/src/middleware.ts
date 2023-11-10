@@ -16,18 +16,18 @@ export const loadUser = async (
   res: Response,
   next: NextFunction
 ) => {
-    if (!req.session?.userID) return next();
+  if (!req.session?.userID) return next();
 
-    const user = await prisma.user.findUnique({
-      where: { uuid: req.session.userID },
-      include: { game: true },
-    });
+  const user = await prisma.user.findUnique({
+    where: { uuid: req.session.userID },
+    include: { game: true },
+  });
 
-    if (!user) return next();
+  if (!user) return next();
 
-    req.user = user;
-    req.game = user.game;
-    next();
+  req.user = user;
+  req.game = user.game;
+  next();
 };
 
 /**
@@ -85,11 +85,11 @@ export const loadNames = async (
   if (!req.user || !req.game) return res.sendStatus(401);
   if (req.game.type !== GameType.NAME) return res.sendStatus(400);
 
-  req.names = await prisma.nameEntry.findMany({
+  req.nameEntries = await prisma.nameEntry.findMany({
     where: { gameId: req.game.id, user: { gameId: req.game.id } },
   });
 
-  if (!req.names) return res.sendStatus(400);
+  if (!req.nameEntries) return res.sendStatus(400);
   next();
 };
 
@@ -109,9 +109,31 @@ export const loadStory = async (
   if (!req.user || !req.game) return res.sendStatus(401);
   if (req.game.type !== GameType.STORY) return res.sendStatus(400);
 
-  req.story = await prisma.storyEntry.findMany({
+  req.storyEntries = await prisma.storyEntry.findMany({
     where: { gameId: req.game.id, user: { gameId: req.game.id } },
   });
-  if (!req.story) return res.sendStatus(400);
+  if (!req.storyEntries) return res.sendStatus(400);
+  next();
+};
+
+/**
+ * Middleware that logs incoming http requests
+ * @param req 
+ * @param res 
+ * @param next 
+ */
+export const accessLogger = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  res.on('finish', () => {
+    if (req.originalUrl.endsWith('/health')) return;
+    console.log(
+      `${new Date().toISOString()} ${req.method} ${req.originalUrl} ${
+        res.statusCode
+      }`
+    );
+  });
   next();
 };
