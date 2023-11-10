@@ -74,7 +74,7 @@ const upsertUser: Middleware<JoinGameRequestBody, User> = async (
     }
 
     res.status(statusCode).send({ ...req.user, game: req.game });
-  } catch (err) {
+  } catch (err: unknown) {
     return next(err);
   }
 };
@@ -85,7 +85,7 @@ const getUser: Middleware<RequestBody, User> = async (req, res, next) => {
       return res.sendStatus(404);
     }
     res.send(req.user);
-  } catch (err) {
+  } catch (err: unknown) {
     return next(err);
   }
 };
@@ -118,7 +118,7 @@ const leaveGame: Middleware = async (req, res, next) => {
     }
 
     res.sendStatus(200);
-  } catch (err) {
+  } catch (err: unknown) {
     return next(err);
   }
 };

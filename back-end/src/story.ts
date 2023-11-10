@@ -138,7 +138,7 @@ const getArchive: Middleware<RequestBody, StoryArchiveResponseBody> = async (
         user: { nickname: entry.user.nickname, id: entry.user.uuid },
       })),
     });
-  } catch (err) {
+  } catch (err: unknown) {
     return next(err);
   }
 };
@@ -181,7 +181,7 @@ const getGame: Middleware<RequestBody, StoryResponseBody> = async (
         isHost: req.game.hostId === req.user.id,
       });
     }
-  } catch (err) {
+  } catch (err: unknown) {
     return next(err);
   }
 };
@@ -222,7 +222,7 @@ const saveEntry: Middleware<StoryRequestBody> = async (req, res, next) => {
       });
     }
     return res.sendStatus(201);
-  } catch (err) {
+  } catch (err: unknown) {
     return next(err);
   }
 };

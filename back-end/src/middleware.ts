@@ -23,7 +23,7 @@ export const loadUser: Middleware = async (req, res, next) => {
     req.user = user;
     req.game = user.game;
     return next();
-  } catch (err) {
+  } catch (err: unknown) {
     return next(err);
   }
 };
@@ -60,7 +60,7 @@ export const joinPhase: Middleware<RequestBody, JoinPhaseResponseBody> = async (
     }
 
     return next();
-  } catch (err) {
+  } catch (err: unknown) {
     return next(err);
   }
 };
@@ -83,7 +83,7 @@ export const loadNames: Middleware = async (req, res, next) => {
 
     if (!req.nameEntries) return res.sendStatus(400);
     return next();
-  } catch (err) {
+  } catch (err: unknown) {
     return next(err);
   }
 };
@@ -106,7 +106,7 @@ export const loadStory: Middleware = async (req, res, next) => {
 
     if (!req.storyEntries) return res.sendStatus(400);
     return next();
-  } catch (err) {
+  } catch (err: unknown) {
     return next(err);
   }
 };

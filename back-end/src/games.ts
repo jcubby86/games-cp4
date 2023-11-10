@@ -52,7 +52,7 @@ const createGame: Middleware<CreateGameRequestBody, Game> = async (
 
     console.info('Game created:', JSON.stringify(game));
     return res.status(201).send({ ...game, title: gameTitles[game.type] });
-  } catch (err) {
+  } catch (err: unknown) {
     return next(err);
   }
 };
@@ -65,7 +65,7 @@ const getGame: Middleware<RequestBody, Game> = async (req, res, next) => {
     if (!game) return res.sendStatus(404);
 
     return res.send({ ...game, title: gameTitles[game.type] });
-  } catch (err) {
+  } catch (err: unknown) {
     return next(err);
   }
 };
@@ -84,7 +84,7 @@ const updateGamePhase: Middleware<UpdateGameRequestBody, Game> = async (
 
     console.info('Game updated:', JSON.stringify(game));
     res.send(game);
-  } catch (err) {
+  } catch (err: unknown) {
     return next(err);
   }
 };
@@ -99,7 +99,7 @@ const getUsers: Middleware<RequestBody, User[]> = async (req, res, next) => {
       },
     });
     return res.send(users);
-  } catch (err) {
+  } catch (err: unknown) {
     return next(err);
   }
 };
@@ -130,7 +130,7 @@ const recreateGame: Middleware<RequestBody, Game> = async (req, res, next) => {
       },
     });
     return res.send(newGame);
-  } catch (err) {
+  } catch (err: unknown) {
     return next(err);
   }
 };
