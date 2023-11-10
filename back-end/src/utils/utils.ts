@@ -7,8 +7,9 @@ import { Game, Suggestion, Category } from '../.generated/prisma';
  * @param limit
  * @returns
  */
-export const randomNumber = (limit: number) =>
-  Math.floor(Math.random() * limit);
+export function randomNumber(limit: number) {
+  return Math.floor(Math.random() * limit);
+}
 
 /**
  * Retrieve a random element from the array.

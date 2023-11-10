@@ -2,12 +2,13 @@ import dotenv from 'dotenv';
 import bodyParser from 'body-parser';
 import cookieSession from 'cookie-session';
 import express from 'express';
+import { PrismaClient } from './.generated/prisma';
 import { router as gameRoutes } from './games.js';
 import { router as userRoutes } from './users.js';
 import { router as storyRoutes } from './story.js';
 import { router as namesRoutes } from './names.js';
 import { accessLogger } from './middleware.js';
-import { PrismaClient } from './.generated/prisma';
+import { serverErrorHandler, notFoundHandler } from './utils/errorHandlers.js';
 
 dotenv.config();
 const prisma = new PrismaClient({
@@ -34,6 +35,9 @@ app.use('/api/names', namesRoutes);
 app.get('/health', async (req, res) => {
   res.sendStatus(200);
 });
+
+app.use(notFoundHandler);
+app.use(serverErrorHandler);
 
 const runPort = process.env.NODE_PORT || 3000;
 app.listen(runPort, () => console.info(`Server listening on port ${runPort}!`));

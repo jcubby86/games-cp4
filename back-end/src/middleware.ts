@@ -1,48 +1,45 @@
-import { JoinResBody } from './types.js';
-import type { Request, Response, NextFunction } from 'express';
 import prisma from './server.js';
 import { User, GamePhase, GameType } from './.generated/prisma';
+import { JoinPhaseResponseBody, Middleware, RequestBody } from './types.js';
 
 /**
  * Middleware for loading in a user from the session.
- *
  * @param req
  * @param res
  * @param next
  * @returns
  */
-export const loadUser = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  if (!req.session?.userID) return next();
+export const loadUser: Middleware = async (req, res, next) => {
+  try {
+    if (!req.session?.userID) return next();
 
-  const user = await prisma.user.findUnique({
-    where: { uuid: req.session.userID },
-    include: { game: true },
-  });
+    const user = await prisma.user.findUnique({
+      where: { uuid: req.session.userID },
+      include: { game: true },
+    });
 
-  if (!user) return next();
+    if (!user) return next();
 
-  req.user = user;
-  req.game = user.game;
-  next();
+    req.user = user;
+    req.game = user.game;
+    return next();
+  } catch (err) {
+    return next(err);
+  }
 };
 
 /**
  * Middleware for handling a game if it's in the join phase.
  * Used by Story and Names types.
- *
  * @param req
  * @param res
  * @param next
  * @returns
  */
-export const joinPhase = async (
-  req: Request,
-  res: Response<JoinResBody>,
-  next: NextFunction
+export const joinPhase: Middleware<RequestBody, JoinPhaseResponseBody> = async (
+  req,
+  res,
+  next
 ) => {
   try {
     if (req.game?.phase === GamePhase.JOIN) {
@@ -62,71 +59,65 @@ export const joinPhase = async (
       });
     }
 
-    next();
+    return next();
   } catch (err) {
-    console.error(err);
-    res.sendStatus(500);
+    return next(err);
   }
 };
 
 /**
  * Middleware for loading in the Names Document.
- *
  * @param req
  * @param res
  * @param next
  * @returns
  */
-export const loadNames = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  if (!req.user || !req.game) return res.sendStatus(401);
-  if (req.game.type !== GameType.NAME) return res.sendStatus(400);
+export const loadNames: Middleware = async (req, res, next) => {
+  try {
+    if (!req.user || !req.game) return res.sendStatus(401);
+    if (req.game.type !== GameType.NAME) return res.sendStatus(400);
 
-  req.nameEntries = await prisma.nameEntry.findMany({
-    where: { gameId: req.game.id, user: { gameId: req.game.id } },
-  });
+    req.nameEntries = await prisma.nameEntry.findMany({
+      where: { gameId: req.game.id, user: { gameId: req.game.id } },
+    });
 
-  if (!req.nameEntries) return res.sendStatus(400);
-  next();
+    if (!req.nameEntries) return res.sendStatus(400);
+    return next();
+  } catch (err) {
+    return next(err);
+  }
 };
 
 /**
  * Middleware for loading in the Story Document.
- *
  * @param req
  * @param res
  * @param next
  * @returns
  */
-export const loadStory = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  if (!req.user || !req.game) return res.sendStatus(401);
-  if (req.game.type !== GameType.STORY) return res.sendStatus(400);
+export const loadStory: Middleware = async (req, res, next) => {
+  try {
+    if (!req.user || !req.game) return res.sendStatus(401);
+    if (req.game.type !== GameType.STORY) return res.sendStatus(400);
 
-  req.storyEntries = await prisma.storyEntry.findMany({
-    where: { gameId: req.game.id, user: { gameId: req.game.id } },
-  });
-  if (!req.storyEntries) return res.sendStatus(400);
-  next();
+    req.storyEntries = await prisma.storyEntry.findMany({
+      where: { gameId: req.game.id, user: { gameId: req.game.id } },
+    });
+
+    if (!req.storyEntries) return res.sendStatus(400);
+    return next();
+  } catch (err) {
+    return next(err);
+  }
 };
 
 /**
  * Middleware that logs incoming http requests
- * @param req 
- * @param res 
- * @param next 
+ * @param req
+ * @param res
+ * @param next
  */
-export const accessLogger = (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const accessLogger: Middleware = async (req, res, next) => {
   res.on('finish', () => {
     if (req.originalUrl.endsWith('/health')) return;
     console.log(
@@ -135,5 +126,5 @@ export const accessLogger = (
       }`
     );
   });
-  next();
+  return next();
 };

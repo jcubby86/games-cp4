@@ -1,4 +1,14 @@
-import { Router, Request, Response } from 'express';
+import { Router } from 'express';
+import prisma from './server.js';
+import { Game, GamePhase, Category } from './.generated/prisma';
+import { quoteRegex, WAIT } from './utils/constants.js';
+import { joinPhase, loadNames, loadUser } from './middleware.js';
+import {
+  Middleware,
+  NamesRequestBody,
+  NamesResponseBody,
+  RequestBody,
+} from './types.js';
 import {
   getEntryForGame,
   getSuggestion,
@@ -6,11 +16,6 @@ import {
   shuffleArray,
   upperFirst,
 } from './utils/utils.js';
-import { joinPhase, loadNames, loadUser } from './middleware.js';
-import { NamesReqBody, NamesResBody } from './types.js';
-import { quoteRegex, WAIT } from './utils/constants.js';
-import prisma from './server.js';
-import { Game, GamePhase, Category } from './.generated/prisma';
 
 const categories = [Category.MALE_NAME, Category.FEMALE_NAME];
 
@@ -47,67 +52,49 @@ async function checkCompletion(game: Game): Promise<string[]> {
   return [];
 }
 
-export const router = Router();
-router.use(loadUser, loadNames);
+const getGameState: Middleware<RequestBody, NamesResponseBody> = async (
+  req,
+  res,
+  next
+) => {
+  try {
+    if (!req.game || !req.user || !req.nameEntries) return res.sendStatus(500);
 
-/**
- * Get the state of the game.
- */
-router.get(
-  '/',
-  joinPhase,
-  async (
-    req: Request<unknown, unknown, unknown>,
-    res: Response<NamesResBody>
-  ) => {
-    try {
-      if (!req.game || !req.user || !req.nameEntries)
-        return res.sendStatus(500);
+    const entries = req.nameEntries;
+    const waitingOnUsers = await checkCompletion(req.game);
+    const isHost = req.game.hostId === req.user.id;
 
-      const entries = req.nameEntries;
-      const waitingOnUsers = await checkCompletion(req.game);
-      const isHost = req.game.hostId === req.user.id;
+    if (req.game.phase === GamePhase.PLAY) {
+      const userElem = entries.find((elem) => elem.userId === req.user?.id);
 
-      if (req.game.phase === GamePhase.PLAY) {
-        const userElem = entries.find((elem) => elem.userId === req.user?.id);
-
-        const category = randomElement(categories);
-        const suggestion = await getSuggestion(category);
-        return res.send({
-          phase: !userElem ? GamePhase.PLAY : WAIT,
-          users: waitingOnUsers,
-          text: userElem?.name,
-          placeholder: suggestion,
-        });
-      } else if (req.game.phase === GamePhase.READ) {
-        shuffleArray(entries);
-        return res.send({
-          phase: GamePhase.READ,
-          names: entries.map((elem) => elem.name),
-          isHost: isHost,
-        });
-      } else {
-        return res.send({
-          phase: GamePhase.END,
-          isHost: isHost,
-        });
-      }
-    } catch (err) {
-      console.error(err);
-      return res.sendStatus(500);
+      const category = randomElement(categories);
+      const suggestion = await getSuggestion(category);
+      return res.send({
+        phase: !userElem ? GamePhase.PLAY : WAIT,
+        users: waitingOnUsers,
+        text: userElem?.name,
+        placeholder: suggestion,
+      });
+    } else if (req.game.phase === GamePhase.READ) {
+      shuffleArray(entries);
+      return res.send({
+        phase: GamePhase.READ,
+        names: entries.map((elem) => elem.name),
+        isHost: isHost,
+      });
+    } else {
+      return res.send({
+        phase: GamePhase.END,
+        isHost: isHost,
+      });
     }
+  } catch (err) {
+    return next(err);
   }
-);
+};
 
-/**
- * Save a user's entry.
- */
-router.put(
-  '/',
-  async (
-    req: Request<unknown, unknown, NamesReqBody>,
-    res: Response<string>
-  ) => {
+const saveEntry: Middleware<NamesRequestBody> = async (req, res, next) => {
+  try {
     if (!req.game || !req.user || !req.nameEntries) return res.sendStatus(500);
 
     if (req.game.phase !== GamePhase.PLAY) return res.sendStatus(403);
@@ -131,5 +118,12 @@ router.put(
     } else {
       res.sendStatus(200);
     }
+  } catch (err) {
+    return next(err);
   }
-);
+};
+
+export const router = Router();
+router.use(loadUser, loadNames);
+router.get('/', joinPhase, getGameState);
+router.put('/', saveEntry);
