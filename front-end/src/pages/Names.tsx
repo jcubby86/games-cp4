@@ -6,7 +6,7 @@ import StartGame from '../components/StartGame';
 import { useAppState } from '../contexts/AppContext';
 import axios, { AxiosError } from '../utils/axiosWrapper';
 import { END, JOIN, PLAY, READ, WAIT } from '../utils/constants';
-import { NamesResponseBody } from '../utils/types';
+import { NamesResBody } from '../utils/types';
 
 const initialState = {
   phase: ''
@@ -14,12 +14,12 @@ const initialState = {
 
 const Names = (): JSX.Element => {
   const { appState } = useAppState();
-  const [state, setState] = useState<NamesResponseBody>(initialState);
+  const [state, setState] = useState<NamesResBody>(initialState);
   const entryRef = useRef<HTMLInputElement>(null);
 
   const pollStatus = async () => {
     try {
-      const response = await axios.get<NamesResponseBody>('/api/names');
+      const response = await axios.get<NamesResBody>('/api/names');
       setState((prev) => ({
         phase: response.data.phase,
         users: response.data.users,

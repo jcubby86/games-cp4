@@ -6,10 +6,10 @@ import axios from '../utils/axiosWrapper';
 import { NAMES, STORY } from '../utils/constants';
 import generateNickname from '../utils/nicknameGeneration';
 import {
-  CreateGameRequestBody,
-  GameDto,
-  JoinGameRequestBody,
-  UserDto
+  CreateGameReqBody as CreateGameReq,
+  GameDto as Game,
+  JoinGameReqBody as JoinGameReq,
+  UserDto as User
 } from '../utils/types';
 
 interface CreateState {
@@ -34,19 +34,13 @@ const Create = (): JSX.Element => {
         return;
       }
 
-      const gameResponse = await axios.post<CreateGameRequestBody, GameDto>(
-        '/api/game',
-        {
-          type: state.selected
-        }
-      );
-      const userResponse = await axios.post<JoinGameRequestBody, UserDto>(
-        '/api/user',
-        {
-          nickname: state.nickname.toLowerCase() || suggestion.current,
-          code: gameResponse.data.code
-        }
-      );
+      const gameResponse = await axios.post<CreateGameReq, Game>('/api/game', {
+        type: state.selected
+      });
+      const userResponse = await axios.post<JoinGameReq, User>('/api/user', {
+        nickname: state.nickname.toLowerCase() || suggestion.current,
+        code: gameResponse.data.code
+      });
 
       setAppState({
         nickname: userResponse.data.nickname,
