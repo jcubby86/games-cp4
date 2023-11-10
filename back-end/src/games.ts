@@ -1,12 +1,13 @@
 import { Router } from 'express';
-import prisma from './server.js';
-import { GameType, GamePhase, User } from './.generated/prisma';
-import { RequestBody, RequestHandler } from './utils/types.js';
+
+import { GamePhase, GameType, User } from './.generated/prisma';
 import {
-  GameDto,
   CreateGameRequestBody,
+  GameDto,
   UpdateGameRequestBody,
 } from './domain/types.js';
+import prisma from './server.js';
+import { RequestBody, RequestHandler } from './utils/types.js';
 
 const gameTitles: { [key: string]: string } = {
   story: 'He Said She Said',

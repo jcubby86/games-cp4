@@ -1,9 +1,10 @@
 import { Router } from 'express';
-import prisma from './server.js';
+
 import { GamePhase } from './.generated/prisma';
+import { JoinGameRequestBody, UserDto } from './domain/types.js';
 import { loadUser } from './middleware.js';
+import prisma from './server.js';
 import { RequestBody, RequestHandler } from './utils/types.js';
-import { UserDto, JoinGameRequestBody } from './domain/types.js';
 
 /**
  * Join a game.

@@ -1,7 +1,7 @@
-import prisma from './server.js';
-import { User, GamePhase, GameType } from './.generated/prisma';
-import { RequestBody, RequestHandler } from './utils/types.js';
+import { GamePhase, GameType, User } from './.generated/prisma';
 import { JoinPhaseResponseBody } from './domain/types.js';
+import prisma from './server.js';
+import { RequestBody, RequestHandler } from './utils/types.js';
 
 /**
  * Middleware for loading in a user from the session.
