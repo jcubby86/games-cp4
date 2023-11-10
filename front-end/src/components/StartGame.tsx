@@ -2,6 +2,7 @@ import List from './List';
 import { useAppState } from '../contexts/AppContext';
 import axios from '../utils/axiosWrapper';
 import { PLAY } from '../utils/constants';
+import { UpdateGameReqBody } from '../utils/types';
 
 interface StartGameProps {
   setPhase: () => unknown;
@@ -19,7 +20,9 @@ const StartGame = ({
   const { appState } = useAppState();
   const startGame = async (e: React.FormEvent) => {
     e.preventDefault();
-    await axios.put(`/api/game/${appState.gameCode}`, { phase: PLAY });
+    await axios.put<UpdateGameReqBody>(`/api/game/${appState.gameCode}`, {
+      phase: PLAY
+    });
     setPhase();
   };
 

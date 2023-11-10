@@ -13,36 +13,36 @@ export interface UserDto {
   uuid: string;
 }
 
-export interface CreateGameRequestBody {
+export interface CreateGameReqBody {
   type: string;
 }
-export interface UpdateGameRequestBody {
+export interface UpdateGameReqBody {
   phase: string;
 }
-export interface JoinGameRequestBody {
+export interface JoinGameReqBody {
   code: string;
   nickname: string;
 }
-export interface NamesRequestBody {
+export interface NamesReqBody {
   text: string;
 }
-export interface StoryRequestBody {
+export interface StoryReqBody {
   part: string;
 }
 
-export interface JoinPhaseResponseBody {
+export interface JoinResBody {
   phase: string;
   users?: string[];
   code?: string;
   nickname?: string;
   isHost?: boolean;
 }
-export interface NamesResponseBody extends JoinPhaseResponseBody {
+export interface NamesResBody extends JoinResBody {
   text?: string;
   placeholder?: string;
   names?: string[];
 }
-export interface StoryResponseBody extends JoinPhaseResponseBody {
+export interface StoryResBody extends JoinResBody {
   prompt?: string;
   placeholder?: string;
   prefix?: string;
@@ -52,15 +52,15 @@ export interface StoryResponseBody extends JoinPhaseResponseBody {
   round?: number;
   id?: string;
 }
-export interface StoryArchiveResponseBody {
+export interface StoryArchiveResBody {
   stories: {
     value: string;
     user: { nickname: string; id: string };
   }[];
 }
 
-export interface ErrorResponseBody {
+export interface ErrorResBody {
   error?: string;
 }
 
-export type RequestBody = never;
+export type ReqBody = never;
