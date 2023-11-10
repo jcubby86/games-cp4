@@ -13,7 +13,7 @@ services:
   backend:
     image: ghcr.io/jcubby86/games-backend:${DOCKER_TAG:-latest}
     environment:
-      - MONGO_DB_CONN_STR=mongodb://db/games
+      - DATABASE_URL="postgresql://postgres:12345@db:5432/prisma?schema=public"
       - NODE_PORT=${NODE_PORT:-3000}
     restart: unless-stopped
     depends_on: 
@@ -26,16 +26,17 @@ services:
       timeout: 10s
       
   db:
-    image: mongo:latest
-    volumes:
-    - /portainer/mongo-games-${ENV:-test}:/data/db
+    image: postgres
     restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: ${PG_PASS}
+    volumes:
+      - /portainer/postgres/games:/var/lib/postgresql/data
     
   db-seed:
-    image: byrnedo/alpine-curl
-    command: "-X POST --silent http://backend:${NODE_PORT:-3000}/api/seed"
+    image: ghcr.io/jcubby86/games-seed:${DOCKER_TAG:-latest}
+    environment:
+      - DATABASE_URL="postgresql://postgres:${PG_PASS}@db:5432/prisma?schema=public"
     depends_on:
-      backend:
-        condition: service_healthy
       db:
-        condition: service_started
+        condition: service_healthy
