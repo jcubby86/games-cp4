@@ -1,13 +1,12 @@
 import { Router } from 'express';
 import prisma from './server.js';
 import { GameType, GamePhase, User } from './.generated/prisma';
+import { RequestBody, RequestHandler } from './utils/types.js';
 import {
-  Game,
-  RequestBody,
+  GameDto,
   CreateGameRequestBody,
   UpdateGameRequestBody,
-  RequestHandler,
-} from './types';
+} from './domain/types.js';
 
 const gameTitles: { [key: string]: string } = {
   story: 'He Said She Said',
@@ -37,7 +36,7 @@ function getGamePhase(s: string): GamePhase {
   return s.toUpperCase() as GamePhase;
 }
 
-const createGame: RequestHandler<CreateGameRequestBody, Game> = async (
+const createGame: RequestHandler<CreateGameRequestBody, GameDto> = async (
   req,
   res,
   next
@@ -57,7 +56,11 @@ const createGame: RequestHandler<CreateGameRequestBody, Game> = async (
   }
 };
 
-const getGame: RequestHandler<RequestBody, Game> = async (req, res, next) => {
+const getGame: RequestHandler<RequestBody, GameDto> = async (
+  req,
+  res,
+  next
+) => {
   try {
     const game = await prisma.game.findUnique({
       where: { code: req.params.code },
@@ -70,7 +73,7 @@ const getGame: RequestHandler<RequestBody, Game> = async (req, res, next) => {
   }
 };
 
-const updateGamePhase: RequestHandler<UpdateGameRequestBody, Game> = async (
+const updateGamePhase: RequestHandler<UpdateGameRequestBody, GameDto> = async (
   req,
   res,
   next
@@ -108,7 +111,7 @@ const getUsers: RequestHandler<RequestBody, User[]> = async (
   }
 };
 
-const recreateGame: RequestHandler<RequestBody, Game> = async (
+const recreateGame: RequestHandler<RequestBody, GameDto> = async (
   req,
   res,
   next

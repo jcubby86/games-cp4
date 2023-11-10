@@ -3,13 +3,7 @@ import prisma from './server.js';
 import { StoryEntry, Category, Game, GamePhase } from './.generated/prisma';
 import { joinPhase, loadStory, loadUser } from './middleware.js';
 import { punctRegex, quoteRegex, WAIT } from './utils/constants.js';
-import {
-  RequestBody,
-  StoryRequestBody,
-  StoryResponseBody,
-  StoryArchiveResponseBody,
-  RequestHandler,
-} from './types.js';
+import { RequestBody, RequestHandler } from './utils/types.js';
 import {
   getEntryForGame,
   getSuggestion,
@@ -17,6 +11,11 @@ import {
   randomNumber,
   upperFirst,
 } from './utils/utils.js';
+import {
+  StoryRequestBody,
+  StoryResponseBody,
+  StoryArchiveResponseBody,
+} from './domain/types.js';
 
 const fillers = ['', '(Man) ', '(Man) and (Woman) ', '', '', ''];
 const prefixes = ['', 'and ', 'were ', 'He said, "', 'She said, "', 'So they '];

@@ -2,19 +2,15 @@ import { Router } from 'express';
 import prisma from './server.js';
 import { GamePhase } from './.generated/prisma';
 import { loadUser } from './middleware.js';
-import {
-  User,
-  RequestBody,
-  JoinGameRequestBody,
-  RequestHandler,
-} from './types.js';
+import { RequestBody, RequestHandler } from './utils/types.js';
+import { UserDto, JoinGameRequestBody } from './domain/types.js';
 
 /**
  * Join a game.
  * If the user already has a session, we update the session/user
  * rather than creating a new one.
  */
-const upsertUser: RequestHandler<JoinGameRequestBody, User> = async (
+const upsertUser: RequestHandler<JoinGameRequestBody, UserDto> = async (
   req,
   res,
   next
@@ -84,7 +80,11 @@ const upsertUser: RequestHandler<JoinGameRequestBody, User> = async (
   }
 };
 
-const getUser: RequestHandler<RequestBody, User> = async (req, res, next) => {
+const getUser: RequestHandler<RequestBody, UserDto> = async (
+  req,
+  res,
+  next
+) => {
   try {
     if (!req.user) {
       return res.sendStatus(404);
