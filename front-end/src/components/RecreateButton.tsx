@@ -1,6 +1,6 @@
 import { useAppState } from '../contexts/AppContext';
-import { GameDto, JoinGameRequestBody, RequestBody, UserDto } from '../helpers/types';
-import axios from '../helpers/axiosWrapper';
+import { GameDto, JoinGameRequestBody, RequestBody, UserDto } from '../utils/types';
+import axios from '../utils/axiosWrapper';
 
 interface RecreateProps {
   reset: () => void;

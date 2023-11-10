@@ -1,9 +1,9 @@
-import axios from '../helpers/axiosWrapper';
+import axios from '../utils/axiosWrapper';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import ShareButton from '../components/ShareButton';
 import RecreateButton from '../components/RecreateButton';
-import { StoryArchiveResponseBody } from '../helpers/types';
+import { StoryArchiveResponseBody } from '../utils/types';
 
 interface Story {
   value: string;

@@ -1,60 +1,36 @@
 import { useState, useEffect, useRef } from 'react';
 import StartGame from '../components/StartGame';
 import List from '../components/List';
-import axios from '../helpers/axiosWrapper';
-import { JOIN, PLAY, READ, WAIT } from '../helpers/constants';
+import axios from '../utils/axiosWrapper';
+import { JOIN, PLAY, READ, WAIT } from '../utils/constants';
 import RecreateButton from '../components/RecreateButton';
 import { useAppState } from '../contexts/AppContext';
 import { Tooltip } from 'react-tooltip';
 import ShareButton from '../components/ShareButton';
 import Icon from '../components/Icon';
 import { Link } from 'react-router-dom';
-import { StoryResponseBody } from '../helpers/types';
+import { StoryResponseBody } from '../utils/types';
 
-interface StoryState {
-  phase: string;
-  users: string[];
-  prompt: string;
-  placeholder: string;
-  prefix: string;
-  suffix: string;
-  story: string;
-  filler: string;
-  id: string;
-  isHost: boolean;
-}
-
-const initialState: StoryState = {
-  phase: '',
-  users: [],
-  prompt: '',
-  placeholder: '',
-  prefix: '',
-  suffix: '',
-  story: '',
-  filler: '',
-  id: '',
-  isHost: false
+const initialState = {
+  phase: ''
 };
 
 const Story = (): JSX.Element => {
   const { appState } = useAppState();
-  const [state, setState] = useState<StoryState>(initialState);
+  const [state, setState] = useState<StoryResponseBody>(initialState);
   const partRef = useRef<HTMLTextAreaElement>(null);
 
   const pollStatus = async (resetPlaceholder = false) => {
     try {
       const response = await axios.get<StoryResponseBody>('/api/story');
-      setState(
-        (prev): StoryState => ({
-          ...response.data,
-          placeholder: getPlaceholder(
-            resetPlaceholder,
-            prev.placeholder,
-            response.data.placeholder
-          )
-        })
-      );
+      setState((prev) => ({
+        ...response.data,
+        placeholder: getPlaceholder(
+          resetPlaceholder,
+          prev.placeholder,
+          response.data.placeholder
+        )
+      }));
     } catch (err: unknown) {
       alert('An error has occurred');
     }
@@ -69,8 +45,11 @@ const Story = (): JSX.Element => {
     return () => clearInterval(timer);
   });
 
-  const getPlaceholder = (reset: boolean, old: string, new_: string): string =>
-    reset || !old ? new_ : old;
+  const getPlaceholder = (
+    reset: boolean,
+    old?: string,
+    new_?: string
+  ): string | undefined => (reset || !old ? new_ : old);
 
   const Play = (): JSX.Element => {
     const submit = async (e: React.FormEvent) => {

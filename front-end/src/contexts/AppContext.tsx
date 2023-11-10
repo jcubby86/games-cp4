@@ -1,12 +1,12 @@
 
-import axios from '../helpers/axiosWrapper';
+import axios from '../utils/axiosWrapper';
 import React, { createContext, useEffect, useState } from 'react';
 import {
   AppContextProps,
   AppContextProviderProps,
   AppState
 } from './AppContextTypes';
-import { UserDto } from '../helpers/types';
+import { UserDto } from '../utils/types';
 
 const initialAppState: AppState = {
   nickname: '',

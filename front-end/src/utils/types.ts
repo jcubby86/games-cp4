@@ -32,25 +32,25 @@ export interface StoryRequestBody {
 
 export interface JoinPhaseResponseBody {
   phase: string;
-  users: string[];
+  users?: string[];
   code?: string;
   nickname?: string;
-  isHost: boolean;
+  isHost?: boolean;
 }
-export interface NamesResponseBody extends JoinPhaseResponseBody{
+export interface NamesResponseBody extends JoinPhaseResponseBody {
   text?: string;
-  placeholder: string;
-  names: string[];
+  placeholder?: string;
+  names?: string[];
 }
 export interface StoryResponseBody extends JoinPhaseResponseBody {
-  prompt: string;
-  placeholder: string;
-  prefix: string;
-  suffix: string;
-  story: string;
-  filler: string;
+  prompt?: string;
+  placeholder?: string;
+  prefix?: string;
+  suffix?: string;
+  story?: string;
+  filler?: string;
   round?: number;
-  id: string;
+  id?: string;
 }
 export interface StoryArchiveResponseBody {
   stories: {

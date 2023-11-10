@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios, { AxiosError } from '../helpers/axiosWrapper';
-import generateNickname from '../helpers/nicknameGeneration';
+import axios, { AxiosError } from '../utils/axiosWrapper';
+import generateNickname from '../utils/nicknameGeneration';
 import { useAppState } from '../contexts/AppContext';
-import { GameDto, JoinGameRequestBody, UserDto } from '../helpers/types';
+import { GameDto, JoinGameRequestBody, UserDto } from '../utils/types';
 
 interface GameType {
   title?: string | null;
