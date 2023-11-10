@@ -1,10 +1,15 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios, { AxiosResponse } from 'axios';
 import generateNickname from '../helpers/nicknameGeneration';
 import { useAppState } from '../contexts/AppContext';
 import { NAMES, STORY } from '../helpers/constants';
-import { Game, PostGameReqBody } from '../helpers/types';
+import {
+  CreateGameRequestBody,
+  GameDto,
+  JoinGameRequestBody,
+  UserDto
+} from '../helpers/types';
+import axios from '../helpers/axiosWrapper';
 
 interface CreateState {
   nickname: string;
@@ -28,26 +33,28 @@ const Create = (): JSX.Element => {
         return;
       }
 
-      const gameResponse = await axios.post<
-        Game,
-        AxiosResponse<Game>,
-        PostGameReqBody
-      >('/api/game', {
-        type: state.selected
-      });
-      const userResponse = await axios.post('/api/user', {
-        nickname: state.nickname.toLowerCase() || suggestion.current,
-        code: gameResponse.data.code
-      });
+      const gameResponse = await axios.post<CreateGameRequestBody, GameDto>(
+        '/api/game',
+        {
+          type: state.selected
+        }
+      );
+      const userResponse = await axios.post<JoinGameRequestBody, UserDto>(
+        '/api/user',
+        {
+          nickname: state.nickname.toLowerCase() || suggestion.current,
+          code: gameResponse.data.code
+        }
+      );
 
       setAppState({
         nickname: userResponse.data.nickname,
-        userId: userResponse.data._id,
+        userId: userResponse.data.uuid,
         gameCode: gameResponse.data.code,
         gameType: gameResponse.data.type
       });
       navigate('/' + gameResponse.data.type.toLowerCase());
-    } catch (err) {
+    } catch (err: unknown) {
       alert('Unable to create game. Please try again in a little bit.');
     }
   };

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import StartGame from '../components/StartGame';
 import List from '../components/List';
-import axios from 'axios';
+import axios from '../helpers/axiosWrapper';
 import { JOIN, PLAY, READ, WAIT } from '../helpers/constants';
 import RecreateButton from '../components/RecreateButton';
 import { useAppState } from '../contexts/AppContext';
@@ -9,6 +9,7 @@ import { Tooltip } from 'react-tooltip';
 import ShareButton from '../components/ShareButton';
 import Icon from '../components/Icon';
 import { Link } from 'react-router-dom';
+import { StoryResponseBody } from '../helpers/types';
 
 interface StoryState {
   phase: string;
@@ -43,7 +44,7 @@ const Story = (): JSX.Element => {
 
   const pollStatus = async (resetPlaceholder = false) => {
     try {
-      const response = await axios.get('/api/story');
+      const response = await axios.get<StoryResponseBody>('/api/story');
       setState(
         (prev): StoryState => ({
           ...response.data,
@@ -54,7 +55,7 @@ const Story = (): JSX.Element => {
           )
         })
       );
-    } catch (error) {
+    } catch (err: unknown) {
       alert('An error has occurred');
     }
   };
@@ -92,7 +93,7 @@ const Story = (): JSX.Element => {
         if (partRef.current) {
           partRef.current.value = '';
         }
-      } catch (error) {
+      } catch (err: unknown) {
         alert('An error has occurred');
       }
     };
@@ -101,7 +102,7 @@ const Story = (): JSX.Element => {
       try {
         _e.stopPropagation();
         pollStatus(true);
-      } catch (err) {
+      } catch (err: unknown) {
         console.error(err);
       }
     };
@@ -192,9 +193,7 @@ const Story = (): JSX.Element => {
         users={state.users}
         isHost={state.isHost}
         title="He Said She Said"
-        setPhase={(newPhase) =>
-          setState((prev) => ({ ...prev, phase: newPhase }))
-        }
+        setPhase={() => setState((prev) => ({ ...prev, phase: '' }))}
       ></StartGame>
     );
   } else if (state.phase === PLAY) {

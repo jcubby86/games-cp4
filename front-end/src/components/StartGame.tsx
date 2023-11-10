@@ -1,10 +1,10 @@
-import axios from 'axios';
+import axios from '../helpers/axiosWrapper';
 import { useAppState } from '../contexts/AppContext';
 import { PLAY } from '../helpers/constants';
 import List from './List';
 
 interface StartGameProps {
-  setPhase: (prevState: string) => unknown;
+  setPhase: () => unknown;
   title: string;
   users: string[];
   isHost: boolean;
@@ -20,7 +20,7 @@ const StartGame = ({
   const startGame = async (e: React.FormEvent) => {
     e.preventDefault();
     await axios.put(`/api/game/${appState.gameCode}`, { phase: PLAY });
-    setPhase('');
+    setPhase();
   };
 
   return (

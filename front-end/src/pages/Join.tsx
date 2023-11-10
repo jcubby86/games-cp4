@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios, { AxiosError } from 'axios';
+import axios, { AxiosError } from '../helpers/axiosWrapper';
 import generateNickname from '../helpers/nicknameGeneration';
 import { useAppState } from '../contexts/AppContext';
+import { GameDto, JoinGameRequestBody, UserDto } from '../helpers/types';
 
 interface GameType {
   title?: string | null;
@@ -32,23 +33,23 @@ const Join = (): JSX.Element => {
         return;
       }
 
-      const response = await axios.post('/api/user', {
+      const response = await axios.post<JoinGameRequestBody, UserDto>('/api/user', {
         nickname: state.nickname.toLowerCase() || suggestion.current,
         code: state.gameCode.toLowerCase()
       });
 
       setAppState({
         nickname: response.data.nickname,
-        userId: response.data._id,
+        userId: response.data.uuid,
         gameCode: response.data.game.code,
         gameType: response.data.game.type
       });
 
-      navigate('/' + response.data.type.toLowerCase());
+      navigate('/' + response.data.game.type.toLowerCase());
     } catch (e: unknown) {
       const err = e as AxiosError;
       if (err?.response?.status === 400) {
-        alert(err.response.data);
+        alert(JSON.stringify(err.response.data));
       } else {
         alert('Error joining game');
       }
@@ -59,13 +60,13 @@ const Join = (): JSX.Element => {
     let gameType: GameType = {};
     try {
       if (code.length === 4) {
-        const result = await axios.get('/api/game/' + code);
+        const result = await axios.get<GameDto>('/api/game/' + code);
         gameType = {
           title: result.data.title,
           valid: true
         };
       }
-    } catch (error) {
+    } catch (err: unknown) {
       gameType = { title: 'Game not found', valid: false };
     }
     setState((prev) => ({ ...prev, gameCode: code, gameType: gameType }));

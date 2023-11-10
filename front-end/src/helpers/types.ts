@@ -1,7 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable no-unused-vars */
-
-export interface Game {
+export interface GameDto {
   type: string;
   code: string;
   phase: string;
@@ -10,79 +7,60 @@ export interface Game {
   title?: string;
 }
 
-export interface User {
-  game?: Game;
+export interface UserDto {
+  game: GameDto;
   nickname: string;
+  uuid: string;
 }
 
-export interface Entry<Type> {
-  user: User;
-  value: Type;
-}
-
-export interface Story {
-  game: Game;
-  entries: Entry<string[]>[];
-  finalEntries: Entry<string>[];
-  round: number;
-}
-
-export interface Names {
-  game: Game;
-  entries: Entry<string>[];
-}
-
-/*
-   ____ _____ ___  
-  |  _ \_   _/ _ \ 
-  | | | || || | | |
-  | |_| || || |_| |
-  |____/ |_| \___/ 
-                   
-*/
-
-export interface PostGameReqBody {
+export interface CreateGameRequestBody {
   type: string;
 }
-
-export interface UpdateGameReqBody {
+export interface UpdateGameRequestBody {
   phase: string;
 }
-
-export type Params = { [key: string]: string };
-
-export interface JoinReqBody {
+export interface JoinGameRequestBody {
   code: string;
   nickname: string;
 }
-
-export interface JoinResBody {
-  phase: string;
-  users?: string[];
-  code?: string;
-  nickname?: string;
-}
-
-export interface NamesResBody extends JoinResBody {
-  text?: string;
-  placeholder?: string;
-  names?: string[];
-}
-
-export interface NamesReqBody {
+export interface NamesRequestBody {
   text: string;
 }
-
-export interface StoryResBody extends JoinResBody {
-  prompt?: string;
-  placeholder?: string;
-  prefix?: string;
-  suffix?: string;
-  story?: string;
-  filler?: string;
-  round?: number;
-}
-
-export interface StoryReqBody {
+export interface StoryRequestBody {
   part: string;
 }
+
+export interface JoinPhaseResponseBody {
+  phase: string;
+  users: string[];
+  code?: string;
+  nickname?: string;
+  isHost: boolean;
+}
+export interface NamesResponseBody extends JoinPhaseResponseBody{
+  text?: string;
+  placeholder: string;
+  names: string[];
+}
+export interface StoryResponseBody extends JoinPhaseResponseBody {
+  prompt: string;
+  placeholder: string;
+  prefix: string;
+  suffix: string;
+  story: string;
+  filler: string;
+  round?: number;
+  id: string;
+}
+export interface StoryArchiveResponseBody {
+  stories: {
+    value: string;
+    user: { nickname: string; id: string };
+  }[];
+}
+
+export interface ErrorResponseBody {
+  error?: string;
+}
+
+export type RequestBody = never;
