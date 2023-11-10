@@ -1,8 +1,9 @@
-import axios from 'axios';
+import axios from '../helpers/axiosWrapper';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import ShareButton from '../components/ShareButton';
 import RecreateButton from '../components/RecreateButton';
+import { StoryArchiveResponseBody } from '../helpers/types';
 
 interface Story {
   value: string;
@@ -24,9 +25,11 @@ export default function StoryArchive(): JSX.Element {
 
   const pollStatus = async () => {
     try {
-      const response = await axios.get(`/api/story/${id}`);
+      const response = await axios.get<StoryArchiveResponseBody>(
+        `/api/story/${id}`
+      );
       setState((prev) => ({ ...response.data, showAll: prev.showAll }));
-    } catch (error) {
+    } catch (err: unknown) {
       // navigate('/');
     }
   };

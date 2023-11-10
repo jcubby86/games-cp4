@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import StartGame from '../components/StartGame';
 import List from '../components/List';
-import axios, { AxiosError } from 'axios';
+import axios, { AxiosError } from '../helpers/axiosWrapper';
 import { useAppState } from '../contexts/AppContext';
 import { END, JOIN, PLAY, READ, WAIT } from '../helpers/constants';
 import RecreateButton from '../components/RecreateButton';
+import { NamesResponseBody } from '../helpers/types';
 
 interface NamesState {
   phase: string;
@@ -27,12 +28,15 @@ const Names = (): JSX.Element => {
 
   const pollStatus = async () => {
     try {
-      const response = await axios.get('/api/names');
+      const response = await axios.get<NamesResponseBody>('/api/names');
       setState((prev) => ({
-        ...response.data,
+        phase: response.data.phase,
+        users: response.data.users,
+        names: response.data.names,
+        isHost: response.data.isHost,
         placeholder: prev.placeholder || response.data.placeholder
       }));
-    } catch (error) {
+    } catch (err: unknown) {
       alert('An error has occurred');
     }
   };
@@ -152,9 +156,7 @@ const Names = (): JSX.Element => {
         users={state.users}
         isHost={state.isHost}
         title="The Name Game"
-        setPhase={(newPhase) =>
-          setState((prev) => ({ ...prev, phase: newPhase }))
-        }
+        setPhase={() => setState((prev) => ({ ...prev, phase: '' }))}
       ></StartGame>
     );
   } else if (state.phase === PLAY) {

@@ -1,10 +1,12 @@
-import axios from 'axios';
+
+import axios from '../helpers/axiosWrapper';
 import React, { createContext, useEffect, useState } from 'react';
 import {
   AppContextProps,
   AppContextProviderProps,
   AppState
 } from './AppContextTypes';
+import { UserDto } from '../helpers/types';
 
 const initialAppState: AppState = {
   nickname: '',
@@ -24,15 +26,15 @@ export const AppContextProvider = ({ children }: AppContextProviderProps) => {
 
   const fetchUser = async () => {
     try {
-      const response = await axios.get('/api/user');
+      const response = await axios.get<UserDto>('/api/user');
 
       setAppState({
         nickname: response.data.nickname,
-        userId: response.data._id,
+        userId: response.data.uuid,
         gameCode: response.data.game.code,
         gameType: response.data.game.type
       });
-    } catch (err) {
+    } catch (err: unknown) {
       return;
     }
   };

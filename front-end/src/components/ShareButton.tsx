@@ -23,7 +23,7 @@ const ShareButton = ({
           url: getUrl()
         });
       }
-    } catch (err) {
+    } catch (err: unknown) {
       console.error(err);
     }
   };

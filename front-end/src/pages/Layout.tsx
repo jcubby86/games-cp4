@@ -1,5 +1,5 @@
 import { Outlet, Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axios from '../helpers/axiosWrapper';
 import { useAppState } from '../contexts/AppContext';
 import { AppState } from '../contexts/AppContextTypes';
 import Icon from '../components/Icon';
@@ -17,7 +17,7 @@ const Layout = (): JSX.Element => {
         return { ...state, gameCode: '', gameType: '' };
       });
       navigate('/');
-    } catch (err) {
+    } catch (err: unknown) {
       console.error(err);
     }
   };
