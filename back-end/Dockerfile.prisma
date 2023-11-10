@@ -1,9 +1,0 @@
-# build environment
-FROM node:alpine as build
-WORKDIR /app
-ENV PATH /app/node_modules/.bin:$PATH
-COPY package*.json ./
-COPY tsconfig*.json ./
-COPY . ./
-RUN npm ci
-CMD ["npm", "run", "prisma:deploy"]
