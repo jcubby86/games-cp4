@@ -6,7 +6,7 @@ import StartGame from '../components/StartGame';
 import { useAppState } from '../contexts/AppContext';
 import axios, { AxiosError } from '../utils/axiosWrapper';
 import { END, JOIN, PLAY, READ, WAIT } from '../utils/constants';
-import { NamesResBody } from '../utils/types';
+import { NamesReqBody, NamesResBody, UpdateGameReqBody } from '../utils/types';
 
 const initialState = {
   phase: ''
@@ -51,7 +51,7 @@ const Names = (): JSX.Element => {
           return;
         }
 
-        await axios.put('/api/names', {
+        await axios.put<NamesReqBody>('/api/names', {
           text: entryRef.current.value
         });
         setState((prev) => ({
@@ -88,14 +88,18 @@ const Names = (): JSX.Element => {
 
   const Read = (): JSX.Element => {
     const endGame = async (e: React.MouseEvent) => {
-      //TODO: check for try/catch on all axios requests
-      //TODO: check for e.preventDefault() on all React.MouseEvent
-      e.preventDefault();
-      await axios.put(`/api/game/${appState.gameId}`, { phase: END });
-      setState((prev) => ({
-        ...prev,
-        phase: END
-      }));
+      try {
+        e.preventDefault();
+        await axios.put<UpdateGameReqBody>(`/api/game/${appState.gameId}`, {
+          phase: END
+        });
+        setState((prev) => ({
+          ...prev,
+          phase: END
+        }));
+      } catch (err: unknown) {
+        console.error(err);
+      }
     };
 
     return (

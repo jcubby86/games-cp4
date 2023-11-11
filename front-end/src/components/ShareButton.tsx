@@ -13,9 +13,9 @@ const ShareButton = ({
   title,
   text
 }: ShareProps): JSX.Element => {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const share = async (_e: React.MouseEvent) => {
+  const share = async (e: React.MouseEvent) => {
     try {
+      e.preventDefault();
       if (navigator.share) {
         await navigator.share({
           title: title,

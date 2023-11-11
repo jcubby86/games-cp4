@@ -103,7 +103,10 @@ const Join = (): JSX.Element => {
             placeholder="abxy"
             maxLength={4}
             value={state.gameCode}
-            onChange={(e) => checkGameType(e.target.value.toLowerCase())}
+            onChange={(e) => {
+              e.preventDefault();
+              checkGameType(e.target.value.toLowerCase());
+            }}
           />
         </div>
 
@@ -121,9 +124,10 @@ const Join = (): JSX.Element => {
             placeholder={suggestion.current}
             maxLength={30}
             value={state.nickname}
-            onChange={(e) =>
-              setState((prev) => ({ ...prev, nickname: e.target.value }))
-            }
+            onChange={(e) => {
+              e.preventDefault();
+              setState((prev) => ({ ...prev, nickname: e.target.value }));
+            }}
           />
         </div>
 
