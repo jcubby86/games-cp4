@@ -130,6 +130,7 @@ const getGame: Handler<ReqBody, StoryResBody> = async (req, res, next) => {
   try {
     if (!req.game || !req.user) return res.sendStatus(403);
 
+    const { round, waitingOnUsers } = await checkRoundCompletion(req.game);
     const entry = await prisma.storyEntry.findUnique({
       where: {
         gameId_userId: {
@@ -139,7 +140,6 @@ const getGame: Handler<ReqBody, StoryResBody> = async (req, res, next) => {
       },
     });
     if (req.game.phase === GamePhase.PLAY) {
-      const { round, waitingOnUsers } = await checkRoundCompletion(req.game);
       const category = categories[round];
       const suggestion = await getSuggestion(category);
       return res.send({
