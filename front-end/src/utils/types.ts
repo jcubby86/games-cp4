@@ -1,5 +1,11 @@
 import StoryArchive from '../pages/StoryArchive';
-export interface GameDto {
+
+export interface ReqBody {}
+export interface ResBody {
+  error?: string;
+}
+
+export interface GameDto extends ResBody {
   type: string;
   code: string;
   phase: string;
@@ -9,30 +15,30 @@ export interface GameDto {
   uuid: string;
 }
 
-export interface UserDto {
+export interface UserDto extends ResBody {
   game: GameDto;
   nickname: string;
   uuid: string;
 }
 
-export interface CreateGameReqBody {
+export interface CreateGameReqBody extends ReqBody {
   type: string;
 }
-export interface UpdateGameReqBody {
+export interface UpdateGameReqBody extends ReqBody {
   phase: string;
 }
-export interface JoinGameReqBody {
+export interface JoinGameReqBody extends ReqBody {
   uuid: string;
   nickname: string;
 }
-export interface NamesReqBody {
+export interface NamesReqBody extends ReqBody {
   text: string;
 }
-export interface StoryReqBody {
+export interface StoryReqBody extends ReqBody {
   part: string;
 }
 
-export interface JoinResBody {
+export interface JoinResBody extends ResBody {
   phase: string;
   users?: string[];
   code?: string;
@@ -58,12 +64,6 @@ export interface StoryArchive {
   value: string;
   user: { nickname: string; id: string };
 }
-export interface StoryArchiveResBody {
+export interface StoryArchiveResBody extends ResBody {
   stories: StoryArchive[];
 }
-
-export interface ErrorResBody {
-  error?: string;
-}
-
-export type ReqBody = never;
