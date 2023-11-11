@@ -15,7 +15,7 @@ const Layout = (): JSX.Element => {
 
       await axios.delete('/api/user');
       setAppState((state: AppState): AppState => {
-        return { ...state, gameCode: '', gameType: '' };
+        return { ...state, gameCode: '', gameType: '', gameId: '' };
       });
       navigate('/');
     } catch (err: unknown) {

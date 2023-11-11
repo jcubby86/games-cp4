@@ -89,10 +89,3 @@ export async function getUsersByGameId(gameId: number) {
     where: { gameId: gameId },
   });
 }
-
-export function getEntryForGame<E extends { gameId: number }>(
-  gameId: number,
-  entries: E[]
-): E | undefined {
-  return entries.find((e) => e.gameId === gameId);
-}

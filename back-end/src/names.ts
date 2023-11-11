@@ -7,7 +7,6 @@ import prisma from './server.js';
 import { WAIT, quoteRegex } from './utils/constants.js';
 import { ReqBody as ReqBody, ReqHandler as ReqHandler } from './utils/types.js';
 import {
-  getEntryForGame,
   getSuggestion,
   randomElement,
   shuffleArray,
@@ -27,11 +26,15 @@ async function checkCompletion(game: Game): Promise<string[]> {
 
   const users = await prisma.user.findMany({
     where: { gameId: game.id },
-    include: { nameEntries: true },
+    include: {
+      nameEntries: {
+        where: { gameId: game.id },
+      },
+    },
   });
 
   const waitingOnUsers = users
-    .filter((u) => getEntryForGame(game.id, u.nameEntries) === undefined)
+    .filter((u) => u.nameEntries.at(0) === undefined)
     .map((u) => u.nickname);
 
   if (waitingOnUsers.length > 0) {
@@ -51,14 +54,20 @@ async function checkCompletion(game: Game): Promise<string[]> {
 
 const getGameState: ReqHandler<ReqBody, ResBody> = async (req, res, next) => {
   try {
-    if (!req.game || !req.user || !req.nameEntries) return res.sendStatus(500);
+    if (!req.game || !req.user) return res.sendStatus(403);
 
-    const entries = req.nameEntries;
     const waitingOnUsers = await checkCompletion(req.game);
     const isHost = req.game.hostId === req.user.id;
 
     if (req.game.phase === GamePhase.PLAY) {
-      const userElem = entries.find((elem) => elem.userId === req.user?.id);
+      const userElem = await prisma.nameEntry.findUnique({
+        where: {
+          gameId_userId: {
+            gameId: req.game.id,
+            userId: req.user.id,
+          },
+        },
+      });
 
       const category = randomElement(categories);
       const suggestion = await getSuggestion(category);
@@ -69,6 +78,9 @@ const getGameState: ReqHandler<ReqBody, ResBody> = async (req, res, next) => {
         placeholder: suggestion,
       });
     } else if (req.game.phase === GamePhase.READ) {
+      const entries = await prisma.nameEntry.findMany({
+        where: { gameId: req.game.id },
+      });
       shuffleArray(entries);
       return res.send({
         phase: GamePhase.READ,
@@ -88,29 +100,31 @@ const getGameState: ReqHandler<ReqBody, ResBody> = async (req, res, next) => {
 
 const saveEntry: ReqHandler<NamesReqBody> = async (req, res, next) => {
   try {
-    if (!req.game || !req.user || !req.nameEntries) return res.sendStatus(500);
+    if (!req.user || !req.game) return res.sendStatus(403);
+    if (req.game.phase !== GamePhase.PLAY) return res.sendStatus(400);
 
-    if (req.game.phase !== GamePhase.PLAY) return res.sendStatus(403);
+    const name = upperFirst(req.body.text.replace(quoteRegex, '').trim());
+    const normalized = name.toUpperCase();
 
-    const names = req.nameEntries;
-
-    const userIndex = names.findIndex((elem) => elem.userId === req.user?.id);
-    if (userIndex === -1) {
-      const name = upperFirst(req.body.text.replace(quoteRegex, '').trim());
-      const normalized = name.toUpperCase();
-
-      await prisma.nameEntry.create({
-        data: {
-          name: name,
-          normalized: normalized,
-          user: { connect: { id: req.user.id } },
-          game: { connect: { id: req.game.id } },
+    await prisma.nameEntry.upsert({
+      where: {
+        gameId_userId: {
+          gameId: req.game.id,
+          userId: req.user.id,
         },
-      });
-      return res.sendStatus(201);
-    } else {
-      res.sendStatus(200);
-    }
+      },
+      update: {
+        name,
+        normalized,
+      },
+      create: {
+        name,
+        normalized,
+        userId: req.user.id,
+        gameId: req.game.id,
+      },
+    });
+    return res.sendStatus(200);
   } catch (err: unknown) {
     return next(err);
   }
