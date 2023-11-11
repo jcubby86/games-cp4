@@ -1,6 +1,6 @@
 {
   "name": "games-backend",
-  "version": "2.2.0",
+  "version": "2.4.0",
   "description": "Back end for a website to play some simple games",
   "main": "server.js",
   "scripts": {
