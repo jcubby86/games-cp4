@@ -14,13 +14,13 @@ const RecreateButton = ({ reset, className }: RecreateProps): JSX.Element => {
     e.preventDefault();
     try {
       const gameResponse = await axios.post<ReqBody, GameDto>(
-        `/api/game/${appState.gameCode}/recreate`
+        `/api/game/${appState.gameId}/recreate`
       );
       const userResponse = await axios.post<JoinGameReqBody, UserDto>(
         '/api/user',
         {
           nickname: appState.nickname.toLowerCase(),
-          code: gameResponse.data.code
+          uuid: gameResponse.data.uuid
         }
       );
 
@@ -28,7 +28,8 @@ const RecreateButton = ({ reset, className }: RecreateProps): JSX.Element => {
         nickname: userResponse.data.nickname,
         userId: userResponse.data.uuid,
         gameCode: gameResponse.data.code,
-        gameType: gameResponse.data.type
+        gameType: gameResponse.data.type,
+        gameId: gameResponse.data.uuid
       });
       reset();
     } catch (err: unknown) {

@@ -6,14 +6,12 @@ import axios, { AxiosError } from '../utils/axiosWrapper';
 import generateNickname from '../utils/nicknameGeneration';
 import { GameDto, JoinGameReqBody, UserDto } from '../utils/types';
 
-interface GameType {
-  title?: string | null;
-  valid?: boolean | null;
-}
 interface JoinState {
   nickname: string;
   gameCode: string;
-  gameType: GameType;
+  gameId?: string;
+  gameTitle?: string;
+  valid?: boolean;
 }
 
 const Join = (): JSX.Element => {
@@ -22,7 +20,7 @@ const Join = (): JSX.Element => {
   const [state, setState] = useState<JoinState>({
     nickname: appState.nickname,
     gameCode: appState.gameCode,
-    gameType: {}
+    gameId: appState.gameId
   });
   const navigate = useNavigate();
 
@@ -36,14 +34,15 @@ const Join = (): JSX.Element => {
 
       const response = await axios.post<JoinGameReqBody, UserDto>('/api/user', {
         nickname: state.nickname.toLowerCase() || suggestion.current,
-        code: state.gameCode.toLowerCase()
+        uuid: state.gameId ?? ''
       });
 
       setAppState({
         nickname: response.data.nickname,
         userId: response.data.uuid,
         gameCode: response.data.game.code,
-        gameType: response.data.game.type
+        gameType: response.data.game.type,
+        gameId: response.data.game.uuid
       });
 
       navigate('/' + response.data.game.type.toLowerCase());
@@ -58,19 +57,28 @@ const Join = (): JSX.Element => {
   };
 
   const checkGameType = async (code: string) => {
-    let gameType: GameType = {};
     try {
       if (code.length === 4) {
-        const result = await axios.get<GameDto>('/api/game/' + code);
-        gameType = {
-          title: result.data.title,
+        const result = await axios.get<GameDto>(`/api/game/${code}`);
+        setState((prev) => ({
+          ...prev,
+          gameCode: code,
+          gameTitle: result.data.title,
+          gameId: result.data.uuid,
           valid: true
-        };
+        }));
+        return;
       }
     } catch (err: unknown) {
-      gameType = { title: 'Game not found', valid: false };
+      console.error('Game not found');
     }
-    setState((prev) => ({ ...prev, gameCode: code, gameType: gameType }));
+    setState((prev) => ({
+      ...prev,
+      gameCode: code,
+      gameTitle: undefined,
+      gameId: undefined,
+      valid: code.length === 4 ? false : undefined
+    }));
   };
 
   useEffect(() => {
@@ -120,19 +128,19 @@ const Join = (): JSX.Element => {
         </div>
 
         <input
-          disabled={!state.gameType.valid}
+          disabled={!state.valid}
           type="submit"
           className="form-control btn btn-success col-12 mt-3"
           value={
-            state.gameType.valid &&
+            state.valid &&
             appState.gameCode &&
             appState.gameCode === state.gameCode
               ? 'Return to Game'
               : 'Join Game'
           }
         />
-        <div className={state.gameType.valid ? 'text-muted' : 'text-danger'}>
-          {state.gameType.title}
+        <div className={state.gameTitle ? 'text-muted' : 'text-danger'}>
+          {state.gameTitle ?? (state.valid === false && 'Game not found')}
         </div>
       </form>
     </div>

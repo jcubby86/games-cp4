@@ -20,7 +20,7 @@ const StartGame = ({
   const { appState } = useAppState();
   const startGame = async (e: React.FormEvent) => {
     e.preventDefault();
-    await axios.put<UpdateGameReqBody>(`/api/game/${appState.gameCode}`, {
+    await axios.put<UpdateGameReqBody>(`/api/game/${appState.gameId}`, {
       phase: PLAY
     });
     setPhase();

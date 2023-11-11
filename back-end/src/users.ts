@@ -14,18 +14,15 @@ import { ReqBody, ReqHandler } from './utils/types.js';
 const upsertUser: ReqHandler<JoinReq, User> = async (req, res, next) => {
   try {
     const game = await prisma.game.findUnique({
-      where: { code: req.body.code },
+      where: { uuid: req.body.uuid },
     });
     if (
       !game ||
       !(game?.phase === GamePhase.JOIN || req.user?.gameId === game.id)
     ) {
-      console.warn(
-        `Game with code ${req.body.code} does not exist or can no longer be joined.`
-      );
-      return res.status(400).send({
-        error: `Game with code ${req.body.code} does not exist or can no longer be joined.`,
-      });
+      const error = `Game with code ${game?.code} does not exist or can no longer be joined.`;
+      console.warn(error);
+      return res.status(400).send({ error });
     }
 
     let statusCode = 201;

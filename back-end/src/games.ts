@@ -9,11 +9,6 @@ import {
 import prisma from './server.js';
 import { ReqBody, ReqHandler as ReqHandler } from './utils/types.js';
 
-const gameTitles: { [key: string]: string } = {
-  story: 'He Said She Said',
-  names: 'The Name Game',
-};
-
 /**
  * Generate a 4 letter string as game code,
  * and make sure that it is not already in use.
@@ -37,6 +32,16 @@ function getGamePhase(s: string): GamePhase {
   return s.toUpperCase() as GamePhase;
 }
 
+function getGameTitle(type: GameType): string | undefined {
+  if (type === GameType.STORY) {
+    return 'He Said She Said';
+  } else if (type === GameType.NAME) {
+    return 'The Name Game';
+  } else {
+    return undefined;
+  }
+}
+
 const createGame: ReqHandler<CreateReq, Game> = async (req, res, next) => {
   try {
     const game = await prisma.game.create({
@@ -47,7 +52,7 @@ const createGame: ReqHandler<CreateReq, Game> = async (req, res, next) => {
     });
 
     console.info('Game created:', JSON.stringify(game));
-    return res.status(201).send({ ...game, title: gameTitles[game.type] });
+    return res.status(201).send({ ...game, title: getGameTitle(game.type) });
   } catch (err: unknown) {
     return next(err);
   }
@@ -60,7 +65,7 @@ const getGame: ReqHandler<ReqBody, Game> = async (req, res, next) => {
     });
     if (!game) return res.sendStatus(404);
 
-    return res.send({ ...game, title: gameTitles[game.type] });
+    return res.send({ ...game, title: getGameTitle(game.type) });
   } catch (err: unknown) {
     return next(err);
   }
@@ -69,7 +74,7 @@ const getGame: ReqHandler<ReqBody, Game> = async (req, res, next) => {
 const updateGamePhase: ReqHandler<UpdateReq, Game> = async (req, res, next) => {
   try {
     const game = await prisma.game.update({
-      where: { code: req.params.code },
+      where: { uuid: req.params.uuid },
       data: { phase: getGamePhase(req.body.phase) },
     });
     if (!game) return res.sendStatus(404);
@@ -86,7 +91,7 @@ const getUsers: ReqHandler<ReqBody, User[]> = async (req, res, next) => {
     const users = await prisma.user.findMany({
       where: {
         game: {
-          code: req.params.code,
+          uuid: req.params.uuid,
         },
       },
     });
@@ -100,7 +105,7 @@ const recreateGame: ReqHandler<ReqBody, Game> = async (req, res, next) => {
   try {
     const oldGame = await prisma.game.findUniqueOrThrow({
       where: {
-        code: req.params.code,
+        uuid: req.params.uuid,
       },
       include: {
         successor: true,
@@ -130,6 +135,6 @@ const recreateGame: ReqHandler<ReqBody, Game> = async (req, res, next) => {
 export const router = Router();
 router.post('/', createGame);
 router.get('/:code', getGame);
-router.put('/:code', updateGamePhase);
-router.get('/:code/users', getUsers);
-router.post('/:code/recreate', recreateGame);
+router.put('/:uuid', updateGamePhase);
+router.get('/:uuid/users', getUsers);
+router.post('/:uuid/recreate', recreateGame);

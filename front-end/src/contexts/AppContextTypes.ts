@@ -3,6 +3,7 @@ export interface AppState {
   gameCode: string;
   gameType: string;
   userId: string;
+  gameId: string;
 }
 export interface AppContextProps {
   appState: AppState;

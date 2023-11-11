@@ -4,29 +4,26 @@ import { useNavigate, useParams } from 'react-router-dom';
 import RecreateButton from '../components/RecreateButton';
 import ShareButton from '../components/ShareButton';
 import axios from '../utils/axiosWrapper';
-import { StoryArchiveResBody } from '../utils/types';
+import {
+  StoryArchiveResBody as ArchiveResBody,
+  StoryArchive as Story
+} from '../utils/types';
 
-interface Story {
-  value: string;
-  user: { nickname: string; id: string };
-}
-
-interface StoryArchiveState {
-  id?: string;
-  stories?: Story[];
+interface StoryArchiveState extends ArchiveResBody {
   showAll: boolean;
 }
 
 export default function StoryArchive(): JSX.Element {
-  const { id, userId } = useParams();
+  const { gameId, userId } = useParams();
   const [{ stories, showAll }, setState] = useState<StoryArchiveState>({
+    stories: [],
     showAll: false
   });
   const navigate = useNavigate();
 
   const pollStatus = async () => {
     try {
-      const response = await axios.get<StoryArchiveResBody>(`/api/story/${id}`);
+      const response = await axios.get<ArchiveResBody>(`/api/story/${gameId}`);
       setState((prev) => ({ ...response.data, showAll: prev.showAll }));
     } catch (err: unknown) {
       // navigate('/');
@@ -37,16 +34,14 @@ export default function StoryArchive(): JSX.Element {
     pollStatus();
   }, []);
 
-  const userItem = stories?.find(
-    (i: Story) => !userId || showAll || userId === i.user.id
-  );
+  const userItem = stories?.find((story) => userId === story.user.id);
   const Items = (): JSX.Element => {
-    if (userItem) {
+    if (userItem && !showAll) {
       return <ListItem item={userItem} index={0} />;
     } else {
       return (
         <>
-          {stories?.map((item: Story, index: number) => {
+          {stories?.map((item, index) => {
             return <ListItem item={item} index={index} />;
           })}
         </>
@@ -59,7 +54,7 @@ export default function StoryArchive(): JSX.Element {
     const toggleAll = (_e: React.MouseEvent) =>
       setState((prev) => ({ ...prev, showAll: !prev.showAll }));
 
-    if (userItem) {
+    if (userItem && stories?.length > 1) {
       return (
         <button className="btn btn-success col" onClick={toggleAll}>
           {showAll ? 'hide' : 'show all'}
@@ -81,7 +76,7 @@ export default function StoryArchive(): JSX.Element {
     );
   };
 
-  const getPath = () => `/story/${id}` + (userId ? `/${userId}` : '');
+  const getPath = () => `/story/${gameId}` + (userId ? `/${userId}` : '');
 
   return (
     <div className="d-flex flex-column w-100">
