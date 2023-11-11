@@ -39,14 +39,15 @@ const Create = (): JSX.Element => {
       });
       const userResponse = await axios.post<JoinGameReq, User>('/api/user', {
         nickname: state.nickname.toLowerCase() || suggestion.current,
-        code: gameResponse.data.code
+        uuid: gameResponse.data.uuid
       });
 
       setAppState({
         nickname: userResponse.data.nickname,
         userId: userResponse.data.uuid,
         gameCode: gameResponse.data.code,
-        gameType: gameResponse.data.type
+        gameType: gameResponse.data.type,
+        gameId: gameResponse.data.uuid
       });
       navigate('/' + gameResponse.data.type.toLowerCase());
     } catch (err: unknown) {

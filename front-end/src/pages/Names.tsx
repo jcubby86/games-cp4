@@ -88,8 +88,10 @@ const Names = (): JSX.Element => {
 
   const Read = (): JSX.Element => {
     const endGame = async (e: React.MouseEvent) => {
+      //TODO: check for try/catch on all axios requests
+      //TODO: check for e.preventDefault() on all React.MouseEvent
       e.preventDefault();
-      await axios.put(`/api/game/${appState.gameCode}`, { phase: END });
+      await axios.put(`/api/game/${appState.gameId}`, { phase: END });
       setState((prev) => ({
         ...prev,
         phase: END

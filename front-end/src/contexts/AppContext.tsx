@@ -12,7 +12,8 @@ const initialAppState: AppState = {
   nickname: '',
   userId: '',
   gameCode: '',
-  gameType: ''
+  gameType: '',
+  gameId: ''
 };
 
 export const AppContext = createContext<AppContextProps>({
@@ -31,7 +32,8 @@ export const AppContextProvider = ({ children }: AppContextProviderProps) => {
         nickname: response.data.nickname,
         userId: response.data.uuid,
         gameCode: response.data.game.code,
-        gameType: response.data.game.type
+        gameType: response.data.game.type,
+        gameId: response.data.game.uuid
       });
     } catch (err: unknown) {
       return;

@@ -15,7 +15,7 @@ export interface UpdateGameReqBody {
   phase: string;
 }
 export interface JoinGameReqBody {
-  code: string;
+  uuid: string;
   nickname: string;
 }
 export interface NamesReqBody {

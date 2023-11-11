@@ -23,7 +23,7 @@ function App(): JSX.Element {
             <Route path="create" element={<Create />} />
             <Route path={STORY.toLowerCase()} element={<Story />} />
             <Route
-              path={`${STORY.toLowerCase()}/:id/:userId?`}
+              path={`${STORY.toLowerCase()}/:gameId/:userId?`}
               element={<StoryArchive />}
             />
             <Route path={NAMES.toLowerCase()} element={<Names />} />

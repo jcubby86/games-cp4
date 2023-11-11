@@ -1,3 +1,4 @@
+import StoryArchive from '../pages/StoryArchive';
 export interface GameDto {
   type: string;
   code: string;
@@ -5,6 +6,7 @@ export interface GameDto {
   test: number;
   createdAt: Date;
   title?: string;
+  uuid: string;
 }
 
 export interface UserDto {
@@ -20,7 +22,7 @@ export interface UpdateGameReqBody {
   phase: string;
 }
 export interface JoinGameReqBody {
-  code: string;
+  uuid: string;
   nickname: string;
 }
 export interface NamesReqBody {
@@ -52,11 +54,12 @@ export interface StoryResBody extends JoinResBody {
   round?: number;
   id?: string;
 }
+export interface StoryArchive {
+  value: string;
+  user: { nickname: string; id: string };
+}
 export interface StoryArchiveResBody {
-  stories: {
-    value: string;
-    user: { nickname: string; id: string };
-  }[];
+  stories: StoryArchive[];
 }
 
 export interface ErrorResBody {
