@@ -60,10 +60,9 @@ const createGame: ReqHandler<CreateReq, Game> = async (req, res, next) => {
 
 const getGame: ReqHandler<ReqBody, Game> = async (req, res, next) => {
   try {
-    const game = await prisma.game.findUnique({
+    const game = await prisma.game.findUniqueOrThrow({
       where: { code: req.params.code },
     });
-    if (!game) return res.sendStatus(404);
 
     return res.send({ ...game, title: getGameTitle(game.type) });
   } catch (err: unknown) {
@@ -80,7 +79,7 @@ const updateGamePhase: ReqHandler<UpdateReq, Game> = async (req, res, next) => {
     if (!game) return res.sendStatus(404);
 
     console.info('Game updated:', JSON.stringify(game));
-    res.send(game);
+    return res.send(game);
   } catch (err: unknown) {
     return next(err);
   }
@@ -113,20 +112,20 @@ const recreateGame: ReqHandler<ReqBody, Game> = async (req, res, next) => {
     });
     if (oldGame.successor) {
       return res.send(oldGame.successor);
-    }
-
-    const newGame = await prisma.game.create({
-      data: {
-        code: getCode(),
-        type: oldGame.type,
-        predecessor: {
-          connect: {
-            id: oldGame.id,
+    } else {
+      const newGame = await prisma.game.create({
+        data: {
+          code: getCode(),
+          type: oldGame.type,
+          predecessor: {
+            connect: {
+              id: oldGame.id,
+            },
           },
         },
-      },
-    });
-    return res.send(newGame);
+      });
+      return res.send(newGame);
+    }
   } catch (err: unknown) {
     return next(err);
   }

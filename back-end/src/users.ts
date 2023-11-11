@@ -95,14 +95,14 @@ const leaveGame: ReqHandler = async (req, res, next) => {
         data: { game: { disconnect: true } },
       });
     }
-    if (game !== null && game !== undefined && game.hostId === req.user?.id) {
+    if (game && game.hostId === req.user?.id) {
       const users = await prisma.user.findMany({
         where: { gameId: game.id },
       });
       if (users.length > 0) {
         await prisma.game.update({
           where: { id: game.id },
-          data: { host: { connect: { id: users[0].id } } },
+          data: { hostId: users[0].id },
         });
       } else {
         await prisma.game.update({

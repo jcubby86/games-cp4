@@ -1,11 +1,13 @@
-import { Game as PrismaGame, User as PrismaUser } from '../.generated/prisma';
+import { Game, NameEntry, StoryEntry, User } from '../.generated/prisma';
 
-export interface GameDto extends PrismaGame {
+export interface GameDto extends Game {
   title?: string;
 }
 
-export interface UserDto extends PrismaUser {
+export interface UserDto extends User {
   game?: GameDto | null;
+  storyEntries?: StoryEntry[];
+  nameEntries?: NameEntry[];
 }
 
 export interface CreateGameReqBody {

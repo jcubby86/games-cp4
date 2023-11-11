@@ -1,17 +1,14 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 import { RequestHandler as ExpressRequestHandler } from 'express';
 
-import { NameEntry, StoryEntry } from '../.generated/prisma';
 import { ErrorResBody, GameDto, UserDto } from '../domain/types';
 
 declare global {
   namespace Express {
     interface Request {
-      user?: UserDto | null;
-      game?: GameDto | null;
-      nameEntries?: NameEntry[] | null;
-      storyEntries?: StoryEntry[] | null;
-      session?: Session | null;
+      user?: UserDto;
+      game?: GameDto;
+      session?: Session;
     }
   }
 }

@@ -5,13 +5,13 @@ import {
   StoryArchiveResBody as ArchiveRes,
   StoryReqBody,
   StoryResBody,
+  UserDto,
 } from './domain/types.js';
 import { joinPhase, loadStory, loadUser } from './middleware.js';
 import prisma from './server.js';
 import { WAIT, punctRegex, quoteRegex } from './utils/constants.js';
 import { ReqHandler as Handler, ReqBody as ReqBody } from './utils/types.js';
 import {
-  getEntryForGame,
   getSuggestion,
   lowerFirst,
   randomNumber,
@@ -38,16 +38,13 @@ const categories = [
   Category.PAST_ACTION,
 ];
 
-function getRoundNumber(entries: StoryEntry[], users: unknown[]) {
-  if (entries.length < users.length) {
-    return 0;
-  } else {
-    return Math.min(...entries.map((e) => e.values.length));
-  }
+function getRoundNumber(users: UserDto[]): number {
+  const lengths = users.map((u) => u.storyEntries?.at(0)?.values.length ?? 0);
+  return Math.min(...lengths);
 }
 
-function isBehind(entry: StoryEntry | undefined, round: number) {
-  if (entry === undefined) return true;
+function isBehind(entry: StoryEntry | undefined | null, round: number) {
+  if (!entry) return true;
   return entry.values.length <= round;
 }
 
@@ -60,22 +57,22 @@ function isBehind(entry: StoryEntry | undefined, round: number) {
  * @return {Promise<{ round: number; waitingOnUsers: string[] }>}
  */
 async function checkRoundCompletion(
-  game: Game,
-  entries: StoryEntry[]
+  game: Game
 ): Promise<{ round: number; waitingOnUsers: string[] }> {
   if (game.phase !== GamePhase.PLAY) return { round: 0, waitingOnUsers: [] };
 
   const users = await prisma.user.findMany({
     where: { gameId: game.id },
-    include: { storyEntries: true },
+    include: {
+      storyEntries: {
+        where: { gameId: game.id },
+      },
+    },
   });
 
-  const round = getRoundNumber(entries, users);
+  const round = getRoundNumber(users);
   const waitingOnUsers = users
-    .filter((u) => {
-      const entry = getEntryForGame(game.id, u.storyEntries);
-      return isBehind(entry, round);
-    })
+    .filter((u) => isBehind(u.storyEntries.at(0), round))
     .map((u) => u.nickname);
 
   if (waitingOnUsers.length > 0 && round < fillers.length) {
@@ -89,7 +86,7 @@ async function checkRoundCompletion(
       data: { phase: GamePhase.READ },
     });
 
-    const finalEntries = getFinalEntries(entries);
+    const finalEntries = getFinalEntries(users.map((u) => u.storyEntries[0]));
     await prisma.$transaction(
       finalEntries.map((e) =>
         prisma.storyEntry.update({
@@ -118,6 +115,97 @@ function getFinalEntries(entries: StoryEntry[]): StoryEntry[] {
   return entries;
 }
 
+function processValue(part: string, round: number) {
+  let value = part.replace(quoteRegex, '').trim();
+  if (round > 1 && !punctRegex.test(value)) value += '.';
+  if (round === 2 || round === 5) {
+    value = lowerFirst(value);
+  } else {
+    value = upperFirst(value);
+  }
+  return value;
+}
+
+const getGame: Handler<ReqBody, StoryResBody> = async (req, res, next) => {
+  try {
+    if (!req.game || !req.user) return res.sendStatus(403);
+
+    const entry = await prisma.storyEntry.findUnique({
+      where: {
+        gameId_userId: {
+          gameId: req.game.id,
+          userId: req.user.id,
+        },
+      },
+    });
+    if (req.game.phase === GamePhase.PLAY) {
+      const { round, waitingOnUsers } = await checkRoundCompletion(req.game);
+      const category = categories[round];
+      const suggestion = await getSuggestion(category);
+      return res.send({
+        phase: isBehind(entry, round) ? GamePhase.PLAY : WAIT,
+        round: round,
+        filler: fillers[round],
+        prompt: prompts[round],
+        prefix: prefixes[round],
+        suffix: suffixes[round],
+        placeholder: suggestion,
+        users: waitingOnUsers,
+      });
+    } else {
+      return res.send({
+        phase: GamePhase.READ,
+        story: entry?.finalValue,
+        id: req.game.uuid,
+        isHost: req.game.hostId === req.user.id,
+      });
+    }
+  } catch (err: unknown) {
+    return next(err);
+  }
+};
+
+const saveEntry: Handler<StoryReqBody> = async (req, res, next) => {
+  try {
+    if (!req.game || !req.user) return res.sendStatus(403);
+    if (req.game.phase !== GamePhase.PLAY) return res.sendStatus(403);
+
+    const { round } = await checkRoundCompletion(req.game);
+    const value = processValue(req.body.part, round);
+    const entry = await prisma.storyEntry.findUnique({
+      where: {
+        gameId_userId: {
+          gameId: req.game.id,
+          userId: req.user.id,
+        },
+      },
+    });
+
+    if (!entry) {
+      await prisma.storyEntry.create({
+        data: {
+          user: { connect: { id: req.user.id } },
+          game: { connect: { id: req.game.id } },
+          values: [value],
+          finalValue: '',
+        },
+      });
+    } else if (entry.values.length > round) {
+      return res.sendStatus(403);
+    } else {
+      await prisma.storyEntry.update({
+        where: { id: entry.id },
+        data: {
+          values: [...entry.values, value],
+        },
+      });
+    }
+    return res.sendStatus(201);
+  } catch (err: unknown) {
+    return next(err);
+  }
+};
+
 const getArchive: Handler<ReqBody, ArchiveRes> = async (req, res, next) => {
   try {
     const entries = await prisma.storyEntry.findMany({
@@ -134,86 +222,6 @@ const getArchive: Handler<ReqBody, ArchiveRes> = async (req, res, next) => {
         user: { nickname: entry.user.nickname, id: entry.user.uuid },
       })),
     });
-  } catch (err: unknown) {
-    return next(err);
-  }
-};
-
-const getGame: Handler<ReqBody, StoryResBody> = async (req, res, next) => {
-  try {
-    if (!req.game || !req.user || !req.storyEntries) return res.sendStatus(500);
-
-    const entries = req.storyEntries;
-    const { round, waitingOnUsers } = await checkRoundCompletion(
-      req.game,
-      entries
-    );
-
-    if (req.game.phase === GamePhase.PLAY) {
-      const userElem = entries.find((elem) => elem.userId === req.user?.id);
-
-      const category = categories[round];
-      const suggestion = await getSuggestion(category);
-      return res.send({
-        phase: isBehind(userElem, round) ? GamePhase.PLAY : WAIT,
-        round: round,
-        filler: fillers[round],
-        prompt: prompts[round],
-        prefix: prefixes[round],
-        suffix: suffixes[round],
-        placeholder: suggestion,
-        users: waitingOnUsers,
-      });
-    } else {
-      return res.send({
-        phase: GamePhase.READ,
-        story: entries.find((element) => element.userId === req.user?.id)
-          ?.finalValue,
-        id: req.game.uuid,
-        isHost: req.game.hostId === req.user.id,
-      });
-    }
-  } catch (err: unknown) {
-    return next(err);
-  }
-};
-
-const saveEntry: Handler<StoryReqBody> = async (req, res, next) => {
-  try {
-    if (!req.game || !req.user || !req.storyEntries) return res.sendStatus(500);
-    if (req.game.phase !== GamePhase.PLAY) return res.sendStatus(403);
-
-    const entries = req.storyEntries;
-    const { round } = await checkRoundCompletion(req.game, entries);
-    let part = req.body.part.replace(quoteRegex, '').trim();
-    if (round > 1 && !punctRegex.test(part)) part += '.';
-    if (round === 2 || round === 5) {
-      part = lowerFirst(part);
-    } else {
-      part = upperFirst(part);
-    }
-
-    const entry = entries.find((element) => element.userId === req.user?.id);
-    if (!entry) {
-      await prisma.storyEntry.create({
-        data: {
-          user: { connect: { id: req.user.id } },
-          game: { connect: { id: req.game.id } },
-          values: [part],
-          finalValue: '',
-        },
-      });
-    } else if (entry.values.length > round) {
-      return res.sendStatus(403);
-    } else {
-      await prisma.storyEntry.update({
-        where: { id: entry.id },
-        data: {
-          values: [...entry.values, part],
-        },
-      });
-    }
-    return res.sendStatus(201);
   } catch (err: unknown) {
     return next(err);
   }

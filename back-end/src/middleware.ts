@@ -22,7 +22,7 @@ export const loadUser: Handler = async (req, res, next) => {
     if (!user) return next();
 
     req.user = user;
-    req.game = user.game;
+    req.game = user.game ?? undefined;
     return next();
   } catch (err: unknown) {
     return next(err);
@@ -70,19 +70,9 @@ export const joinPhase: Handler<ReqBody, JoinRes> = async (req, res, next) => {
  * @returns
  */
 export const loadNames: Handler = async (req, res, next) => {
-  try {
-    if (!req.user || !req.game) return res.sendStatus(401);
-    if (req.game.type !== GameType.NAME) return res.sendStatus(400);
-
-    req.nameEntries = await prisma.nameEntry.findMany({
-      where: { gameId: req.game.id, user: { gameId: req.game.id } },
-    });
-
-    if (!req.nameEntries) return res.sendStatus(400);
-    return next();
-  } catch (err: unknown) {
-    return next(err);
-  }
+  if (!req.user || !req.game) return res.sendStatus(403);
+  if (req.game.type !== GameType.NAME) return res.sendStatus(400);
+  return next();
 };
 
 /**
@@ -93,19 +83,9 @@ export const loadNames: Handler = async (req, res, next) => {
  * @returns
  */
 export const loadStory: Handler = async (req, res, next) => {
-  try {
-    if (!req.user || !req.game) return res.sendStatus(401);
-    if (req.game.type !== GameType.STORY) return res.sendStatus(400);
-
-    req.storyEntries = await prisma.storyEntry.findMany({
-      where: { gameId: req.game.id, user: { gameId: req.game.id } },
-    });
-
-    if (!req.storyEntries) return res.sendStatus(400);
-    return next();
-  } catch (err: unknown) {
-    return next(err);
-  }
+  if (!req.user || !req.game) return res.sendStatus(403);
+  if (req.game.type !== GameType.STORY) return res.sendStatus(400);
+  return next();
 };
 
 /**
