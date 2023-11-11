@@ -11,8 +11,8 @@ const RecreateButton = ({ reset, className }: RecreateProps): JSX.Element => {
   const { appState, setAppState } = useAppState();
 
   const recreateGame = async (e: React.MouseEvent) => {
-    e.preventDefault();
     try {
+      e.preventDefault();
       const gameResponse = await axios.post<ReqBody, GameDto>(
         `/api/game/${appState.gameId}/recreate`
       );

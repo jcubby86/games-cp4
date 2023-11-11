@@ -27,8 +27,8 @@ const Create = (): JSX.Element => {
   const navigate = useNavigate();
 
   const createGame = async (e: React.FormEvent) => {
-    e.preventDefault();
     try {
+      e.preventDefault();
       if (state.selected === '') {
         alert('Please select a valid game type');
         return;
@@ -76,9 +76,10 @@ const Create = (): JSX.Element => {
             placeholder={suggestion.current}
             maxLength={30}
             value={state.nickname}
-            onChange={(e) =>
-              setState((prev) => ({ ...prev, nickname: e.target.value }))
-            }
+            onChange={(e) => {
+              e.preventDefault();
+              setState((prev) => ({ ...prev, nickname: e.target.value }));
+            }}
           />
         </div>
         <div className="mb-3">

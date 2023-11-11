@@ -1,7 +1,9 @@
-import axios, { AxiosResponse } from 'axios';
-export { AxiosError } from 'axios';
+import axios, { AxiosResponse as AxiosRes, AxiosError as Err } from 'axios';
 
-export interface AxiosWrapper {
+export type AxiosResponse<Res = never> = AxiosRes<Res, never>;
+export type AxiosError<Res = never> = Err<Res, never>;
+
+interface AxiosWrapper {
   get: <Res = never>(path: string) => Promise<AxiosResponse<Res>>;
   post: <Req = never, Res = never>(
     path: string,

@@ -26,7 +26,7 @@ export default function StoryArchive(): JSX.Element {
       const response = await axios.get<ArchiveResBody>(`/api/story/${gameId}`);
       setState((prev) => ({ ...response.data, showAll: prev.showAll }));
     } catch (err: unknown) {
-      // navigate('/');
+      console.error(err);
     }
   };
 
@@ -50,9 +50,10 @@ export default function StoryArchive(): JSX.Element {
   };
 
   const ToggleButton = () => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const toggleAll = (_e: React.MouseEvent) =>
+    const toggleAll = (e: React.MouseEvent) => {
+      e.preventDefault();
       setState((prev) => ({ ...prev, showAll: !prev.showAll }));
+    };
 
     if (userItem && stories?.length > 1) {
       return (

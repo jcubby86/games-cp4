@@ -10,7 +10,7 @@ import StartGame from '../components/StartGame';
 import { useAppState } from '../contexts/AppContext';
 import axios from '../utils/axiosWrapper';
 import { JOIN, PLAY, READ, WAIT } from '../utils/constants';
-import { StoryResBody } from '../utils/types';
+import { StoryReqBody, StoryResBody } from '../utils/types';
 
 const initialState = {
   phase: ''
@@ -65,8 +65,8 @@ const Story = (): JSX.Element => {
             return;
         }
 
-        await axios.put('/api/story', {
-          part: partRef.current?.value || state.placeholder
+        await axios.put<StoryReqBody>('/api/story', {
+          part: (partRef.current?.value || state.placeholder) ?? ''
         });
         setState((prev) => ({ ...prev, phase: '', placeholder: '' }));
 
@@ -78,9 +78,9 @@ const Story = (): JSX.Element => {
       }
     };
 
-    const resetPlaceholder = async (_e: React.MouseEvent) => {
+    const resetPlaceholder = async (e: React.MouseEvent) => {
       try {
-        _e.stopPropagation();
+        e.preventDefault();
         pollStatus(true);
       } catch (err: unknown) {
         console.error(err);
