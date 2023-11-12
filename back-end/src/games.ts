@@ -1,12 +1,12 @@
 import { Router } from 'express';
 
 import { GamePhase, GameType, User } from './.generated/prisma';
+import prisma from './client';
 import {
   CreateGameReqBody as CreateReq,
   GameDto as Game,
   UpdateGameReqBody as UpdateReq,
 } from './domain/types.js';
-import prisma from './server.js';
 import { ReqBody, ReqHandler as ReqHandler } from './utils/types.js';
 
 /**
