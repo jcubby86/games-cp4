@@ -3,46 +3,47 @@ import { describe, expect, jest, test } from '@jest/globals';
 import { NextFunction } from 'express';
 
 import { GamePhase } from '../src/.generated/prisma';
+import client from '../src/client';
 import { joinPhase, loadUser } from '../src/middleware';
-import server from '../src/server.js';
 
-const prisma = server as jest.Mocked<typeof server>;
+const prismaMock = client as jest.Mocked<typeof client>;
 
-jest.mock('../src/server.js', () => {
-  return {
-    __esModule: true,
-    default: { user: { findUnique: jest.fn(), findMany: jest.fn() } },
-  };
-});
+jest.mock('../src/client', () => ({
+  __esModule: true,
+  default: { user: { findUnique: jest.fn(), findMany: jest.fn() } },
+}));
 
 describe('loadUser', () => {
   test('No user found', async () => {
-    const nextFunction = jest.fn();
     const req: any = { session: { userID: 'z' } };
+    const res: any = {};
+    const nextFunction: NextFunction = jest.fn();
+    const mockUser: any = { uuid: 'uuid' };
 
-    prisma.user.findUnique.mockReturnValue({} as any);
+    prismaMock.user.findUnique.mockResolvedValue(mockUser);
 
-    await loadUser(req, {} as any, nextFunction as NextFunction);
+    await loadUser(req, res, nextFunction);
 
-    expect(prisma.user.findUnique).toHaveBeenCalled();
+    expect(prismaMock.user.findUnique).toHaveBeenCalled();
     expect(nextFunction).toHaveBeenCalledTimes(1);
     expect(nextFunction).toHaveBeenCalledWith();
 
-    expect(req.user).toMatchObject({});
+    expect(req.user).toBe(mockUser);
   });
 });
 
 describe('joinPhase', () => {
   test('No user found', async () => {
-    const nextFunction = jest.fn();
     const req: any = { game: { phase: GamePhase.JOIN } };
     const res: any = { send: jest.fn() };
+    const nextFunction: NextFunction = jest.fn();
+    const mockUsers: any[] = [];
 
-    prisma.user.findMany.mockReturnValue([] as any);
+    prismaMock.user.findMany.mockResolvedValue(mockUsers);
 
     await joinPhase(req, res, nextFunction as NextFunction);
 
-    expect(prisma.user.findMany).toHaveBeenCalled();
+    expect(prismaMock.user.findMany).toHaveBeenCalled();
     expect(res.send).toHaveBeenCalled();
     expect(nextFunction).toHaveBeenCalledTimes(0);
 
