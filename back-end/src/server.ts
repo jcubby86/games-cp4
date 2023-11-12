@@ -3,7 +3,6 @@ import cookieSession from 'cookie-session';
 import dotenv from 'dotenv';
 import express from 'express';
 
-import { PrismaClient } from './.generated/prisma';
 import { router as gameRoutes } from './games.js';
 import { accessLogger } from './middleware.js';
 import { router as namesRoutes } from './names.js';
@@ -12,9 +11,6 @@ import { router as userRoutes } from './users.js';
 import { notFoundHandler, serverErrorHandler } from './utils/errorHandlers.js';
 
 dotenv.config();
-const prisma = new PrismaClient({
-  log: ['info', 'warn', 'error'],
-});
 
 const app = express();
 app.use(bodyParser.json());
@@ -42,5 +38,3 @@ app.use(serverErrorHandler);
 
 const runPort = process.env.NODE_PORT || 3000;
 app.listen(runPort, () => console.info(`Server listening on port ${runPort}!`));
-
-export default prisma;

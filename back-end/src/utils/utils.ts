@@ -1,5 +1,5 @@
 import { Category, Game, Suggestion } from '../.generated/prisma';
-import prisma from '../server';
+import prisma from '../client';
 
 /**
  * Generate a random number between 0 and the limit, exclusive.
