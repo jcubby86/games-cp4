@@ -1,7 +1,6 @@
 import { Router } from 'express';
 
 import { Category, Game, GamePhase, StoryEntry } from './.generated/prisma';
-import prisma from './client';
 import {
   StoryArchiveResBody as ArchiveRes,
   StoryReqBody,
@@ -9,6 +8,7 @@ import {
   UserDto,
 } from './domain/types.js';
 import { joinPhase, loadStory, loadUser } from './middleware.js';
+import prisma from './prisma';
 import { WAIT, punctRegex, quoteRegex } from './utils/constants.js';
 import { ReqHandler as Handler, ReqBody as ReqBody } from './utils/types.js';
 import {

@@ -1,6 +1,6 @@
 import { GamePhase, GameType, User } from './.generated/prisma';
-import prisma from './client';
 import { JoinResBody as JoinRes } from './domain/types.js';
+import prisma from './prisma';
 import { ReqHandler as Handler, ReqBody as ReqBody } from './utils/types.js';
 
 /**
