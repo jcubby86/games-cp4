@@ -1,9 +1,9 @@
 import { Router } from 'express';
 
 import { Category, Game, GamePhase } from './.generated/prisma';
-import prisma from './client';
 import { NamesReqBody, NamesResBody as ResBody } from './domain/types.js';
 import { joinPhase, loadNames, loadUser } from './middleware.js';
+import prisma from './prisma';
 import { WAIT, quoteRegex } from './utils/constants.js';
 import { ReqBody as ReqBody, ReqHandler as ReqHandler } from './utils/types.js';
 import {
