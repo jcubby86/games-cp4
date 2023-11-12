@@ -3,15 +3,12 @@ import { describe, expect, jest, test } from '@jest/globals';
 import { NextFunction } from 'express';
 
 import { GamePhase } from '../src/.generated/prisma';
-import client from '../src/client';
 import { joinPhase, loadUser } from '../src/middleware';
+import prisma from '../src/prisma';
 
-const prismaMock = client as jest.Mocked<typeof client>;
+jest.mock('../src/prisma');
 
-jest.mock('../src/client', () => ({
-  __esModule: true,
-  default: { user: { findUnique: jest.fn(), findMany: jest.fn() } },
-}));
+const prismaMock = prisma as jest.Mocked<typeof prisma>;
 
 describe('loadUser', () => {
   test('No user found', async () => {
