@@ -7,7 +7,7 @@ import {
   UpdateGameReqBody as UpdateReq,
 } from './domain/types.js';
 import prisma from './prisma';
-import { ReqBody, ReqHandler as ReqHandler } from './utils/types.js';
+import { ReqHandler as Handler, ReqBody } from './utils/types.js';
 
 /**
  * Generate a 4 letter string as game code,
@@ -42,7 +42,7 @@ function getGameTitle(type: GameType): string | undefined {
   }
 }
 
-const createGame: ReqHandler<CreateReq, Game> = async (req, res, next) => {
+export const createGame: Handler<CreateReq, Game> = async (req, res, next) => {
   try {
     const game = await prisma.game.create({
       data: {
@@ -58,7 +58,7 @@ const createGame: ReqHandler<CreateReq, Game> = async (req, res, next) => {
   }
 };
 
-const getGame: ReqHandler<ReqBody, Game> = async (req, res, next) => {
+export const getGame: Handler<ReqBody, Game> = async (req, res, next) => {
   try {
     const game = await prisma.game.findUniqueOrThrow({
       where: { code: req.params.code },
@@ -70,7 +70,7 @@ const getGame: ReqHandler<ReqBody, Game> = async (req, res, next) => {
   }
 };
 
-const updateGamePhase: ReqHandler<UpdateReq, Game> = async (req, res, next) => {
+const updateGamePhase: Handler<UpdateReq, Game> = async (req, res, next) => {
   try {
     const game = await prisma.game.update({
       where: { uuid: req.params.uuid },
@@ -85,7 +85,7 @@ const updateGamePhase: ReqHandler<UpdateReq, Game> = async (req, res, next) => {
   }
 };
 
-const getUsers: ReqHandler<ReqBody, User[]> = async (req, res, next) => {
+const getUsers: Handler<ReqBody, User[]> = async (req, res, next) => {
   try {
     const users = await prisma.user.findMany({
       where: {
@@ -100,7 +100,7 @@ const getUsers: ReqHandler<ReqBody, User[]> = async (req, res, next) => {
   }
 };
 
-const recreateGame: ReqHandler<ReqBody, Game> = async (req, res, next) => {
+const recreateGame: Handler<ReqBody, Game> = async (req, res, next) => {
   try {
     const oldGame = await prisma.game.findUniqueOrThrow({
       where: {

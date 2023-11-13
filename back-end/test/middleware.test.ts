@@ -9,18 +9,18 @@ import prisma from '../src/prisma';
 jest.mock('../src/prisma');
 
 const prismaMock = prisma as jest.Mocked<typeof prisma>;
-const nextFunction: NextFunction = jest.fn();
+const next: NextFunction = jest.fn();
 const res: any = { send: jest.fn(), sendStatus: jest.fn() };
 
 describe('loadUser', () => {
   test('No session', async () => {
     const req: any = {};
 
-    await loadUser(req, res, nextFunction);
+    await loadUser(req, res, next);
 
     expect(prismaMock.user.findUnique).not.toHaveBeenCalled();
-    expect(nextFunction).toHaveBeenCalledTimes(1);
-    expect(nextFunction).toHaveBeenCalledWith();
+    expect(next).toHaveBeenCalledTimes(1);
+    expect(next).toHaveBeenCalledWith();
     expect(req.user).toBeUndefined();
   });
 
@@ -29,11 +29,11 @@ describe('loadUser', () => {
 
     prismaMock.user.findUnique.mockResolvedValue(null as any);
 
-    await loadUser(req, res, nextFunction);
+    await loadUser(req, res, next);
 
     expect(prismaMock.user.findUnique).toHaveBeenCalledTimes(1);
-    expect(nextFunction).toHaveBeenCalledTimes(1);
-    expect(nextFunction).toHaveBeenCalledWith();
+    expect(next).toHaveBeenCalledTimes(1);
+    expect(next).toHaveBeenCalledWith();
     expect(req.user).toBeUndefined();
   });
 
@@ -43,11 +43,11 @@ describe('loadUser', () => {
 
     prismaMock.user.findUnique.mockResolvedValue(mockUser);
 
-    await loadUser(req, res, nextFunction);
+    await loadUser(req, res, next);
 
     expect(prismaMock.user.findUnique).toHaveBeenCalledTimes(1);
-    expect(nextFunction).toHaveBeenCalledTimes(1);
-    expect(nextFunction).toHaveBeenCalledWith();
+    expect(next).toHaveBeenCalledTimes(1);
+    expect(next).toHaveBeenCalledWith();
     expect(req.user).toBe(mockUser);
   });
 
@@ -59,11 +59,11 @@ describe('loadUser', () => {
       throw err;
     });
 
-    await loadUser(req, res, nextFunction);
+    await loadUser(req, res, next);
 
     expect(prismaMock.user.findUnique).toHaveBeenCalledTimes(1);
-    expect(nextFunction).toHaveBeenCalledTimes(1);
-    expect(nextFunction).toHaveBeenCalledWith(err);
+    expect(next).toHaveBeenCalledTimes(1);
+    expect(next).toHaveBeenCalledWith(err);
     expect(req.user).toBeUndefined();
   });
 });
@@ -80,10 +80,10 @@ describe('joinPhase', () => {
 
     prismaMock.user.findMany.mockResolvedValue(mockUsers);
 
-    await joinPhase(req, res, nextFunction);
+    await joinPhase(req, res, next);
 
     expect(prismaMock.user.findMany).toHaveBeenCalledTimes(1);
-    expect(nextFunction).not.toHaveBeenCalled();
+    expect(next).not.toHaveBeenCalled();
     expect(res.send).toHaveBeenCalledTimes(1);
     expect(res.send.mock.calls[0][0]).toMatchObject({
       phase: GamePhase.JOIN,
@@ -99,12 +99,12 @@ describe('joinPhase', () => {
 
     prismaMock.user.findMany.mockResolvedValue(mockUsers);
 
-    await joinPhase(req, res, nextFunction);
+    await joinPhase(req, res, next);
 
     expect(prismaMock.user.findMany).not.toHaveBeenCalled();
     expect(res.send).not.toHaveBeenCalled();
-    expect(nextFunction).toHaveBeenCalledTimes(1);
-    expect(nextFunction).toHaveBeenCalledWith();
+    expect(next).toHaveBeenCalledTimes(1);
+    expect(next).toHaveBeenCalledWith();
   });
 
   test('Error', async () => {
@@ -115,12 +115,12 @@ describe('joinPhase', () => {
       throw err;
     });
 
-    await joinPhase(req, res, nextFunction);
+    await joinPhase(req, res, next);
 
     expect(prismaMock.user.findMany).toHaveBeenCalledTimes(1);
     expect(res.send).not.toHaveBeenCalled();
-    expect(nextFunction).toHaveBeenCalledTimes(1);
-    expect(nextFunction).toHaveBeenCalledWith(err);
+    expect(next).toHaveBeenCalledTimes(1);
+    expect(next).toHaveBeenCalledWith(err);
   });
 });
 
@@ -128,29 +128,29 @@ describe('loadNames', () => {
   test('no game', async () => {
     const req: any = {};
 
-    await loadNames(req, res, nextFunction);
+    await loadNames(req, res, next);
 
     expect(res.sendStatus).toHaveBeenCalledWith(403);
-    expect(nextFunction).not.toHaveBeenCalled();
+    expect(next).not.toHaveBeenCalled();
   });
 
   test('wrong game type', async () => {
     const req: any = { game: { type: GameType.STORY }, user: {} };
 
-    await loadNames(req, res, nextFunction);
+    await loadNames(req, res, next);
 
     expect(res.sendStatus).toHaveBeenCalledWith(400);
-    expect(nextFunction).not.toHaveBeenCalled();
+    expect(next).not.toHaveBeenCalled();
   });
 
   test('happy path', async () => {
     const req: any = { game: { type: GameType.NAME }, user: {} };
 
-    await loadNames(req, res, nextFunction);
+    await loadNames(req, res, next);
 
     expect(res.sendStatus).not.toHaveBeenCalled();
-    expect(nextFunction).toHaveBeenCalledTimes(1);
-    expect(nextFunction).toHaveBeenCalledWith();
+    expect(next).toHaveBeenCalledTimes(1);
+    expect(next).toHaveBeenCalledWith();
   });
 });
 
@@ -158,28 +158,28 @@ describe('loadStory', () => {
   test('no game', async () => {
     const req: any = {};
 
-    await loadStory(req, res, nextFunction);
+    await loadStory(req, res, next);
 
     expect(res.sendStatus).toHaveBeenCalledWith(403);
-    expect(nextFunction).not.toHaveBeenCalled();
+    expect(next).not.toHaveBeenCalled();
   });
 
   test('wrong game type', async () => {
     const req: any = { game: { type: GameType.NAME }, user: {} };
 
-    await loadStory(req, res, nextFunction);
+    await loadStory(req, res, next);
 
     expect(res.sendStatus).toHaveBeenCalledWith(400);
-    expect(nextFunction).not.toHaveBeenCalled();
+    expect(next).not.toHaveBeenCalled();
   });
 
   test('happy path', async () => {
     const req: any = { game: { type: GameType.STORY }, user: {} };
 
-    await loadStory(req, res, nextFunction);
+    await loadStory(req, res, next);
 
     expect(res.sendStatus).not.toHaveBeenCalled();
-    expect(nextFunction).toHaveBeenCalledTimes(1);
-    expect(nextFunction).toHaveBeenCalledWith();
+    expect(next).toHaveBeenCalledTimes(1);
+    expect(next).toHaveBeenCalledWith();
   });
 });
