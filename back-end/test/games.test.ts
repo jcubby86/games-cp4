@@ -1,81 +1,56 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, expect, jest, test } from '@jest/globals';
-import { NextFunction } from 'express';
 
 import { GameType } from '../src/.generated/prisma';
-import { createGame, getGame } from '../src/controllers/games';
+import { createGame, getGame } from '../src/models/games';
 import prisma from '../src/prisma';
 
 jest.mock('../src/prisma');
 
 const prismaMock = prisma as jest.Mocked<typeof prisma>;
-const next: NextFunction = jest.fn();
-const res: any = {
-  send: jest.fn(),
-  sendStatus: jest.fn(),
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
-  status: function (code: number) {
-    return this;
-  },
-};
 
 describe('createGame', () => {
   test('happy path', async () => {
-    const req: any = { body: { type: 'NAME' } };
-    const game: any = { type: GameType.NAME };
+    const mockGame: any = { type: GameType.NAME };
+    prismaMock.game.create.mockResolvedValue(mockGame);
 
-    prismaMock.game.create.mockResolvedValue(game);
+    const game = await createGame('NAME');
 
-    await createGame(req, res, next);
-
-    expect(prisma.game.create).toBeCalledTimes(1);
-    expect(res.send).toBeCalled();
-    expect(res.send.mock.calls[0][0]).toMatchObject({
+    expect(prisma.game.create).toBeCalled();
+    expect(game).toMatchObject({
       type: GameType.NAME,
       title: 'The Name Game',
     });
-    expect(next).not.toHaveBeenCalled();
   });
 
   test('error', async () => {
-    const req: any = { body: { type: 'NAME' } };
-    const err = new Error();
-
     prismaMock.game.create.mockImplementation(() => {
-      throw err;
+      throw new Error();
     });
 
-    await createGame(req, res, next);
-
-    expect(res.send).not.toBeCalled();
-    expect(next).toBeCalledWith(err);
+    expect(createGame('')).rejects.toThrow();
   });
 });
 
 describe('getGame', () => {
   test('happy path', async () => {
-    const req: any = { params: { code: 'abcd' } };
-    const game: any = { type: GameType.NAME };
+    const mockGame: any = { type: GameType.NAME };
+    prismaMock.game.findUniqueOrThrow.mockResolvedValue(mockGame);
 
-    prismaMock.game.findUniqueOrThrow.mockResolvedValue(game);
+    const game = await getGame('NAME');
 
-    await getGame(req, res, next);
-
-    expect(res.send).toBeCalled();
-    expect(next).not.toBeCalled();
+    expect(prisma.game.findUniqueOrThrow).toBeCalled();
+    expect(game).toMatchObject({
+      type: GameType.NAME,
+      title: 'The Name Game',
+    });
   });
 
   test('error', async () => {
-    const req: any = { params: { code: 'abcd' } };
-    const err = new Error();
-
     prismaMock.game.findUniqueOrThrow.mockImplementation(() => {
-      throw err;
+      throw new Error();
     });
 
-    await getGame(req, res, next);
-
-    expect(res.send).not.toBeCalled();
-    expect(next).toBeCalledWith(err);
+    expect(getGame('')).rejects.toThrow();
   });
 });
