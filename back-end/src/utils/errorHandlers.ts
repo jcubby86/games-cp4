@@ -6,13 +6,12 @@ import { ErrorRequestHandler } from 'express';
 import { Prisma } from '../.generated/prisma';
 
 export const notFoundHandler: ErrorRequestHandler = (err, req, res, next) => {
-  if (
-    err instanceof Prisma.PrismaClientKnownRequestError &&
-    err.code === 'P2025'
-  ) {
-    return res.sendStatus(404);
+  if (err instanceof Prisma.PrismaClientKnownRequestError) {
+    if (err.code === 'P2025') {
+      return res.sendStatus(404);
+    }
   }
-  return next();
+  return next(err);
 };
 
 export const serverErrorHandler: ErrorRequestHandler = (err, req, res, n) => {

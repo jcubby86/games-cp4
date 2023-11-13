@@ -3,7 +3,7 @@ import { describe, expect, jest, test } from '@jest/globals';
 import { NextFunction } from 'express';
 
 import { GameType } from '../src/.generated/prisma';
-import { createGame, getGame } from '../src/games';
+import { createGame, getGame } from '../src/controllers/games';
 import prisma from '../src/prisma';
 
 jest.mock('../src/prisma');
