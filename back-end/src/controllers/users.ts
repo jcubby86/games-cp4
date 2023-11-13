@@ -1,10 +1,13 @@
 import { Router } from 'express';
 
-import { GamePhase } from './.generated/prisma';
-import { JoinGameReqBody as JoinReq, UserDto as User } from './domain/types.js';
-import { loadUser } from './middleware.js';
-import prisma from './prisma';
-import { ReqBody, ReqHandler } from './utils/types.js';
+import { GamePhase } from '../.generated/prisma';
+import {
+  JoinGameReqBody as JoinReq,
+  UserDto as User,
+} from '../domain/types.js';
+import { loadUser } from '../middleware.js';
+import prisma from '../prisma';
+import { ReqBody, ReqHandler } from '../utils/types.js';
 
 /**
  * Join a game.
@@ -116,8 +119,9 @@ const leaveGame: ReqHandler = async (req, res, next) => {
   }
 };
 
-export const router = Router();
+const router = Router();
 router.use(loadUser);
 router.post('/', upsertUser);
 router.get('/', getUser);
 router.delete('/', leaveGame);
+export default router;

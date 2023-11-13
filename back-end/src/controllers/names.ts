@@ -1,17 +1,20 @@
 import { Router } from 'express';
 
-import { Category, Game, GamePhase } from './.generated/prisma';
-import { NamesReqBody, NamesResBody as ResBody } from './domain/types.js';
-import { joinPhase, loadNames, loadUser } from './middleware.js';
-import prisma from './prisma';
-import { WAIT, quoteRegex } from './utils/constants.js';
-import { ReqBody as ReqBody, ReqHandler as ReqHandler } from './utils/types.js';
+import { Category, Game, GamePhase } from '../.generated/prisma';
+import { NamesReqBody, NamesResBody as ResBody } from '../domain/types.js';
+import { joinPhase, loadNames, loadUser } from '../middleware.js';
+import prisma from '../prisma';
+import { WAIT, quoteRegex } from '../utils/constants.js';
+import {
+  ReqBody as ReqBody,
+  ReqHandler as ReqHandler,
+} from '../utils/types.js';
 import {
   getSuggestion,
   randomElement,
   shuffleArray,
   upperFirst,
-} from './utils/utils.js';
+} from '../utils/utils.js';
 
 const categories = [Category.MALE_NAME, Category.FEMALE_NAME];
 
@@ -130,7 +133,8 @@ const saveEntry: ReqHandler<NamesReqBody> = async (req, res, next) => {
   }
 };
 
-export const router = Router();
+const router = Router();
 router.use(loadUser, loadNames);
 router.get('/', joinPhase, getGameState);
 router.put('/', saveEntry);
+export default router;

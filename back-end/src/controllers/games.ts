@@ -1,13 +1,13 @@
 import { Router } from 'express';
 
-import { GamePhase, GameType, User } from './.generated/prisma';
+import { GamePhase, GameType, User } from '../.generated/prisma';
 import {
   CreateGameReqBody as CreateReq,
   GameDto as Game,
   UpdateGameReqBody as UpdateReq,
-} from './domain/types.js';
-import prisma from './prisma';
-import { ReqHandler as Handler, ReqBody } from './utils/types.js';
+} from '../domain/types.js';
+import prisma from '../prisma';
+import { ReqHandler as Handler, ReqBody } from '../utils/types.js';
 
 /**
  * Generate a 4 letter string as game code,
@@ -131,9 +131,10 @@ const recreateGame: Handler<ReqBody, Game> = async (req, res, next) => {
   }
 };
 
-export const router = Router();
+const router = Router();
 router.post('/', createGame);
 router.get('/:code', getGame);
 router.put('/:uuid', updateGamePhase);
 router.get('/:uuid/users', getUsers);
 router.post('/:uuid/recreate', recreateGame);
+export default router;
