@@ -4,7 +4,7 @@ import { randomElement } from '../utils/utils';
 
 export async function getSuggestion(category: Category): Promise<string> {
   const suggestions: Suggestion[] = await prisma.suggestion.findMany({
-    where: { category },
+    where: { category }
   });
   return randomElement(suggestions.map((x) => x.value));
 }

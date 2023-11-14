@@ -9,7 +9,7 @@
     "typecheck": "tsc --noEmit",
     "test": "jest",
     "lint": "eslint . --ext ts,js --report-unused-disable-directives --max-warnings 0",
-    "format": "prettier --config .prettierrc --write .",
+    "format": "prettier --config .prettierrc --end-of-line lf --write .",
     "prod:deploy": "prisma migrate deploy && node server.js"
   },
   "author": "",

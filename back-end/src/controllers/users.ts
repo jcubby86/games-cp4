@@ -6,7 +6,7 @@ import { leaveGame, upsertUser } from '../models/users';
 import {
   JoinGameReqBody as JoinReq,
   ReqBody,
-  UserDto as User,
+  UserDto as User
 } from '../types/domain.js';
 import { ReqHandler } from '../types/express.js';
 
@@ -22,7 +22,7 @@ const upsertUserHandler: ReqHandler<JoinReq, User> = async (req, res, next) => {
     req.session = {
       ...req.session,
       userID: req.user.uuid,
-      nowInMinutes: Math.floor(Date.now() / 60e3), //refresh cookie so it won't expire for another 2 hours
+      nowInMinutes: Math.floor(Date.now() / 60e3) //refresh cookie so it won't expire for another 2 hours
     };
 
     res.send({ ...req.user, game: req.game });

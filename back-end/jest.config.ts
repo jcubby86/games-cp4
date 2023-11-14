@@ -6,10 +6,10 @@ const jestConfig: JestConfigWithTsJest = {
   // collectCoverageFrom: ['./src/**'],
   coveragePathIgnorePatterns: ['.generated', 'node_modules'],
   moduleNameMapper: {
-    '^(\\.{1,2}/.*)\\.js$': '$1',
+    '^(\\.{1,2}/.*)\\.js$': '$1'
   },
   resetMocks: true,
-  setupFiles: ['<rootDir>/test/setup.ts'],
+  setupFiles: ['<rootDir>/test/setup.ts']
 };
 
 export default jestConfig;

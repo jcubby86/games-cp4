@@ -15,7 +15,7 @@ const prompts = [
   'Activity:',
   'Statement:',
   'Statement:',
-  'Activity:',
+  'Activity:'
 ];
 const categories = [
   Category.MALE_NAME,
@@ -23,7 +23,7 @@ const categories = [
   Category.PRESENT_ACTION,
   Category.STATEMENT,
   Category.STATEMENT,
-  Category.PAST_ACTION,
+  Category.PAST_ACTION
 ];
 
 function getRoundNumber(users: UserDto[]): number {
@@ -53,9 +53,9 @@ async function checkRoundCompletion(
     where: { gameId: game.id },
     include: {
       storyEntries: {
-        where: { gameId: game.id },
-      },
-    },
+        where: { gameId: game.id }
+      }
+    }
   });
 
   const round = getRoundNumber(users);
@@ -71,7 +71,7 @@ async function checkRoundCompletion(
     game.phase = GamePhase.READ;
     await prisma.game.update({
       where: { id: game.id },
-      data: { phase: GamePhase.READ },
+      data: { phase: GamePhase.READ }
     });
 
     const finalEntries = getFinalEntries(users.map((u) => u.storyEntries[0]));
@@ -79,7 +79,7 @@ async function checkRoundCompletion(
       finalEntries.map((e) =>
         prisma.storyEntry.update({
           where: { id: e.id },
-          data: { finalValue: e.finalValue },
+          data: { finalValue: e.finalValue }
         })
       )
     );
@@ -123,9 +123,9 @@ export const getStoryStatus = async (
     where: {
       gameId_userId: {
         gameId: game.id,
-        userId: user.id,
-      },
-    },
+        userId: user.id
+      }
+    }
   });
   if (game.phase === GamePhase.PLAY) {
     const category = categories[round];
@@ -138,14 +138,14 @@ export const getStoryStatus = async (
       prefix: prefixes[round],
       suffix: suffixes[round],
       placeholder: suggestion,
-      users: waitingOnUsers,
+      users: waitingOnUsers
     };
   } else {
     return {
       phase: GamePhase.READ,
       story: entry?.finalValue,
       id: game.uuid,
-      isHost: game.hostId === user.id,
+      isHost: game.hostId === user.id
     };
   }
 };
@@ -165,9 +165,9 @@ export const saveStoryEntry = async (
     where: {
       gameId_userId: {
         gameId: game.id,
-        userId: user.id,
-      },
-    },
+        userId: user.id
+      }
+    }
   });
 
   if (!entry) {
@@ -176,15 +176,15 @@ export const saveStoryEntry = async (
         user: { connect: { id: user.id } },
         game: { connect: { id: game.id } },
         values: [value],
-        finalValue: '',
-      },
+        finalValue: ''
+      }
     });
   } else if (entry.values.length <= round) {
     await prisma.storyEntry.update({
       where: { id: entry.id },
       data: {
-        values: [...entry.values, value],
-      },
+        values: [...entry.values, value]
+      }
     });
   } else {
     throw new SaveEntryError('User has already submitted this round');
@@ -194,9 +194,9 @@ export const saveStoryEntry = async (
 export const getStoryArchive = async (gameUuid: string) => {
   const entries = await prisma.storyEntry.findMany({
     where: {
-      game: { uuid: gameUuid },
+      game: { uuid: gameUuid }
     },
-    include: { user: true },
+    include: { user: true }
   });
 
   return entries;

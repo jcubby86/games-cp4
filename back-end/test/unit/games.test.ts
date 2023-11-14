@@ -19,7 +19,7 @@ describe('createGame', () => {
     expect(prisma.game.create).toBeCalled();
     expect(game).toMatchObject({
       type: GameType.NAME,
-      title: 'The Name Game',
+      title: 'The Name Game'
     });
   });
 
@@ -42,7 +42,7 @@ describe('getGame', () => {
     expect(prisma.game.findUniqueOrThrow).toBeCalled();
     expect(game).toMatchObject({
       type: GameType.NAME,
-      title: 'The Name Game',
+      title: 'The Name Game'
     });
   });
 

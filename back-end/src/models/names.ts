@@ -21,9 +21,9 @@ async function checkCompletion(game: Game): Promise<string[]> {
     where: { gameId: game.id },
     include: {
       nameEntries: {
-        where: { gameId: game.id },
-      },
-    },
+        where: { gameId: game.id }
+      }
+    }
   });
 
   const waitingOnUsers = users
@@ -38,7 +38,7 @@ async function checkCompletion(game: Game): Promise<string[]> {
     game.phase = GamePhase.READ;
     await prisma.game.update({
       where: { id: game.id },
-      data: { phase: GamePhase.READ },
+      data: { phase: GamePhase.READ }
     });
   }
 
@@ -57,9 +57,9 @@ export const getNameStatus = async (
       where: {
         gameId_userId: {
           gameId: game.id,
-          userId: user.id,
-        },
-      },
+          userId: user.id
+        }
+      }
     });
 
     const category = randomElement(categories);
@@ -68,22 +68,22 @@ export const getNameStatus = async (
       phase: !userElem ? GamePhase.PLAY : WAIT,
       users: waitingOnUsers,
       text: userElem?.name,
-      placeholder: suggestion,
+      placeholder: suggestion
     };
   } else if (game.phase === GamePhase.READ) {
     const entries = await prisma.nameEntry.findMany({
-      where: { gameId: game.id },
+      where: { gameId: game.id }
     });
     shuffleArray(entries);
     return {
       phase: GamePhase.READ,
       names: entries.map((elem) => elem.name),
-      isHost: isHost,
+      isHost: isHost
     };
   } else {
     return {
       phase: GamePhase.END,
-      isHost: isHost,
+      isHost: isHost
     };
   }
 };
@@ -104,18 +104,18 @@ export const saveNameEntry = async (
     where: {
       gameId_userId: {
         gameId: game.id,
-        userId: user.id,
-      },
+        userId: user.id
+      }
     },
     update: {
       name,
-      normalized,
+      normalized
     },
     create: {
       name,
       normalized,
       userId: user.id,
-      gameId: game.id,
-    },
+      gameId: game.id
+    }
   });
 };
