@@ -9,6 +9,7 @@ const jestConfig: JestConfigWithTsJest = {
     '^(\\.{1,2}/.*)\\.js$': '$1',
   },
   resetMocks: true,
+  setupFiles: ['<rootDir>/test/setup.ts'],
 };
 
 export default jestConfig;

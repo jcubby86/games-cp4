@@ -1,7 +1,7 @@
 import bodyParser from 'body-parser';
 import cookieSession from 'cookie-session';
-import dotenv from 'dotenv';
 import express from 'express';
+import 'dotenv/config';
 
 import gameController from './controllers/games.js';
 import namesController from './controllers/names.js';
@@ -14,8 +14,6 @@ import {
 import { accessLogger } from './utils/accessLogger.js';
 import { TEST_ENV } from './utils/constants.js';
 
-dotenv.config();
-
 const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -26,7 +24,10 @@ app.use(
     maxAge: 2 * 60 * 60 * 1000, // 2 hours
   })
 );
-app.use(accessLogger);
+
+if (process.env.NODE_ENV != TEST_ENV) {
+  app.use(accessLogger);
+}
 
 app.use('/api/game', gameController);
 app.use('/api/user', userController);
