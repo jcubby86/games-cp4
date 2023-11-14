@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, expect, jest, test } from '@jest/globals';
 
-import { GameType } from '../src/.generated/prisma';
-import { createGame, getGame } from '../src/models/games';
-import prisma from '../src/prisma';
+import { GameType } from '../../src/.generated/prisma';
+import { createGame, getGame } from '../../src/models/games';
+import prisma from '../../src/prisma';
 
-jest.mock('../src/prisma');
+jest.mock('../../src/prisma');
 
 const prismaMock = prisma as jest.Mocked<typeof prisma>;
 
