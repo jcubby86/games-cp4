@@ -1,5 +1,5 @@
 import { GamePhase, GameType } from '../.generated/prisma';
-import { GameDto, UserDto } from '../domain/types.js';
+import { GameDto } from '../domain/types.js';
 import prisma from '../prisma';
 
 /**
@@ -64,15 +64,6 @@ export const updateGamePhase = async (
     },
   });
   return game;
-};
-
-export const getUsers = async (uuid: string): Promise<UserDto[]> => {
-  const users = await prisma.user.findMany({
-    where: {
-      game: { uuid },
-    },
-  });
-  return users;
 };
 
 export const recreateGame = async (oldGameUuid: string): Promise<GameDto> => {

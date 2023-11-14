@@ -3,7 +3,7 @@ import { Router } from 'express';
 import { NamesReqBody, NamesResBody } from '../domain/types.js';
 import SaveEntryError from '../errors/SaveEntryError';
 import { joinPhase, loadNames, loadUser } from '../middleware.js';
-import { getGame, saveEntry } from '../models/names';
+import { getNameStatus, saveNameEntry } from '../models/names';
 import {
   ReqBody as ReqBody,
   ReqHandler as ReqHandler,
@@ -16,7 +16,7 @@ const getGameHandler: ReqHandler<ReqBody, NamesResBody> = async (
 ) => {
   try {
     if (!req.game || !req.user) return res.sendStatus(403);
-    const response = await getGame(req.user, req.game);
+    const response = await getNameStatus(req.user, req.game);
     return res.send(response);
   } catch (err: unknown) {
     return next(err);
@@ -26,7 +26,7 @@ const getGameHandler: ReqHandler<ReqBody, NamesResBody> = async (
 const saveEntryHandler: ReqHandler<NamesReqBody> = async (req, res, next) => {
   try {
     if (!req.user || !req.game) return res.sendStatus(403);
-    await saveEntry(req.user, req.game, req.body.text);
+    await saveNameEntry(req.user, req.game, req.body.text);
     return res.sendStatus(200);
   } catch (err: unknown) {
     if (err instanceof SaveEntryError) {

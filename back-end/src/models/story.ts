@@ -1,14 +1,10 @@
+import { getSuggestion } from './suggestion';
 import { Category, Game, GamePhase, StoryEntry } from '../.generated/prisma';
 import { GameDto, StoryResBody, UserDto } from '../domain/types.js';
 import SaveEntryError from '../errors/SaveEntryError';
 import prisma from '../prisma';
 import { WAIT, punctRegex, quoteRegex } from '../utils/constants.js';
-import {
-  getSuggestion,
-  lowerFirst,
-  randomNumber,
-  upperFirst,
-} from '../utils/utils.js';
+import { lowerFirst, randomNumber, upperFirst } from '../utils/utils.js';
 
 const fillers = ['', '(Man) ', '(Man) and (Woman) ', '', '', ''];
 const prefixes = ['', 'and ', 'were ', 'He said, "', 'She said, "', 'So they '];
@@ -118,7 +114,7 @@ function processValue(part: string, round: number) {
   return value;
 }
 
-export const getGame = async (
+export const getStoryStatus = async (
   user: UserDto,
   game: GameDto
 ): Promise<StoryResBody> => {
@@ -154,7 +150,11 @@ export const getGame = async (
   }
 };
 
-export const saveEntry = async (user: UserDto, game: GameDto, part: string) => {
+export const saveStoryEntry = async (
+  user: UserDto,
+  game: GameDto,
+  part: string
+) => {
   if (game.phase !== GamePhase.PLAY) {
     throw new SaveEntryError('Game is not in "PLAY" phase');
   }
@@ -191,7 +191,7 @@ export const saveEntry = async (user: UserDto, game: GameDto, part: string) => {
   }
 };
 
-export const getArchive = async (gameUuid: string) => {
+export const getStoryArchive = async (gameUuid: string) => {
   const entries = await prisma.storyEntry.findMany({
     where: {
       game: { uuid: gameUuid },

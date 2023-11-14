@@ -78,3 +78,25 @@ export const leaveGame = async (user?: UserDto) => {
     }
   }
 };
+
+export const getUser = async (uuid: string): Promise<UserDto | null> => {
+  const user = await prisma.user.findUnique({
+    where: { uuid },
+    include: { game: true },
+  });
+  return user;
+};
+
+export const getUsersByGameId = async (gameId: number): Promise<UserDto[]> => {
+  const users = await prisma.user.findMany({
+    where: { gameId },
+  });
+  return users;
+};
+
+export const getUsersByGameUuid = async (uuid: string): Promise<UserDto[]> => {
+  const users = await prisma.user.findMany({
+    where: { game: { uuid } },
+  });
+  return users;
+};

@@ -9,10 +9,10 @@ import {
 import {
   createGame,
   getGame,
-  getUsers,
   recreateGame,
   updateGamePhase,
 } from '../models/games';
+import { getUsersByGameUuid } from '../models/users.js';
 import { ReqHandler as Handler, ReqBody } from '../utils/types.js';
 
 const createGameHandler: Handler<CreateReq, Game> = async (req, res, next) => {
@@ -49,7 +49,7 @@ const updatePhaseHandler: Handler<UpdateReq, Game> = async (req, res, next) => {
 
 const getUsersHandler: Handler<ReqBody, UserDto[]> = async (req, res, next) => {
   try {
-    const users = await getUsers(req.params.uuid);
+    const users = await getUsersByGameUuid(req.params.uuid);
     return res.send(users);
   } catch (err: unknown) {
     return next(err);
