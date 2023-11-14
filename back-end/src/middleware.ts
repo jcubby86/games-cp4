@@ -1,7 +1,7 @@
 import { GamePhase, GameType, User } from './.generated/prisma';
 import { JoinResBody as JoinRes } from './domain/types.js';
-import prisma from './prisma';
-import { ReqHandler as Handler, ReqBody as ReqBody } from './utils/types.js';
+import { getUser, getUsersByGameId } from './models/users';
+import { ReqHandler as Handler, ReqBody } from './utils/types.js';
 
 /**
  * Middleware for loading in a user from the session.
@@ -14,10 +14,7 @@ export const loadUser: Handler = async (req, res, next) => {
   try {
     if (!req.session?.userID) return next();
 
-    const user = await prisma.user.findUnique({
-      where: { uuid: req.session.userID },
-      include: { game: true },
-    });
+    const user = await getUser(req.session.userID);
 
     if (!user) return next();
 
@@ -40,13 +37,7 @@ export const loadUser: Handler = async (req, res, next) => {
 export const joinPhase: Handler<ReqBody, JoinRes> = async (req, res, next) => {
   try {
     if (req.game?.phase === GamePhase.JOIN) {
-      const users = await prisma.user.findMany({
-        where: {
-          game: {
-            id: req.game.id,
-          },
-        },
-      });
+      const users = await getUsersByGameId(req.game.id);
       return res.send({
         phase: GamePhase.JOIN,
         users: users.map((user: User) => user.nickname),

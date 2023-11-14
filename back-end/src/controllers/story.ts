@@ -7,7 +7,11 @@ import {
 } from '../domain/types.js';
 import SaveEntryError from '../errors/SaveEntryError';
 import { joinPhase, loadStory, loadUser } from '../middleware.js';
-import { getArchive, getGame, saveEntry } from '../models/story';
+import {
+  getStoryArchive,
+  getStoryStatus,
+  saveStoryEntry,
+} from '../models/story';
 import { ReqHandler as Handler, ReqBody as ReqBody } from '../utils/types.js';
 
 const getGameHandler: Handler<ReqBody, StoryResBody> = async (
@@ -17,7 +21,7 @@ const getGameHandler: Handler<ReqBody, StoryResBody> = async (
 ) => {
   try {
     if (!req.game || !req.user) return res.sendStatus(403);
-    const response = await getGame(req.user, req.game);
+    const response = await getStoryStatus(req.user, req.game);
     return res.send(response);
   } catch (err: unknown) {
     return next(err);
@@ -27,7 +31,7 @@ const getGameHandler: Handler<ReqBody, StoryResBody> = async (
 const saveEntryHandler: Handler<StoryReqBody> = async (req, res, next) => {
   try {
     if (!req.game || !req.user) return res.sendStatus(403);
-    await saveEntry(req.user, req.game, req.body.part);
+    await saveStoryEntry(req.user, req.game, req.body.part);
     return res.sendStatus(200);
   } catch (err: unknown) {
     if (err instanceof SaveEntryError) {
@@ -43,7 +47,7 @@ const getArchiveHandler: Handler<ReqBody, StoryArchiveResBody> = async (
   next
 ) => {
   try {
-    const entries = await getArchive(req.params.id);
+    const entries = await getStoryArchive(req.params.id);
 
     if (!entries) return res.status(404);
 

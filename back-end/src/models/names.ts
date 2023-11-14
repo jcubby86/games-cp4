@@ -1,14 +1,10 @@
+import { getSuggestion } from './suggestion';
 import { Category, Game, GamePhase } from '../.generated/prisma';
 import { GameDto, NamesResBody, UserDto } from '../domain/types.js';
 import SaveEntryError from '../errors/SaveEntryError';
 import prisma from '../prisma';
 import { WAIT, quoteRegex } from '../utils/constants.js';
-import {
-  getSuggestion,
-  randomElement,
-  shuffleArray,
-  upperFirst,
-} from '../utils/utils.js';
+import { randomElement, shuffleArray, upperFirst } from '../utils/utils.js';
 
 const categories = [Category.MALE_NAME, Category.FEMALE_NAME];
 
@@ -49,7 +45,7 @@ async function checkCompletion(game: Game): Promise<string[]> {
   return [];
 }
 
-export const getGame = async (
+export const getNameStatus = async (
   user: UserDto,
   game: GameDto
 ): Promise<NamesResBody> => {
@@ -92,7 +88,11 @@ export const getGame = async (
   }
 };
 
-export const saveEntry = async (user: UserDto, game: GameDto, text: string) => {
+export const saveNameEntry = async (
+  user: UserDto,
+  game: GameDto,
+  text: string
+) => {
   if (game.phase !== GamePhase.PLAY) {
     throw new SaveEntryError('Game is not in "PLAY" phase');
   }
