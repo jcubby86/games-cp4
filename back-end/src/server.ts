@@ -12,6 +12,7 @@ import {
   serverErrorHandler,
 } from './errors/errorHandlers.js';
 import { accessLogger } from './utils/accessLogger.js';
+import { TEST_ENV } from './utils/constants.js';
 
 dotenv.config();
 
@@ -38,7 +39,11 @@ app.get('/health', async (req, res) => {
 
 app.use(prismaErrorHandler, serverErrorHandler);
 
-const runPort = process.env.NODE_PORT || 3000;
-app.listen(runPort, () => console.info(`Server listening on port ${runPort}!`));
+if (process.env.NODE_ENV != TEST_ENV) {
+  const runPort = process.env.NODE_PORT || 3000;
+  app.listen(runPort, () =>
+    console.info(`Server listening on port ${runPort}!`)
+  );
+}
 
 export default app;
