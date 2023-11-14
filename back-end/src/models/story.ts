@@ -1,8 +1,8 @@
 import { getSuggestion } from './suggestion';
 import { Category, Game, GamePhase, StoryEntry } from '../.generated/prisma';
-import { GameDto, StoryResBody, UserDto } from '../domain/types.js';
 import SaveEntryError from '../errors/SaveEntryError';
 import prisma from '../prisma';
+import { GameDto, StoryResBody, UserDto } from '../types/domain.js';
 import { WAIT, punctRegex, quoteRegex } from '../utils/constants.js';
 import { lowerFirst, randomNumber, upperFirst } from '../utils/utils.js';
 

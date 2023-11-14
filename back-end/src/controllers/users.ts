@@ -1,13 +1,14 @@
 import { Router } from 'express';
 
-import {
-  JoinGameReqBody as JoinReq,
-  UserDto as User,
-} from '../domain/types.js';
 import CannotJoinGameError from '../errors/CannotJoinGameError.js';
 import { loadUser } from '../middleware.js';
 import { leaveGame, upsertUser } from '../models/users';
-import { ReqBody, ReqHandler } from '../utils/types.js';
+import {
+  JoinGameReqBody as JoinReq,
+  ReqBody,
+  UserDto as User,
+} from '../types/domain.js';
+import { ReqHandler } from '../types/express.js';
 
 /**
  * Join a game.

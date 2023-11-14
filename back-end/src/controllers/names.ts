@@ -1,13 +1,10 @@
 import { Router } from 'express';
 
-import { NamesReqBody, NamesResBody } from '../domain/types.js';
 import SaveEntryError from '../errors/SaveEntryError';
-import { joinPhase, loadNames, loadUser } from '../middleware.js';
+import { joinPhaseHandler, loadNames, loadUser } from '../middleware.js';
 import { getNameStatus, saveNameEntry } from '../models/names';
-import {
-  ReqBody as ReqBody,
-  ReqHandler as ReqHandler,
-} from '../utils/types.js';
+import { NamesReqBody, NamesResBody, ReqBody } from '../types/domain.js';
+import { ReqHandler } from '../types/express.js';
 
 const getGameHandler: ReqHandler<ReqBody, NamesResBody> = async (
   req,
@@ -38,6 +35,6 @@ const saveEntryHandler: ReqHandler<NamesReqBody> = async (req, res, next) => {
 
 const router = Router();
 router.use(loadUser, loadNames);
-router.get('/', joinPhase, getGameHandler);
+router.get('/', joinPhaseHandler, getGameHandler);
 router.put('/', saveEntryHandler);
 export default router;

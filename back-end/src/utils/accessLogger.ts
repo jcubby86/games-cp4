@@ -1,4 +1,4 @@
-import { ReqHandler as Handler } from './types.js';
+import { ReqHandler as Handler } from '../types/express.js';
 
 /**
  * Middleware that logs incoming http requests
