@@ -1,19 +1,20 @@
 import { Router } from 'express';
 
 import {
-  CreateGameReqBody as CreateReq,
-  GameDto as Game,
-  UpdateGameReqBody as UpdateReq,
-  UserDto,
-} from '../domain/types.js';
-import {
   createGame,
   getGame,
   recreateGame,
   updateGamePhase,
 } from '../models/games';
 import { getUsersByGameUuid } from '../models/users.js';
-import { ReqHandler as Handler, ReqBody } from '../utils/types.js';
+import {
+  CreateGameReqBody as CreateReq,
+  GameDto as Game,
+  ReqBody,
+  UpdateGameReqBody as UpdateReq,
+  UserDto,
+} from '../types/domain.js';
+import { ReqHandler as Handler } from '../types/express.js';
 
 const createGameHandler: Handler<CreateReq, Game> = async (req, res, next) => {
   try {

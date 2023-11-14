@@ -1,7 +1,8 @@
-import { GamePhase, GameType, User } from './.generated/prisma';
-import { JoinResBody as JoinRes } from './domain/types.js';
-import { getUser, getUsersByGameId } from './models/users';
-import { ReqHandler as Handler, ReqBody } from './utils/types.js';
+import { GameType } from './.generated/prisma';
+import { joinPhase } from './models/games';
+import { getUser } from './models/users';
+import { JoinResBody, ReqBody } from './types/domain.js';
+import { ReqHandler as Handler } from './types/express.js';
 
 /**
  * Middleware for loading in a user from the session.
@@ -34,19 +35,15 @@ export const loadUser: Handler = async (req, res, next) => {
  * @param next
  * @returns
  */
-export const joinPhase: Handler<ReqBody, JoinRes> = async (req, res, next) => {
+export const joinPhaseHandler: Handler<ReqBody, JoinResBody> = async (
+  req,
+  res,
+  next
+) => {
   try {
-    if (req.game?.phase === GamePhase.JOIN) {
-      const users = await getUsersByGameId(req.game.id);
-      return res.send({
-        phase: GamePhase.JOIN,
-        users: users.map((user: User) => user.nickname),
-        code: req.game.code,
-        nickname: req.user?.nickname,
-        isHost: req.game.hostId === req.user?.id,
-      });
-    }
-
+    if (!req.user || !req.game) return res.sendStatus(403);
+    const response = await joinPhase(req.user, req.game);
+    if (response) return res.send(response);
     return next();
   } catch (err: unknown) {
     return next(err);

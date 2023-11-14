@@ -1,18 +1,19 @@
 import { Router } from 'express';
 
-import {
-  StoryArchiveResBody,
-  StoryReqBody,
-  StoryResBody,
-} from '../domain/types.js';
 import SaveEntryError from '../errors/SaveEntryError';
-import { joinPhase, loadStory, loadUser } from '../middleware.js';
+import { joinPhaseHandler, loadStory, loadUser } from '../middleware.js';
 import {
   getStoryArchive,
   getStoryStatus,
   saveStoryEntry,
 } from '../models/story';
-import { ReqHandler as Handler, ReqBody as ReqBody } from '../utils/types.js';
+import {
+  ReqBody,
+  StoryArchiveResBody,
+  StoryReqBody,
+  StoryResBody,
+} from '../types/domain.js';
+import { ReqHandler as Handler } from '../types/express.js';
 
 const getGameHandler: Handler<ReqBody, StoryResBody> = async (
   req,
@@ -47,7 +48,7 @@ const getArchiveHandler: Handler<ReqBody, StoryArchiveResBody> = async (
   next
 ) => {
   try {
-    const entries = await getStoryArchive(req.params.id);
+    const entries = await getStoryArchive(req.params.uuid);
 
     if (!entries) return res.status(404);
 
@@ -63,8 +64,8 @@ const getArchiveHandler: Handler<ReqBody, StoryArchiveResBody> = async (
 };
 
 const router = Router();
-router.get('/:id', getArchiveHandler);
+router.get('/:uuid', getArchiveHandler);
 router.use(loadUser, loadStory);
-router.get('/', joinPhase, getGameHandler);
+router.get('/', joinPhaseHandler, getGameHandler);
 router.put('/', saveEntryHandler);
 export default router;

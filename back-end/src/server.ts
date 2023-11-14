@@ -7,8 +7,11 @@ import gameController from './controllers/games.js';
 import namesController from './controllers/names.js';
 import storyController from './controllers/story.js';
 import userController from './controllers/users.js';
+import {
+  prismaErrorHandler,
+  serverErrorHandler,
+} from './errors/errorHandlers.js';
 import { accessLogger } from './utils/accessLogger.js';
-import { notFoundHandler, serverErrorHandler } from './utils/errorHandlers.js';
 
 dotenv.config();
 
@@ -33,7 +36,9 @@ app.get('/health', async (req, res) => {
   res.sendStatus(200);
 });
 
-app.use(notFoundHandler, serverErrorHandler);
+app.use(prismaErrorHandler, serverErrorHandler);
 
 const runPort = process.env.NODE_PORT || 3000;
 app.listen(runPort, () => console.info(`Server listening on port ${runPort}!`));
+
+export default app;

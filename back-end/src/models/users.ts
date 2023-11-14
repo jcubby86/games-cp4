@@ -1,7 +1,7 @@
 import { GamePhase } from '../.generated/prisma';
-import { UserDto } from '../domain/types.js';
 import CannotJoinGameError from '../errors/CannotJoinGameError';
 import prisma from '../prisma';
+import { UserDto } from '../types/domain.js';
 
 /**
  * Join a game.
