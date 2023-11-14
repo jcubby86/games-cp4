@@ -83,9 +83,3 @@ export function gameExists(game: Game): boolean {
   const twoHours = 2 * 60 * 60 * 1000;
   return new Date().getTime() - twoHours < game.createdAt.getTime();
 }
-
-export async function getUsersByGameId(gameId: number) {
-  return prisma.user.findMany({
-    where: { gameId: gameId },
-  });
-}
