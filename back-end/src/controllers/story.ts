@@ -5,13 +5,13 @@ import { joinPhaseHandler, loadStory, loadUser } from '../middleware.js';
 import {
   getStoryArchive,
   getStoryStatus,
-  saveStoryEntry,
+  saveStoryEntry
 } from '../models/story';
 import {
   ReqBody,
   StoryArchiveResBody,
   StoryReqBody,
-  StoryResBody,
+  StoryResBody
 } from '../types/domain.js';
 import { ReqHandler as Handler } from '../types/express.js';
 
@@ -55,8 +55,8 @@ const getArchiveHandler: Handler<ReqBody, StoryArchiveResBody> = async (
     return res.send({
       stories: entries.map((entry) => ({
         value: entry.finalValue,
-        user: { nickname: entry.user.nickname, id: entry.user.uuid },
-      })),
+        user: { nickname: entry.user.nickname, id: entry.user.uuid }
+      }))
     });
   } catch (err: unknown) {
     return next(err);

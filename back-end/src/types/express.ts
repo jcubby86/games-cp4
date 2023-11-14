@@ -4,7 +4,7 @@ import {
   RequestHandler as ExpressRequestHandler,
   NextFunction,
   Request,
-  Response,
+  Response
 } from 'express';
 
 import { GameDto, ReqBody, ResBody, UserDto } from './domain';

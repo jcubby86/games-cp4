@@ -40,15 +40,15 @@ export const createGame = async (gameType: string): Promise<GameDto> => {
   const game = await prisma.game.create({
     data: {
       code: getCode(),
-      type: getGameType(gameType),
-    },
+      type: getGameType(gameType)
+    }
   });
   return { ...game, title: getGameTitle(game.type) };
 };
 
 export const getGame = async (code: string): Promise<GameDto> => {
   const game = await prisma.game.findUniqueOrThrow({
-    where: { code },
+    where: { code }
   });
 
   return { ...game, title: getGameTitle(game.type) };
@@ -61,8 +61,8 @@ export const updateGamePhase = async (
   const game = await prisma.game.update({
     where: { uuid },
     data: {
-      phase: getGamePhase(phase),
-    },
+      phase: getGamePhase(phase)
+    }
   });
   return game;
 };
@@ -70,11 +70,11 @@ export const updateGamePhase = async (
 export const recreateGame = async (oldGameUuid: string): Promise<GameDto> => {
   const oldGame = await prisma.game.findUniqueOrThrow({
     where: {
-      uuid: oldGameUuid,
+      uuid: oldGameUuid
     },
     include: {
-      successor: true,
-    },
+      successor: true
+    }
   });
   if (oldGame.successor) {
     return oldGame.successor;
@@ -85,10 +85,10 @@ export const recreateGame = async (oldGameUuid: string): Promise<GameDto> => {
         type: oldGame.type,
         predecessor: {
           connect: {
-            id: oldGame.id,
-          },
-        },
-      },
+            id: oldGame.id
+          }
+        }
+      }
     });
     return newGame;
   }
@@ -105,7 +105,7 @@ export const joinPhase = async (
       users: users.map((user) => user.nickname),
       code: game.code,
       nickname: user.nickname,
-      isHost: game.hostId === user.id,
+      isHost: game.hostId === user.id
     };
   }
   return undefined;

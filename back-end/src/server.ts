@@ -9,7 +9,7 @@ import storyController from './controllers/story.js';
 import userController from './controllers/users.js';
 import {
   prismaErrorHandler,
-  serverErrorHandler,
+  serverErrorHandler
 } from './errors/errorHandlers.js';
 import { accessLogger } from './utils/accessLogger.js';
 import { TEST_ENV } from './utils/constants.js';
@@ -21,7 +21,7 @@ app.use(
   cookieSession({
     name: 'session',
     keys: ['secretValue'],
-    maxAge: 2 * 60 * 60 * 1000, // 2 hours
+    maxAge: 2 * 60 * 60 * 1000 // 2 hours
   })
 );
 

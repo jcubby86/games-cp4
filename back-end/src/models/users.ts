@@ -14,7 +14,7 @@ export const upsertUser = async (
   nickname: string
 ): Promise<UserDto> => {
   const game = await prisma.game.findUnique({
-    where: { uuid: gameUuid },
+    where: { uuid: gameUuid }
   });
   if (!game || !(game?.phase === GamePhase.JOIN || user?.gameId === game.id)) {
     const message = `Game with code ${game?.code} does not exist or can no longer be joined.`;
@@ -26,9 +26,9 @@ export const upsertUser = async (
       data: {
         nickname: nickname,
         game: {
-          connect: { id: game.id },
-        },
-      },
+          connect: { id: game.id }
+        }
+      }
     });
   } else {
     user = await prisma.user.update({
@@ -36,16 +36,16 @@ export const upsertUser = async (
       data: {
         nickname: nickname,
         game: {
-          connect: { id: game.id },
-        },
-      },
+          connect: { id: game.id }
+        }
+      }
     });
   }
 
   if (!game.hostId) {
     await prisma.game.update({
       where: { id: game.id },
-      data: { host: { connect: { id: user.id } } },
+      data: { host: { connect: { id: user.id } } }
     });
   }
 
@@ -58,21 +58,21 @@ export const leaveGame = async (user?: UserDto) => {
   if (user) {
     await prisma.user.update({
       where: { id: user.id },
-      data: { game: { disconnect: true } },
+      data: { game: { disconnect: true } }
     });
     if (user.game && user.game.hostId === user.id) {
       const users = await prisma.user.findMany({
-        where: { gameId: user.game.id },
+        where: { gameId: user.game.id }
       });
       if (users.length > 0) {
         await prisma.game.update({
           where: { id: user.game.id },
-          data: { hostId: users[0].id },
+          data: { hostId: users[0].id }
         });
       } else {
         await prisma.game.update({
           where: { id: user.game.id },
-          data: { host: { disconnect: true } },
+          data: { host: { disconnect: true } }
         });
       }
     }
@@ -82,21 +82,21 @@ export const leaveGame = async (user?: UserDto) => {
 export const getUser = async (uuid: string): Promise<UserDto | null> => {
   const user = await prisma.user.findUnique({
     where: { uuid },
-    include: { game: true },
+    include: { game: true }
   });
   return user;
 };
 
 export const getUsersByGameId = async (gameId: number): Promise<UserDto[]> => {
   const users = await prisma.user.findMany({
-    where: { gameId },
+    where: { gameId }
   });
   return users;
 };
 
 export const getUsersByGameUuid = async (uuid: string): Promise<UserDto[]> => {
   const users = await prisma.user.findMany({
-    where: { game: { uuid } },
+    where: { game: { uuid } }
   });
   return users;
 };

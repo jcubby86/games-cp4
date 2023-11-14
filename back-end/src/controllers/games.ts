@@ -4,7 +4,7 @@ import {
   createGame,
   getGame,
   recreateGame,
-  updateGamePhase,
+  updateGamePhase
 } from '../models/games';
 import { getUsersByGameUuid } from '../models/users.js';
 import {
@@ -12,7 +12,7 @@ import {
   GameDto as Game,
   ReqBody,
   UpdateGameReqBody as UpdateReq,
-  UserDto,
+  UserDto
 } from '../types/domain.js';
 import { ReqHandler as Handler } from '../types/express.js';
 
