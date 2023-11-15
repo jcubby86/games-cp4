@@ -1,4 +1,4 @@
-import { describe, expect, jest, test } from '@jest/globals';
+import { describe, expect, test } from '@jest/globals';
 import request from 'supertest';
 
 import app from '../../src/server';
@@ -20,7 +20,7 @@ describe('updateGame', () => {
   test('should get OK', async () => {
     const createResponse = await request(app)
       .post('/api/game')
-      .send({ type: 'story' });
+      .send({ type: 'name' });
     expect(createResponse.body.phase).toMatch('JOIN');
 
     const updateResponse = await request(app)
