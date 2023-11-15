@@ -8,8 +8,7 @@ const jestConfig: JestConfigWithTsJest = {
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1'
   },
-  resetMocks: true,
-  setupFiles: ['<rootDir>/test/setup.ts']
+  resetMocks: true
 };
 
 export default jestConfig;
