@@ -19,15 +19,21 @@ function getCode(): string {
 }
 
 function getGameType(type: string): GameType {
-  if ((Object.values(GameType) as string[]).includes(type)) {
-    return type as GameType;
+  const normalized = type.toUpperCase();
+  if ((Object.values(GameType) as string[]).includes(normalized)) {
+    return normalized as GameType;
   } else {
     throw new Error('Invalid Game Type');
   }
 }
 
-function getGamePhase(s: string): GamePhase {
-  return s.toUpperCase() as GamePhase;
+function getGamePhase(phase: string): GamePhase {
+  const normalized = phase.toUpperCase();
+  if ((Object.values(GamePhase) as string[]).includes(normalized)) {
+    return normalized as GamePhase;
+  } else {
+    throw new Error('Invalid Game Phase');
+  }
 }
 
 function getGameTitle(type: GameType): string | undefined {
@@ -44,7 +50,7 @@ export const createGame = async (gameType: string): Promise<GameDto> => {
   const game = await prisma.game.create({
     data: {
       code: getCode(),
-      type: getGameType(gameType.toUpperCase())
+      type: getGameType(gameType)
     }
   });
   return { ...game, title: getGameTitle(game.type) };
