@@ -76,7 +76,9 @@ describe('updateGamePhase', () => {
   });
 
   test('invalid type', async () => {
-    expect(updateGamePhase('uuid', 'story')).rejects.toThrow('Invalid Game Phase');
+    expect(updateGamePhase('uuid', 'story')).rejects.toThrow(
+      'Invalid Game Phase'
+    );
   });
 });
 
@@ -90,7 +92,7 @@ describe('recreateGame', () => {
     const newGame = await recreateGame('uuid');
 
     expect(prismaMock.game.create).toBeCalled();
-    expect(newGame).toBe(newMockGame);
+    expect(newGame).toEqual(newMockGame);
   });
 
   test('recreating for second time', async () => {
@@ -100,7 +102,7 @@ describe('recreateGame', () => {
     const newGame = await recreateGame('uuid');
 
     expect(prismaMock.game.create).not.toBeCalled();
-    expect(newGame).toBe(mockGame.successor);
+    expect(newGame).toEqual(mockGame.successor);
   });
 });
 
