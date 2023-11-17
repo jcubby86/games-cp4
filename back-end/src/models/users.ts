@@ -16,9 +16,14 @@ export const upsertUser = async (
   const game = await prisma.game.findUnique({
     where: { uuid: gameUuid }
   });
-  if (!game || !(game?.phase === GamePhase.JOIN || user?.gameId === game.id)) {
-    const message = `Game with code ${game?.code} does not exist or can no longer be joined.`;
-    throw new CannotJoinGameError(message);
+  if (!game) {
+    throw new CannotJoinGameError(
+      `Game with uuid '${gameUuid}' does not exist.`
+    );
+  } else if (game.phase !== GamePhase.JOIN && user?.gameId !== game.id) {
+    throw new CannotJoinGameError(
+      `Game with uuid '${gameUuid}' can no longer be joined.`
+    );
   }
 
   if (!user) {
