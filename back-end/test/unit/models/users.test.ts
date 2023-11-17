@@ -12,7 +12,7 @@ const prismaMock = prisma as jest.Mocked<typeof prisma>;
 
 describe('joinGame', () => {
   test('game not found', async () => {
-    expect(upsertUser({} as any, 'uuid', 'nick')).rejects.toThrow(
+    await expect(upsertUser({} as any, 'uuid', 'nick')).rejects.toThrow(
       new CannotJoinGameError("Game with uuid 'uuid' does not exist.")
     );
   });
@@ -23,7 +23,7 @@ describe('joinGame', () => {
       id: 1
     } as any);
 
-    expect(upsertUser({} as any, 'uuid', 'nick')).rejects.toThrow(
+    await expect(upsertUser({} as any, 'uuid', 'nick')).rejects.toThrow(
       new CannotJoinGameError("Game with uuid 'uuid' can no longer be joined.")
     );
   });
@@ -34,11 +34,11 @@ describe('joinGame', () => {
       id: 1
     } as any);
 
-    expect(upsertUser({ gameId: 2 } as any, 'uuid', 'nick')).rejects.toThrow(
+    await expect(upsertUser({ gameId: 2 } as any, 'uuid', 'nick')).rejects.toThrow(
       new CannotJoinGameError("Game with uuid 'uuid' can no longer be joined.")
     );
 
-    expect(upsertUser(undefined, 'uuid', 'nick')).rejects.toThrow(
+    await expect(upsertUser(undefined, 'uuid', 'nick')).rejects.toThrow(
       new CannotJoinGameError("Game with uuid 'uuid' can no longer be joined.")
     );
   });

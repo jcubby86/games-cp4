@@ -43,7 +43,7 @@ describe('createGame', () => {
   });
 
   test('invalid game type', async () => {
-    expect(createGame('bad')).rejects.toThrow('Invalid Game Type');
+    await expect(createGame('bad')).rejects.toThrow('Invalid Game Type');
   });
 });
 
@@ -76,7 +76,7 @@ describe('updateGamePhase', () => {
   });
 
   test('invalid type', async () => {
-    expect(updateGamePhase('uuid', 'story')).rejects.toThrow(
+    await expect(updateGamePhase('uuid', 'story')).rejects.toThrow(
       'Invalid Game Phase'
     );
   });
