@@ -34,7 +34,9 @@ describe('joinGame', () => {
       id: 1
     } as any);
 
-    await expect(upsertUser({ gameId: 2 } as any, 'uuid', 'nick')).rejects.toThrow(
+    await expect(
+      upsertUser({ gameId: 2 } as any, 'uuid', 'nick')
+    ).rejects.toThrow(
       new CannotJoinGameError("Game with uuid 'uuid' can no longer be joined.")
     );
 
@@ -94,14 +96,14 @@ describe('leaveGame', () => {
   });
 
   test('no game', async () => {
-    await leaveGame({} as any);
+    await leaveGame({ id: 1 } as any);
     expect(prisma.user.update).toBeCalled();
     expect(prisma.user.findMany).not.toBeCalled();
     expect(prisma.game.update).not.toBeCalled();
   });
 
   test('not host', async () => {
-    await leaveGame({ id: 1, game: { hostId: 2 } } as any);
+    await leaveGame({ id: 1, game: { id: 1, hostId: 2 } } as any);
     expect(prisma.user.update).toBeCalled();
     expect(prisma.user.findMany).not.toBeCalled();
     expect(prisma.game.update).not.toBeCalled();

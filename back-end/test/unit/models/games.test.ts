@@ -108,18 +108,21 @@ describe('recreateGame', () => {
 
 describe('joinPhase', () => {
   test('not in JOIN phase', async () => {
-    const game = { phase: GamePhase.END };
-
-    const result = await joinPhase({} as any, game as any);
+    const result = await joinPhase(
+      { id: 1, nickname: 'nickname' } as any,
+      { id: 1, code: 'code', phase: GamePhase.END, hostId: null } as any
+    );
     expect(result).toBeUndefined();
     expect(prismaMock.user.findMany).not.toBeCalled();
   });
 
   test('in JOIN phase', async () => {
-    const game = { phase: GamePhase.JOIN };
     prismaMock.user.findMany.mockResolvedValue([{ nickname: 'nick' }] as any);
 
-    const result = await joinPhase({} as any, game as any);
+    const result = await joinPhase(
+      { id: 1, nickname: 'nickname' } as any,
+      { id: 1, code: 'code', phase: GamePhase.JOIN, hostId: null } as any
+    );
     expect(result).not.toBeUndefined();
     expect(result?.users).toContainEqual('nick');
   });

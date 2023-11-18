@@ -6,6 +6,7 @@ import { getSuggestion } from '../../../src/models/suggestion';
 import prisma from '../../../src/prisma';
 
 jest.mock('../../../src/prisma');
+jest.mock('../../../src/utils/utils');
 
 const prismaMock = prisma as jest.Mocked<typeof prisma>;
 
@@ -24,5 +25,5 @@ test('multipleOptions', async () => {
   ] as any);
 
   const suggestion = await getSuggestion(Category.STATEMENT);
-  expect(['test1', 'test2', 'test3']).toContain(suggestion);
+  expect(suggestion).toEqual('test1');
 });
