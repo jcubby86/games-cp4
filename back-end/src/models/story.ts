@@ -26,13 +26,14 @@ const categories = [
   Category.PAST_ACTION
 ];
 
-function getRoundNumber(users: UserDto[]): number {
-  const lengths = users.map((u) => u.storyEntries?.at(0)?.values.length ?? 0);
+export function getRoundNumber(entries: { values?: string[] }[]): number {
+  if (!entries.length) return 0;
+  const lengths = entries.map((e) => e.values?.length ?? 0);
   return Math.min(...lengths);
 }
 
-function isBehind(entry: StoryEntry | undefined | null, round: number) {
-  if (!entry) return true;
+export function isBehind(round: number, entry: { values?: string[] } | null) {
+  if (!entry?.values) return true;
   return entry.values.length <= round;
 }
 
@@ -41,10 +42,9 @@ function isBehind(entry: StoryEntry | undefined | null, round: number) {
  * Once all rounds are complete, marks the game as complete.
  *
  * @param {Game} game
- * @param {StoryEntry[]} entries
  * @return {Promise<{ round: number; waitingOnUsers: string[] }>}
  */
-async function checkRoundCompletion(
+export async function checkRoundCompletion(
   game: Game
 ): Promise<{ round: number; waitingOnUsers: string[] }> {
   if (game.phase !== GamePhase.PLAY) return { round: 0, waitingOnUsers: [] };
@@ -57,24 +57,28 @@ async function checkRoundCompletion(
       }
     }
   });
+  const entries = users.map((u) => ({
+    ...u.storyEntries.at(0),
+    nickname: u.nickname
+  }));
 
-  const round = getRoundNumber(users);
-  const waitingOnUsers = users
-    .filter((u) => isBehind(u.storyEntries.at(0), round))
-    .map((u) => u.nickname);
+  const round = getRoundNumber(entries);
+  const waitingOnUsers = entries
+    .filter((e) => isBehind(round, e))
+    .map((e) => e.nickname);
 
   if (waitingOnUsers.length > 0 && round < fillers.length) {
     return { round, waitingOnUsers };
   }
 
-  if (round >= fillers.length && (game.phase as GamePhase) !== GamePhase.READ) {
+  if (round >= fillers.length) {
     game.phase = GamePhase.READ;
     await prisma.game.update({
       where: { id: game.id },
       data: { phase: GamePhase.READ }
     });
 
-    const finalEntries = getFinalEntries(users.map((u) => u.storyEntries[0]));
+    const finalEntries = getFinalEntries(entries as StoryEntry[]);
     await prisma.$transaction(
       finalEntries.map((e) =>
         prisma.storyEntry.update({
@@ -103,7 +107,7 @@ function getFinalEntries(entries: StoryEntry[]): StoryEntry[] {
   return entries;
 }
 
-function processValue(part: string, round: number) {
+export function processValue(part: string, round: number) {
   let value = part.replace(quoteRegex, '').trim();
   if (round > 1 && !punctRegex.test(value)) value += '.';
   if (round === 2 || round === 5) {
@@ -131,7 +135,7 @@ export const getStoryStatus = async (
     const category = categories[round];
     const suggestion = await getSuggestion(category);
     return {
-      phase: isBehind(entry, round) ? GamePhase.PLAY : WAIT,
+      phase: isBehind(round, entry) ? GamePhase.PLAY : WAIT,
       round: round,
       filler: fillers[round],
       prompt: prompts[round],
