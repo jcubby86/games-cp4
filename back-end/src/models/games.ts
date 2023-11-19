@@ -1,5 +1,6 @@
 import { getUsersByGameId } from './users';
 import { GamePhase, GameType } from '../.generated/prisma';
+import InvalidRequestError from '../errors/InvalidRequestError';
 import prisma from '../prisma';
 import { GameDto, JoinResBody, UserDto } from '../types/domain.js';
 
@@ -23,7 +24,7 @@ function getGameType(type: string): GameType {
   if ((Object.values(GameType) as string[]).includes(normalized)) {
     return normalized as GameType;
   } else {
-    throw new Error('Invalid Game Type');
+    throw new InvalidRequestError('Invalid Game Type');
   }
 }
 
@@ -32,7 +33,7 @@ function getGamePhase(phase: string): GamePhase {
   if ((Object.values(GamePhase) as string[]).includes(normalized)) {
     return normalized as GamePhase;
   } else {
-    throw new Error('Invalid Game Phase');
+    throw new InvalidRequestError('Invalid Game Phase');
   }
 }
 

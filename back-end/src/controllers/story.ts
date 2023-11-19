@@ -36,7 +36,7 @@ const saveEntryHandler: Handler<StoryReqBody> = async (req, res, next) => {
     return res.sendStatus(200);
   } catch (err: unknown) {
     if (err instanceof SaveEntryError) {
-      return res.sendStatus(400);
+      return res.status(400).send({ error: err.message });
     }
     return next(err);
   }
