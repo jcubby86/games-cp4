@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 /* eslint-disable @typescript-eslint/no-namespace */
 import {
   RequestHandler as ExpressRequestHandler,

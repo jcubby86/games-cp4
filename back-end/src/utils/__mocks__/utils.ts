@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-empty-function */
-/* eslint-disable no-unused-vars */
 
 import { Game } from '../../.generated/prisma';
 import {
