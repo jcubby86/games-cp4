@@ -9,6 +9,7 @@
     "plugin:import/typescript"
   ],
   "rules": {
+    "no-unused-vars": "off",
     "sort-imports": [
       "warn",
       {
