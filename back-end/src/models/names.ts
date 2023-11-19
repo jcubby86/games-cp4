@@ -14,7 +14,7 @@ const categories = [Category.MALE_NAME, Category.FEMALE_NAME];
  * @param {Game} game
  * @return {*}  {Promise<string[]>}
  */
-async function checkCompletion(game: Game): Promise<string[]> {
+export async function checkCompletion(game: Game): Promise<string[]> {
   if (game.phase !== GamePhase.PLAY) return [];
 
   const users = await prisma.user.findMany({
