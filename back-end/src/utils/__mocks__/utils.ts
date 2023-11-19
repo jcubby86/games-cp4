@@ -4,7 +4,6 @@
 
 import { Game } from '../../.generated/prisma';
 import {
-  gameExists as gameExistsImpl,
   lowerFirst as lowerFirstImpl,
   upperFirst as upperFirstImpl
 } from '../utils';
@@ -21,8 +20,4 @@ export function lowerFirst(part: string): string {
 }
 export function upperFirst(part: string): string {
   return part.slice(0, 1).toUpperCase() + part.slice(1);
-}
-export function gameExists(game: Game): boolean {
-  const twoHours = 2 * 60 * 60 * 1000;
-  return new Date().getTime() - twoHours < game.createdAt.getTime();
 }
