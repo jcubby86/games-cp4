@@ -22,7 +22,7 @@ describe('createGame', () => {
 
   test('should error', async () => {
     await request(app).post('/api/game').expect(500);
-    await request(app).post('/api/game').send({ type: 'badType' }).expect(500);
+    await request(app).post('/api/game').send({ type: 'badType' }).expect(400);
   });
 });
 
@@ -38,6 +38,10 @@ describe('updateGame', () => {
     expect(updateResponse.statusCode).toBe(200);
     expect(updateResponse.body.uuid).toMatch(context.game.uuid);
     expect(updateResponse.body.phase).toMatch('END');
+
+    await request(app)
+    .put(`/api/game/${context.game.uuid}`)
+    .send({ phase: 'WHAT' }).expect(400);
   });
 });
 

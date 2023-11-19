@@ -1,5 +1,6 @@
 import { Router } from 'express';
 
+import InvalidRequestError from '../errors/InvalidRequestError';
 import {
   createGame,
   getGame,
@@ -23,6 +24,9 @@ const createGameHandler: Handler<CreateReq, Game> = async (req, res, next) => {
 
     return res.status(201).send(game);
   } catch (err: unknown) {
+    if (err instanceof InvalidRequestError) {
+      return res.status(400).send({ error: err.message });
+    }
     return next(err);
   }
 };
@@ -44,6 +48,9 @@ const updatePhaseHandler: Handler<UpdateReq, Game> = async (req, res, next) => {
     console.info('Game updated:', JSON.stringify(game));
     return res.send(game);
   } catch (err: unknown) {
+    if (err instanceof InvalidRequestError) {
+      return res.status(400).send({ error: err.message });
+    }
     return next(err);
   }
 };
