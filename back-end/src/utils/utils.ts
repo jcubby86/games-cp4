@@ -1,5 +1,3 @@
-import { Game } from '../.generated/prisma';
-
 /**
  * Generate a random number between 0 and the limit, exclusive.
  *
@@ -61,17 +59,4 @@ export function lowerFirst(part: string): string {
  */
 export function upperFirst(part: string): string {
   return part.slice(0, 1).toUpperCase() + part.slice(1);
-}
-
-/**
- * Check if the game has ended.
- *
- * @export
- * @param {Game} game
- * @return {*}  {boolean}
- */
-export function gameExists(game: Game): boolean {
-  //               hr  min  sec  millis
-  const twoHours = 2 * 60 * 60 * 1000;
-  return new Date().getTime() - twoHours < game.createdAt.getTime();
 }
