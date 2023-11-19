@@ -28,6 +28,7 @@ describe('single user', () => {
   });
 
   test('play phase', async () => {
+    await agent.put(`/api/names`).send({ text: 'test entry 1' }).expect(400);
     await agent.put(`/api/game/${context.game.uuid}`).send({ phase: 'play' });
 
     const response = await agent.get('/api/names').expect(200);
@@ -38,6 +39,7 @@ describe('single user', () => {
   });
 
   test('submit entry', async () => {
+    await agent.put(`/api/names`).expect(400);
     await agent.put(`/api/names`).send({ text: 'test entry' });
 
     const response = await agent.get('/api/names').expect(200);
@@ -216,8 +218,6 @@ describe('multiple users - leaving partway through', () => {
   });
 
   test('submit first entry', async () => {
-    await agent1.put(`/api/names`).send({ text: 'test entry 1' }).expect(400);
-
     await agent1.put(`/api/game/${context.game.uuid}`).send({ phase: 'play' });
     await agent1.put(`/api/names`).send({ text: 'test entry 1' }).expect(200);
 
@@ -226,7 +226,8 @@ describe('multiple users - leaving partway through', () => {
       .expect(200)
       .then((response) => {
         expect(response.body).toMatchObject({
-          phase: WAIT
+          phase: WAIT,
+          text: 'Test entry 1'
         });
       });
 
@@ -240,6 +241,20 @@ describe('multiple users - leaving partway through', () => {
       });
   });
 
+  test('resubmit first', async () => {
+    await agent1.put(`/api/names`).send({ text: 'resubmit entry 1' }).expect(200);
+
+    await agent1
+      .get('/api/names')
+      .expect(200)
+      .then((response) => {
+        expect(response.body).toMatchObject({
+          phase: WAIT,
+          text: 'Resubmit entry 1'
+        });
+      });
+  });
+
   test('second user leaves', async () => {
     await agent2.delete(`/api/user`);
 
@@ -248,7 +263,7 @@ describe('multiple users - leaving partway through', () => {
       .expect(200)
       .then((response) => {
         expect(response.body.phase).toEqual(GamePhase.READ);
-        expect(response.body.names).toEqual(['Test entry 1']);
+        expect(response.body.names).toEqual(['Resubmit entry 1']);
       });
 
     await agent2.get('/api/names').expect(403);

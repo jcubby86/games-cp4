@@ -96,6 +96,9 @@ export const saveNameEntry = async (
   if (game.phase !== GamePhase.PLAY) {
     throw new SaveEntryError('Game is not in "PLAY" phase');
   }
+  if (!text) {
+    throw new SaveEntryError('No name was entered');
+  }
 
   const name = upperFirst(text.replace(quoteRegex, '').trim());
   const normalized = name.toUpperCase();
