@@ -52,6 +52,7 @@ export const upsertUser = async (
       where: { id: game.id },
       data: { host: { connect: { id: user.id } } }
     });
+    game.hostId = user.id;
   }
 
   user.game = game;

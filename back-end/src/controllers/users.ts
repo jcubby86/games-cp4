@@ -25,7 +25,7 @@ const upsertUserHandler: ReqHandler<JoinReq, User> = async (req, res, next) => {
       nowInMinutes: Math.floor(Date.now() / 60e3) //refresh cookie so it won't expire for another 2 hours
     };
 
-    res.send({ ...req.user, game: req.game });
+    res.send({ ...req.user });
   } catch (err: unknown) {
     if (err instanceof CannotJoinGameError) {
       return res.status(400).send({ error: err.message });
