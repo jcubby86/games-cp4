@@ -9,6 +9,8 @@ export const prismaErrorHandler: ErrorHandler = (err, req, res, next) => {
   if (err instanceof Prisma.PrismaClientKnownRequestError) {
     if (err.code === 'P2025') {
       return res.sendStatus(404);
+    } else if (err.code === 'P2002') {
+      return res.sendStatus(403);
     }
   }
   return next(err);
