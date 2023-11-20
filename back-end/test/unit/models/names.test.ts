@@ -138,7 +138,7 @@ describe('saveNameEntry', () => {
   });
 
   test('success', async () => {
-    await saveNameEntry({} as any, { phase: GamePhase.PLAY } as any, '');
+    await saveNameEntry({} as any, { phase: GamePhase.PLAY } as any, 'entry');
 
     expect(prisma.nameEntry.upsert).toBeCalled();
   });

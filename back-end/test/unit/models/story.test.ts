@@ -182,7 +182,7 @@ describe('getStoryStatus', () => {
 describe('saveStoryEntry', () => {
   test('wrong phase', async () => {
     await expect(
-      saveStoryEntry({} as any, { phase: GamePhase.END } as any, '')
+      saveStoryEntry({} as any, { phase: GamePhase.END } as any, 'entry')
     ).rejects.toThrow(new SaveEntryError('Game is not in "PLAY" phase'));
 
     expect(prisma.storyEntry.create).not.toBeCalled();
@@ -194,7 +194,7 @@ describe('saveStoryEntry', () => {
       { storyEntries: [], nickname: 'test' }
     ] as any);
 
-    await saveStoryEntry({} as any, { phase: GamePhase.PLAY } as any, '');
+    await saveStoryEntry({} as any, { phase: GamePhase.PLAY } as any, 'entry');
 
     expect(prisma.storyEntry.create).toBeCalled();
     expect(prisma.storyEntry.update).not.toBeCalled();
@@ -206,7 +206,7 @@ describe('saveStoryEntry', () => {
     ] as any);
     prismaMock.storyEntry.findUnique.mockResolvedValue({ values: [] } as any);
 
-    await saveStoryEntry({} as any, { phase: GamePhase.PLAY } as any, '');
+    await saveStoryEntry({} as any, { phase: GamePhase.PLAY } as any, 'entry');
 
     expect(prisma.storyEntry.create).not.toBeCalled();
     expect(prisma.storyEntry.update).toBeCalled();
@@ -219,7 +219,7 @@ describe('saveStoryEntry', () => {
     prismaMock.storyEntry.findUnique.mockResolvedValue({ values: [''] } as any);
 
     await expect(
-      saveStoryEntry({} as any, { phase: GamePhase.PLAY } as any, '')
+      saveStoryEntry({} as any, { phase: GamePhase.PLAY } as any, 'entry')
     ).rejects.toThrow(new SaveEntryError('User has already submitted this round'));
 
     expect(prisma.storyEntry.create).not.toBeCalled();
