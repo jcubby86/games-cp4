@@ -162,6 +162,9 @@ export const saveStoryEntry = async (
   if (game.phase !== GamePhase.PLAY) {
     throw new SaveEntryError('Game is not in "PLAY" phase');
   }
+  if (!part) {
+    throw new SaveEntryError('No value was entered');
+  }
 
   const { round } = await checkRoundCompletion(game);
   const value = processValue(part, round);
