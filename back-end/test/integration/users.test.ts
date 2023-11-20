@@ -133,3 +133,7 @@ test('closed game - join before closing', async () => {
 test('leaveGame - no user', async () => {
   await request(app).delete('/api/user').expect(200);
 });
+
+test('getUser - no user', async () => {
+  await request(app).get('/api/user').expect(404);
+});
