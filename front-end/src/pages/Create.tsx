@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { useAppState } from '../contexts/AppContext';
 import axios from '../utils/axiosWrapper';
+import { gameVariants } from '../utils/gameVariants';
 import generateNickname from '../utils/nicknameGeneration';
 import {
   CreateGameReqBody as CreateGameReq,
@@ -10,7 +11,6 @@ import {
   JoinGameReqBody as JoinGameReq,
   UserDto as User
 } from '../utils/types';
-import { gameVariants } from '../utils/gameVariants';
 
 interface CreateState {
   nickname: string;

@@ -3,9 +3,9 @@ import { useNavigate } from 'react-router-dom';
 
 import { useAppState } from '../contexts/AppContext';
 import axios, { AxiosError } from '../utils/axiosWrapper';
+import { gameVariants } from '../utils/gameVariants';
 import generateNickname from '../utils/nicknameGeneration';
 import { GameDto, JoinGameReqBody, UserDto } from '../utils/types';
-import { gameVariants } from '../utils/gameVariants';
 import { eqIgnoreCase as eq } from '../utils/utils';
 
 interface JoinState {

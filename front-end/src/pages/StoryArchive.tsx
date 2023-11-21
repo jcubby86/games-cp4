@@ -4,11 +4,11 @@ import { useNavigate, useParams } from 'react-router-dom';
 import RecreateButton from '../components/RecreateButton';
 import ShareButton from '../components/ShareButton';
 import axios from '../utils/axiosWrapper';
+import { StoryVariant } from '../utils/gameVariants';
 import {
   StoryArchiveResBody as ArchiveResBody,
   StoryArchive as Story
 } from '../utils/types';
-import { StoryVariant } from '../utils/gameVariants';
 
 interface StoryArchiveState extends ArchiveResBody {
   showAll: boolean;
@@ -99,7 +99,7 @@ export default function StoryArchive(): JSX.Element {
           <ShareButton
             className="btn col-2"
             path={getPath()}
-            title={"Games: " + StoryVariant.title}
+            title={'Games: ' + StoryVariant.title}
             text="Read my hilarious story!"
           ></ShareButton>
         </div>
