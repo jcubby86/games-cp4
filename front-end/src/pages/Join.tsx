@@ -35,7 +35,7 @@ const Join = (): JSX.Element => {
       }
 
       const response = await axios.post<JoinGameReqBody, UserDto>('/api/user', {
-        nickname: state.nickname.toLowerCase() || suggestion.current,
+        nickname: state.nickname || suggestion.current,
         uuid: state.gameId ?? ''
       });
 

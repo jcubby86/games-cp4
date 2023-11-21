@@ -19,7 +19,7 @@ const RecreateButton = ({ reset, className }: RecreateProps): JSX.Element => {
       const userResponse = await axios.post<JoinGameReqBody, UserDto>(
         '/api/user',
         {
-          nickname: appState.nickname.toLowerCase(),
+          nickname: appState.nickname,
           uuid: gameResponse.data.uuid
         }
       );
