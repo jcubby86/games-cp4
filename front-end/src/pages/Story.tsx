@@ -10,8 +10,8 @@ import StartGame from '../components/StartGame';
 import { useAppState } from '../contexts/AppContext';
 import axios from '../utils/axiosWrapper';
 import { JOIN, PLAY, READ, WAIT } from '../utils/constants';
-import { EntryReqBody, StoryResBody } from '../utils/types';
 import { StoryVariant } from '../utils/gameVariants';
+import { EntryReqBody, StoryResBody } from '../utils/types';
 
 const initialState = {
   phase: ''
@@ -150,7 +150,7 @@ const Story = (): JSX.Element => {
             <ShareButton
               className="btn col-2"
               path={`/story/${appState.gameId}/${appState.userId}`}
-              title={"Games: " + StoryVariant.title}
+              title={'Games: ' + StoryVariant.title}
               text="Read my hilarious story!"
             ></ShareButton>
           </div>

@@ -6,8 +6,8 @@ import StartGame from '../components/StartGame';
 import { useAppState } from '../contexts/AppContext';
 import axios, { AxiosError } from '../utils/axiosWrapper';
 import { END, JOIN, PLAY, READ, WAIT } from '../utils/constants';
-import { EntryReqBody, NamesResBody, UpdateGameReqBody } from '../utils/types';
 import { NameVariant } from '../utils/gameVariants';
+import { EntryReqBody, NamesResBody, UpdateGameReqBody } from '../utils/types';
 
 const initialState = {
   phase: ''
