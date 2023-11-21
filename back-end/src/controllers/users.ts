@@ -17,7 +17,11 @@ import { ReqHandler } from '../types/express.js';
  */
 const upsertUserHandler: ReqHandler<JoinReq, User> = async (req, res, next) => {
   try {
-    req.user = await upsertUser(req.user, req.body.uuid, req.body.nickname);
+    req.user = await upsertUser(
+      req.user,
+      req.body.uuid,
+      req.body.nickname.toLowerCase()
+    );
 
     req.session = {
       ...req.session,

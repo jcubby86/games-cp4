@@ -39,7 +39,7 @@ const Create = (): JSX.Element => {
       });
       const userResponse = await axios.post<JoinGameReq, User>('/api/user', {
         //TODO: preserve case in nicknames
-        nickname: state.nickname.toLowerCase() || suggestion.current,
+        nickname: state.nickname || suggestion.current,
         uuid: gameResponse.data.uuid
       });
 
