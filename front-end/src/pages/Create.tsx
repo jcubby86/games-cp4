@@ -38,7 +38,6 @@ const Create = (): JSX.Element => {
         type: state.selected
       });
       const userResponse = await axios.post<JoinGameReq, User>('/api/user', {
-        //TODO: preserve case in nicknames
         nickname: state.nickname || suggestion.current,
         uuid: gameResponse.data.uuid
       });
