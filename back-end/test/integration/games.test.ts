@@ -40,8 +40,9 @@ describe('updateGame', () => {
     expect(updateResponse.body.phase).toMatch('END');
 
     await request(app)
-    .put(`/api/game/${context.game.uuid}`)
-    .send({ phase: 'WHAT' }).expect(400);
+      .put(`/api/game/${context.game.uuid}`)
+      .send({ phase: 'WHAT' })
+      .expect(400);
   });
 });
 

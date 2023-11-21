@@ -67,7 +67,6 @@ export const getNameStatus = async (
     return {
       phase: !userElem ? GamePhase.PLAY : WAIT,
       users: waitingOnUsers,
-      text: userElem?.name,
       placeholder: suggestion
     };
   } else if (game.phase === GamePhase.READ) {
@@ -91,16 +90,16 @@ export const getNameStatus = async (
 export const saveNameEntry = async (
   user: UserDto,
   game: GameDto,
-  text: string
+  value: string
 ) => {
   if (game.phase !== GamePhase.PLAY) {
     throw new SaveEntryError('Game is not in "PLAY" phase');
   }
-  if (!text) {
+  if (!value) {
     throw new SaveEntryError('No name was entered');
   }
 
-  const name = upperFirst(text.replace(quoteRegex, '').trim());
+  const name = upperFirst(value.replace(quoteRegex, '').trim());
   const normalized = name.toUpperCase();
 
   await prisma.nameEntry.upsert({

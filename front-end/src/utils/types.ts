@@ -30,34 +30,28 @@ export interface JoinGameReqBody extends ReqBody {
   uuid: string;
   nickname: string;
 }
-export interface NamesReqBody extends ReqBody {
-  text: string;
-}
-export interface StoryReqBody extends ReqBody {
-  part: string;
+export interface EntryReqBody extends ReqBody {
+  value: string;
 }
 
-export interface JoinResBody extends ResBody {
+export interface GameStatusResBody extends ResBody {
   phase: string;
   users?: string[];
   code?: string;
   nickname?: string;
   isHost?: boolean;
-}
-export interface NamesResBody extends JoinResBody {
-  text?: string;
   placeholder?: string;
+}
+export interface NamesResBody extends GameStatusResBody {
   names?: string[];
 }
-export interface StoryResBody extends JoinResBody {
+export interface StoryResBody extends GameStatusResBody {
   prompt?: string;
-  placeholder?: string;
   prefix?: string;
   suffix?: string;
   story?: string;
   filler?: string;
   round?: number;
-  id?: string;
 }
 export interface StoryArchive {
   value: string;

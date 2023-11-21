@@ -107,8 +107,8 @@ function getFinalEntries(entries: StoryEntry[]): StoryEntry[] {
   return entries;
 }
 
-export function processValue(part: string, round: number) {
-  let value = part.replace(quoteRegex, '').trim();
+export function processValue(entry: string, round: number) {
+  let value = entry.replace(quoteRegex, '').trim();
   if (round > 1 && !punctRegex.test(value)) value += '.';
   if (round === 2 || round === 5) {
     value = lowerFirst(value);
@@ -148,7 +148,6 @@ export const getStoryStatus = async (
     return {
       phase: GamePhase.READ,
       story: entry?.finalValue,
-      id: game.uuid,
       isHost: game.hostId === user.id
     };
   }
@@ -157,17 +156,16 @@ export const getStoryStatus = async (
 export const saveStoryEntry = async (
   user: UserDto,
   game: GameDto,
-  part: string
+  value: string
 ) => {
   if (game.phase !== GamePhase.PLAY) {
     throw new SaveEntryError('Game is not in "PLAY" phase');
   }
-  if (!part) {
+  if (!value) {
     throw new SaveEntryError('No value was entered');
   }
 
   const { round } = await checkRoundCompletion(game);
-  const value = processValue(part, round);
   const entry = await prisma.storyEntry.findUnique({
     where: {
       gameId_userId: {
@@ -182,7 +180,7 @@ export const saveStoryEntry = async (
       data: {
         user: { connect: { id: user.id } },
         game: { connect: { id: game.id } },
-        values: [value],
+        values: [processValue(value, round)],
         finalValue: ''
       }
     });
@@ -190,7 +188,7 @@ export const saveStoryEntry = async (
     await prisma.storyEntry.update({
       where: { id: entry.id },
       data: {
-        values: [...entry.values, value]
+        values: [...entry.values, processValue(value, round)]
       }
     });
   } else {

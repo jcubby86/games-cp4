@@ -17,7 +17,7 @@ interface JoinState {
 }
 
 const Join = (): JSX.Element => {
-  const suggestion = useRef(generateNickname());
+  const suggestionRef = useRef(generateNickname());
   const { appState, setAppState } = useAppState();
   const [state, setState] = useState<JoinState>({
     nickname: appState.nickname,
@@ -35,7 +35,7 @@ const Join = (): JSX.Element => {
       }
 
       const response = await axios.post<JoinGameReqBody, UserDto>('/api/user', {
-        nickname: state.nickname || suggestion.current,
+        nickname: state.nickname || suggestionRef.current,
         uuid: state.gameId ?? ''
       });
 
@@ -122,7 +122,7 @@ const Join = (): JSX.Element => {
             autoComplete="off"
             spellCheck="false"
             autoCorrect="off"
-            placeholder={suggestion.current}
+            placeholder={suggestionRef.current}
             maxLength={30}
             value={state.nickname}
             onChange={(e) => {

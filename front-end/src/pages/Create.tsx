@@ -19,7 +19,7 @@ interface CreateState {
 
 const Create = (): JSX.Element => {
   const { appState, setAppState } = useAppState();
-  const suggestion = useRef(generateNickname());
+  const suggestionRef = useRef(generateNickname());
   const [state, setState] = useState<CreateState>({
     nickname: appState.nickname,
     selected: ''
@@ -38,7 +38,7 @@ const Create = (): JSX.Element => {
         type: state.selected
       });
       const userResponse = await axios.post<JoinGameReq, User>('/api/user', {
-        nickname: state.nickname || suggestion.current,
+        nickname: state.nickname || suggestionRef.current,
         uuid: gameResponse.data.uuid
       });
 
@@ -85,7 +85,7 @@ const Create = (): JSX.Element => {
             autoComplete="off"
             spellCheck="false"
             autoCorrect="off"
-            placeholder={suggestion.current}
+            placeholder={suggestionRef.current}
             maxLength={30}
             value={state.nickname}
             onChange={(e) => {
