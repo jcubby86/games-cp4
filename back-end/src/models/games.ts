@@ -2,7 +2,7 @@ import { getUsersByGameId } from './users';
 import { GamePhase, GameType } from '../.generated/prisma';
 import InvalidRequestError from '../errors/InvalidRequestError';
 import prisma from '../prisma';
-import { GameDto, JoinResBody, UserDto } from '../types/domain.js';
+import { GameDto, GameStatusResBody, UserDto } from '../types/domain.js';
 
 /**
  * Generate a 4 letter string as game code,
@@ -98,7 +98,7 @@ export const recreateGame = async (oldGameUuid: string): Promise<GameDto> => {
 export const joinPhase = async (
   user: UserDto,
   game: GameDto
-): Promise<JoinResBody | undefined> => {
+): Promise<GameStatusResBody | undefined> => {
   if (game.phase === GamePhase.JOIN) {
     const users = await getUsersByGameId(game.id);
     return {

@@ -10,7 +10,7 @@ import StartGame from '../components/StartGame';
 import { useAppState } from '../contexts/AppContext';
 import axios from '../utils/axiosWrapper';
 import { JOIN, PLAY, READ, WAIT } from '../utils/constants';
-import { StoryReqBody, StoryResBody } from '../utils/types';
+import { EntryReqBody, StoryResBody } from '../utils/types';
 import { StoryVariant } from '../utils/gameVariants';
 
 const initialState = {
@@ -20,7 +20,7 @@ const initialState = {
 const Story = (): JSX.Element => {
   const { appState } = useAppState();
   const [state, setState] = useState<StoryResBody>(initialState);
-  const partRef = useRef<HTMLTextAreaElement>(null);
+  const entryRef = useRef<HTMLTextAreaElement>(null);
 
   const pollStatus = async (resetPlaceholder = false) => {
     try {
@@ -57,7 +57,7 @@ const Story = (): JSX.Element => {
     const submit = async (e: React.FormEvent) => {
       try {
         e.preventDefault();
-        if (!partRef.current?.value) {
+        if (!entryRef.current?.value) {
           if (
             !window.confirm(
               "You haven't typed anything in! Do you want to use the placeholder text?"
@@ -66,13 +66,13 @@ const Story = (): JSX.Element => {
             return;
         }
 
-        await axios.put<StoryReqBody>('/api/story', {
-          part: (partRef.current?.value || state.placeholder) ?? ''
+        await axios.put<EntryReqBody>('/api/story', {
+          value: (entryRef.current?.value || state.placeholder) ?? ''
         });
         setState((prev) => ({ ...prev, phase: '', placeholder: '' }));
 
-        if (partRef.current) {
-          partRef.current.value = '';
+        if (entryRef.current) {
+          entryRef.current.value = '';
         }
       } catch (err: unknown) {
         alert('An error has occurred');
@@ -96,7 +96,7 @@ const Story = (): JSX.Element => {
         </p>
         <textarea
           placeholder={state.placeholder}
-          ref={partRef}
+          ref={entryRef}
           className="form-control"
           rows={3}
         />
@@ -142,14 +142,14 @@ const Story = (): JSX.Element => {
           <div className="row gap-4">
             <RecreateButton reset={reset} className="col btn btn-success" />
             <Link
-              to={`/story/${state.id}`}
+              to={`/story/${appState.gameId}`}
               className="col btn btn-outline-success"
             >
               See all
             </Link>
             <ShareButton
               className="btn col-2"
-              path={`/story/${state.id}/${appState.userId}`}
+              path={`/story/${appState.gameId}/${appState.userId}`}
               title={"Games: " + StoryVariant.title}
               text="Read my hilarious story!"
             ></ShareButton>

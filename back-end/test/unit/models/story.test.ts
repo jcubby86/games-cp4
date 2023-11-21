@@ -220,7 +220,9 @@ describe('saveStoryEntry', () => {
 
     await expect(
       saveStoryEntry({} as any, { phase: GamePhase.PLAY } as any, 'entry')
-    ).rejects.toThrow(new SaveEntryError('User has already submitted this round'));
+    ).rejects.toThrow(
+      new SaveEntryError('User has already submitted this round')
+    );
 
     expect(prisma.storyEntry.create).not.toBeCalled();
     expect(prisma.storyEntry.update).not.toBeCalled();

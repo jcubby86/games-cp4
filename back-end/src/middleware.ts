@@ -1,7 +1,7 @@
 import { GameType } from './.generated/prisma';
 import { joinPhase } from './models/games';
 import { getUser } from './models/users';
-import { JoinResBody, ReqBody } from './types/domain.js';
+import { GameStatusResBody, ReqBody } from './types/domain.js';
 import { ReqHandler as Handler } from './types/express.js';
 
 /**
@@ -35,7 +35,7 @@ export const loadUser: Handler = async (req, res, next) => {
  * @param next
  * @returns
  */
-export const joinPhaseHandler: Handler<ReqBody, JoinResBody> = async (
+export const joinPhaseHandler: Handler<ReqBody, GameStatusResBody> = async (
   req,
   res,
   next

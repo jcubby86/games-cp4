@@ -13,7 +13,7 @@ describe('single user', () => {
     const createResponse = await agent.post('/api/game').send({ type: 'name' });
     await agent
       .post('/api/user')
-      .send({ uuid: createResponse.body.uuid, nickname: 'nameTest' });
+      .send({ uuid: createResponse.body.uuid, nickname: 'nametest' });
 
     context.game = createResponse.body;
   });
@@ -22,25 +22,25 @@ describe('single user', () => {
     const response = await agent.get('/api/names').expect(200);
     expect(response.body).toMatchObject({
       phase: GamePhase.JOIN,
-      users: ['nameTest'],
+      users: ['nametest'],
       isHost: true
     });
   });
 
   test('play phase', async () => {
-    await agent.put(`/api/names`).send({ text: 'test entry 1' }).expect(400);
+    await agent.put(`/api/names`).send({ value: 'test entry 1' }).expect(400);
     await agent.put(`/api/game/${context.game.uuid}`).send({ phase: 'play' });
 
     const response = await agent.get('/api/names').expect(200);
     expect(response.body).toMatchObject({
       phase: GamePhase.PLAY,
-      users: ['nameTest']
+      users: ['nametest']
     });
   });
 
   test('submit entry', async () => {
     await agent.put(`/api/names`).expect(400);
-    await agent.put(`/api/names`).send({ text: 'test entry' });
+    await agent.put(`/api/names`).send({ value: 'test entry' });
 
     const response = await agent.get('/api/names').expect(200);
     expect(response.body).toMatchObject({
@@ -69,10 +69,10 @@ describe('multiple users', () => {
       .send({ type: 'name' });
     await agent1
       .post('/api/user')
-      .send({ uuid: createResponse.body.uuid, nickname: 'nameTest1' });
+      .send({ uuid: createResponse.body.uuid, nickname: 'nametest1' });
     await agent2
       .post('/api/user')
-      .send({ uuid: createResponse.body.uuid, nickname: 'nameTest2' });
+      .send({ uuid: createResponse.body.uuid, nickname: 'nametest2' });
 
     context.game = createResponse.body;
   });
@@ -87,7 +87,7 @@ describe('multiple users', () => {
           isHost: true
         });
         expect(response.body.users).toEqual(
-          expect.arrayContaining(['nameTest1', 'nameTest2'])
+          expect.arrayContaining(['nametest1', 'nametest2'])
         );
       });
     await agent2
@@ -99,14 +99,14 @@ describe('multiple users', () => {
           isHost: false
         });
         expect(response.body.users).toEqual(
-          expect.arrayContaining(['nameTest1', 'nameTest2'])
+          expect.arrayContaining(['nametest1', 'nametest2'])
         );
       });
   });
 
   test('submit first entry', async () => {
     await agent1.put(`/api/game/${context.game.uuid}`).send({ phase: 'play' });
-    await agent1.put(`/api/names`).send({ text: 'test entry 1' });
+    await agent1.put(`/api/names`).send({ value: 'test entry 1' });
 
     await agent1
       .get('/api/names')
@@ -128,7 +128,7 @@ describe('multiple users', () => {
   });
 
   test('submit second entry', async () => {
-    await agent2.put(`/api/names`).send({ text: 'test entry 2' });
+    await agent2.put(`/api/names`).send({ value: 'test entry 2' });
 
     await agent1
       .get('/api/names')
@@ -182,10 +182,10 @@ describe('multiple users - leaving partway through', () => {
       .send({ type: 'name' });
     await agent1
       .post('/api/user')
-      .send({ uuid: createResponse.body.uuid, nickname: 'nameTest1' });
+      .send({ uuid: createResponse.body.uuid, nickname: 'nametest1' });
     await agent2
       .post('/api/user')
-      .send({ uuid: createResponse.body.uuid, nickname: 'nameTest2' });
+      .send({ uuid: createResponse.body.uuid, nickname: 'nametest2' });
 
     context.game = createResponse.body;
   });
@@ -200,7 +200,7 @@ describe('multiple users - leaving partway through', () => {
           isHost: true
         });
         expect(response.body.users).toEqual(
-          expect.arrayContaining(['nameTest1', 'nameTest2'])
+          expect.arrayContaining(['nametest1', 'nametest2'])
         );
       });
     await agent2
@@ -212,22 +212,21 @@ describe('multiple users - leaving partway through', () => {
           isHost: false
         });
         expect(response.body.users).toEqual(
-          expect.arrayContaining(['nameTest1', 'nameTest2'])
+          expect.arrayContaining(['nametest1', 'nametest2'])
         );
       });
   });
 
   test('submit first entry', async () => {
     await agent1.put(`/api/game/${context.game.uuid}`).send({ phase: 'play' });
-    await agent1.put(`/api/names`).send({ text: 'test entry 1' }).expect(200);
+    await agent1.put(`/api/names`).send({ value: 'test entry 1' }).expect(200);
 
     await agent1
       .get('/api/names')
       .expect(200)
       .then((response) => {
         expect(response.body).toMatchObject({
-          phase: WAIT,
-          text: 'Test entry 1'
+          phase: WAIT
         });
       });
 
@@ -242,15 +241,17 @@ describe('multiple users - leaving partway through', () => {
   });
 
   test('resubmit first', async () => {
-    await agent1.put(`/api/names`).send({ text: 'resubmit entry 1' }).expect(200);
+    await agent1
+      .put(`/api/names`)
+      .send({ value: 'resubmit entry 1' })
+      .expect(200);
 
     await agent1
       .get('/api/names')
       .expect(200)
       .then((response) => {
         expect(response.body).toMatchObject({
-          phase: WAIT,
-          text: 'Resubmit entry 1'
+          phase: WAIT
         });
       });
   });

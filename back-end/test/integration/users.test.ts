@@ -100,7 +100,10 @@ describe('multiple users', () => {
 });
 
 test('game not found', async () => {
-  await request(app).post('/api/user').send({ uuid: 'UUID' }).expect(400);
+  await request(app)
+    .post('/api/user')
+    .send({ uuid: 'UUID', nickname: 'test' })
+    .expect(400);
 });
 
 test('closed game - join after closing', async () => {
@@ -111,7 +114,7 @@ test('closed game - join after closing', async () => {
     .expect(200);
   await request(app)
     .post('/api/user')
-    .send({ uuid: newGame.body.uuid })
+    .send({ uuid: newGame.body.uuid, nickname: 'test' })
     .expect(400);
 });
 
@@ -122,7 +125,7 @@ test('closed game - join before closing', async () => {
     .post('/api/user')
     .send({ uuid: newGame.body.uuid, nickname: 'test' })
     .expect(200);
-    
+
   await agent.put(`/api/game/${newGame.body.uuid}`).send({ phase: 'end' });
   await agent
     .post('/api/user')

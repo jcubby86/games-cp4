@@ -6,7 +6,7 @@ import StartGame from '../components/StartGame';
 import { useAppState } from '../contexts/AppContext';
 import axios, { AxiosError } from '../utils/axiosWrapper';
 import { END, JOIN, PLAY, READ, WAIT } from '../utils/constants';
-import { NamesReqBody, NamesResBody, UpdateGameReqBody } from '../utils/types';
+import { EntryReqBody, NamesResBody, UpdateGameReqBody } from '../utils/types';
 import { NameVariant } from '../utils/gameVariants';
 
 const initialState = {
@@ -52,8 +52,8 @@ const Names = (): JSX.Element => {
           return;
         }
 
-        await axios.put<NamesReqBody>('/api/names', {
-          text: entryRef.current.value
+        await axios.put<EntryReqBody>('/api/names', {
+          value: entryRef.current.value
         });
         setState((prev) => ({
           ...prev,

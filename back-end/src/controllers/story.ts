@@ -8,9 +8,9 @@ import {
   saveStoryEntry
 } from '../models/story';
 import {
+  EntryReqBody,
   ReqBody,
   StoryArchiveResBody,
-  StoryReqBody,
   StoryResBody
 } from '../types/domain.js';
 import { ReqHandler as Handler } from '../types/express.js';
@@ -29,10 +29,10 @@ const getGameHandler: Handler<ReqBody, StoryResBody> = async (
   }
 };
 
-const saveEntryHandler: Handler<StoryReqBody> = async (req, res, next) => {
+const saveEntryHandler: Handler<EntryReqBody> = async (req, res, next) => {
   try {
     if (!req.game || !req.user) return res.sendStatus(403);
-    await saveStoryEntry(req.user, req.game, req.body.part);
+    await saveStoryEntry(req.user, req.game, req.body.value);
     return res.sendStatus(200);
   } catch (err: unknown) {
     if (err instanceof SaveEntryError) {
