@@ -11,7 +11,6 @@ export interface GameDto extends ResBody {
   phase: string;
   test: number;
   createdAt: Date;
-  title?: string;
   uuid: string;
 }
 

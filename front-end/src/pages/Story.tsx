@@ -11,6 +11,7 @@ import { useAppState } from '../contexts/AppContext';
 import axios from '../utils/axiosWrapper';
 import { JOIN, PLAY, READ, WAIT } from '../utils/constants';
 import { StoryReqBody, StoryResBody } from '../utils/types';
+import { StoryVariant } from '../utils/gameVariants';
 
 const initialState = {
   phase: ''
@@ -149,7 +150,7 @@ const Story = (): JSX.Element => {
             <ShareButton
               className="btn col-2"
               path={`/story/${state.id}/${appState.userId}`}
-              title="Games: He Said She Said"
+              title={"Games: " + StoryVariant.title}
               text="Read my hilarious story!"
             ></ShareButton>
           </div>
@@ -172,7 +173,7 @@ const Story = (): JSX.Element => {
       <StartGame
         users={state.users}
         isHost={state.isHost}
-        title="He Said She Said"
+        title={StoryVariant.title}
         setPhase={() => setState((prev) => ({ ...prev, phase: '' }))}
       ></StartGame>
     );

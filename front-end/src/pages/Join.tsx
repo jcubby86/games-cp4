@@ -5,12 +5,14 @@ import { useAppState } from '../contexts/AppContext';
 import axios, { AxiosError } from '../utils/axiosWrapper';
 import generateNickname from '../utils/nicknameGeneration';
 import { GameDto, JoinGameReqBody, UserDto } from '../utils/types';
+import { gameVariants } from '../utils/gameVariants';
+import { eqIgnoreCase as eq } from '../utils/utils';
 
 interface JoinState {
   nickname: string;
   gameCode: string;
   gameId?: string;
-  gameTitle?: string;
+  gameType?: string;
   valid?: boolean;
 }
 
@@ -45,7 +47,7 @@ const Join = (): JSX.Element => {
         gameId: response.data.game.uuid
       });
 
-      navigate('/' + response.data.game.type.toLowerCase());
+      navigate('/' + response.data.game.type);
     } catch (e: unknown) {
       const err = e as AxiosError;
       if (err?.response?.status === 400) {
@@ -63,7 +65,7 @@ const Join = (): JSX.Element => {
         setState((prev) => ({
           ...prev,
           gameCode: code,
-          gameTitle: result.data.title,
+          gameType: result.data.type,
           gameId: result.data.uuid,
           valid: true
         }));
@@ -75,7 +77,6 @@ const Join = (): JSX.Element => {
     setState((prev) => ({
       ...prev,
       gameCode: code,
-      gameTitle: undefined,
       gameId: undefined,
       valid: code.length === 4 ? false : undefined
     }));
@@ -143,8 +144,9 @@ const Join = (): JSX.Element => {
               : 'Join Game'
           }
         />
-        <div className={state.gameTitle ? 'text-muted' : 'text-danger'}>
-          {state.gameTitle ?? (state.valid === false && 'Game not found')}
+        <div className={state.gameId ? 'text-muted' : 'text-danger'}>
+          {gameVariants.find((v) => eq(v.type, state.gameType))?.title ??
+            (state.valid === false && 'Game not found')}
         </div>
       </form>
     </div>

@@ -23,10 +23,7 @@ describe('createGame', () => {
     const game = await createGame('name');
 
     expect(prisma.game.create).toBeCalled();
-    expect(game).toMatchObject({
-      type: GameType.NAME,
-      title: 'The Name Game'
-    });
+    expect(game.type).toEqual(GameType.NAME);
   });
 
   test('story game', async () => {
@@ -36,10 +33,7 @@ describe('createGame', () => {
     const game = await createGame('story');
 
     expect(prisma.game.create).toBeCalled();
-    expect(game).toMatchObject({
-      type: GameType.STORY,
-      title: 'He Said She Said'
-    });
+    expect(game.type).toEqual(GameType.STORY);
   });
 
   test('invalid game type', async () => {
@@ -55,10 +49,7 @@ describe('getGame', () => {
     const game = await getGame('NAME');
 
     expect(prisma.game.findUniqueOrThrow).toBeCalled();
-    expect(game).toMatchObject({
-      type: GameType.NAME,
-      title: 'The Name Game'
-    });
+    expect(game.type).toEqual(GameType.NAME);
   });
 });
 
@@ -70,9 +61,7 @@ describe('updateGamePhase', () => {
     const game = await updateGamePhase('uuid', 'end');
 
     expect(prisma.game.update).toBeCalled();
-    expect(game).toMatchObject({
-      type: GameType.STORY
-    });
+    expect(game.type).toEqual(GameType.STORY);
   });
 
   test('invalid type', async () => {

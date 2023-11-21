@@ -7,6 +7,7 @@ import { useAppState } from '../contexts/AppContext';
 import axios, { AxiosError } from '../utils/axiosWrapper';
 import { END, JOIN, PLAY, READ, WAIT } from '../utils/constants';
 import { NamesReqBody, NamesResBody, UpdateGameReqBody } from '../utils/types';
+import { NameVariant } from '../utils/gameVariants';
 
 const initialState = {
   phase: ''
@@ -152,7 +153,7 @@ const Names = (): JSX.Element => {
       <StartGame
         users={state.users}
         isHost={state.isHost}
-        title="The Name Game"
+        title={NameVariant.title}
         setPhase={() => setState((prev) => ({ ...prev, phase: '' }))}
       ></StartGame>
     );

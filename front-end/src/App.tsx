@@ -21,12 +21,12 @@ function App(): JSX.Element {
             <Route index element={<Home />} />
             <Route path="join" element={<Join />} />
             <Route path="create" element={<Create />} />
-            <Route path={STORY.toLowerCase()} element={<Story />} />
+            <Route path={STORY} element={<Story />} />
             <Route
-              path={`${STORY.toLowerCase()}/:gameId/:userId?`}
+              path={`${STORY}/:gameId/:userId?`}
               element={<StoryArchive />}
             />
-            <Route path={NAMES.toLowerCase()} element={<Names />} />
+            <Route path={NAMES} element={<Names />} />
             <Route path="*" element={<Home />} />
           </Route>
         </Routes>

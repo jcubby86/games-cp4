@@ -7,7 +7,6 @@ export interface ResBody {
 }
 
 export interface GameDto extends Game, ResBody {
-  title?: string;
 }
 
 export interface UserDto extends User, ResBody {
