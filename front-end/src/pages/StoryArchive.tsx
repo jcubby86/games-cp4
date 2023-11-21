@@ -8,6 +8,7 @@ import {
   StoryArchiveResBody as ArchiveResBody,
   StoryArchive as Story
 } from '../utils/types';
+import { StoryVariant } from '../utils/gameVariants';
 
 interface StoryArchiveState extends ArchiveResBody {
   showAll: boolean;
@@ -82,7 +83,7 @@ export default function StoryArchive(): JSX.Element {
   return (
     <div className="d-flex flex-column w-100">
       <div className="text-center">
-        <h1 className="text-nowrap">He Said She Said</h1>
+        <h1 className="text-nowrap">{StoryVariant.title}</h1>
       </div>
 
       <ul className="list-group list-group-flush my-3 w-100">
@@ -98,7 +99,7 @@ export default function StoryArchive(): JSX.Element {
           <ShareButton
             className="btn col-2"
             path={getPath()}
-            title="Games: He Said She Said"
+            title={"Games: " + StoryVariant.title}
             text="Read my hilarious story!"
           ></ShareButton>
         </div>

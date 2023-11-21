@@ -37,16 +37,6 @@ function getGamePhase(phase: string): GamePhase {
   }
 }
 
-function getGameTitle(type: GameType): string | undefined {
-  if (type === GameType.STORY) {
-    return 'He Said She Said';
-  } else if (type === GameType.NAME) {
-    return 'The Name Game';
-  } else {
-    return undefined;
-  }
-}
-
 export const createGame = async (gameType: string): Promise<GameDto> => {
   const game = await prisma.game.create({
     data: {
@@ -54,7 +44,7 @@ export const createGame = async (gameType: string): Promise<GameDto> => {
       type: getGameType(gameType)
     }
   });
-  return { ...game, title: getGameTitle(game.type) };
+  return game;
 };
 
 export const getGame = async (code: string): Promise<GameDto> => {
@@ -62,7 +52,7 @@ export const getGame = async (code: string): Promise<GameDto> => {
     where: { code }
   });
 
-  return { ...game, title: getGameTitle(game.type) };
+  return game;
 };
 
 export const updateGamePhase = async (

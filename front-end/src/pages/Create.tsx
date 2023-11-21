@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 
 import { useAppState } from '../contexts/AppContext';
 import axios from '../utils/axiosWrapper';
-import { NAMES, STORY } from '../utils/constants';
 import generateNickname from '../utils/nicknameGeneration';
 import {
   CreateGameReqBody as CreateGameReq,
@@ -11,6 +10,7 @@ import {
   JoinGameReqBody as JoinGameReq,
   UserDto as User
 } from '../utils/types';
+import { gameVariants } from '../utils/gameVariants';
 
 interface CreateState {
   nickname: string;
@@ -22,15 +22,15 @@ const Create = (): JSX.Element => {
   const suggestion = useRef(generateNickname());
   const [state, setState] = useState<CreateState>({
     nickname: appState.nickname,
-    selected: STORY
+    selected: ''
   });
   const navigate = useNavigate();
 
   const createGame = async (e: React.FormEvent) => {
     try {
       e.preventDefault();
-      if (state.selected === '') {
-        alert('Please select a valid game type');
+      if (!gameVariants.map((t) => t.type).includes(state.selected)) {
+        alert('Please select a game type');
         return;
       }
 
@@ -38,6 +38,7 @@ const Create = (): JSX.Element => {
         type: state.selected
       });
       const userResponse = await axios.post<JoinGameReq, User>('/api/user', {
+        //TODO: preserve case in nicknames
         nickname: state.nickname.toLowerCase() || suggestion.current,
         uuid: gameResponse.data.uuid
       });
@@ -49,7 +50,7 @@ const Create = (): JSX.Element => {
         gameType: gameResponse.data.type,
         gameId: gameResponse.data.uuid
       });
-      navigate('/' + gameResponse.data.type.toLowerCase());
+      navigate('/' + gameResponse.data.type);
     } catch (err: unknown) {
       alert('Unable to create game. Please try again in a little bit.');
     }
@@ -58,6 +59,18 @@ const Create = (): JSX.Element => {
   useEffect(() => {
     setState((prev) => ({ ...prev, nickname: appState.nickname }));
   }, [appState]);
+
+  const Description = (): JSX.Element => {
+    if (state.selected) {
+      return (
+        <p className="p-3 text-wrap">
+          {gameVariants.find((v) => v.type === state.selected)?.description}
+        </p>
+      );
+    } else {
+      return <></>;
+    }
+  };
 
   return (
     <div className="w-100">
@@ -82,41 +95,30 @@ const Create = (): JSX.Element => {
             }}
           />
         </div>
-        <div className="mb-3">
-          <div
-            className="btn-group d-block text-center m-4"
-            role="group"
-            aria-label="Game Type"
-          >
-            <button
-              className={
-                'btn opacity-75 ' +
-                (state.selected === STORY
-                  ? 'btn-primary'
-                  : 'btn-outline-primary')
-              }
-              onClick={(e) => {
-                e.preventDefault();
-                setState((prev) => ({ ...prev, selected: STORY }));
-              }}
-            >
-              He Said She Said
-            </button>
-            <button
-              className={
-                'btn opacity-75 ' +
-                (state.selected === NAMES
-                  ? 'btn-primary'
-                  : 'btn-outline-primary')
-              }
-              onClick={(e) => {
-                e.preventDefault();
-                setState((prev) => ({ ...prev, selected: NAMES }));
-              }}
-            >
-              Name Game
-            </button>
-          </div>
+        <div
+          className="btn-group-vertical d-block text-center m-4"
+          role="group"
+          aria-label="Game Type"
+        >
+          {gameVariants.map((variant) => {
+            return (
+              <button
+                className={
+                  'btn opacity-75 ' +
+                  (state.selected === variant.type
+                    ? 'btn-primary'
+                    : 'btn-outline-primary')
+                }
+                onClick={(e) => {
+                  e.preventDefault();
+                  setState((prev) => ({ ...prev, selected: variant.type }));
+                }}
+                key={variant.type}
+              >
+                {variant.title}
+              </button>
+            );
+          })}
         </div>
         <input
           type="submit"
@@ -124,18 +126,7 @@ const Create = (): JSX.Element => {
           className="form-control btn btn-success"
         />
       </form>
-      {state.selected === STORY && (
-        <p className="p-3 text-wrap">
-          Create a fun story reminiscent of mad libs together!
-        </p>
-      )}
-      {state.selected === NAMES && (
-        <p className="p-3 text-wrap">
-          Everyone secretly enters the name of a person (real or fictional) that
-          others would know. Players then take turns guessing each other's names
-          until only one remains!
-        </p>
-      )}
+      <Description />
     </div>
   );
 };
