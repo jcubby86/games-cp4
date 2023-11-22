@@ -6,11 +6,11 @@ import {
   AppState
 } from './AppContextTypes';
 import axios from '../utils/axiosWrapper';
-import { UserDto } from '../utils/types';
+import { PlayerDto } from '../utils/types';
 
 const initialAppState: AppState = {
   nickname: '',
-  userId: '',
+  playerId: '',
   gameCode: '',
   gameType: '',
   gameId: ''
@@ -24,13 +24,13 @@ export const AppContext = createContext<AppContextProps>({
 export const AppContextProvider = ({ children }: AppContextProviderProps) => {
   const [appState, setAppState] = useState<AppState>(initialAppState);
 
-  const fetchUser = async () => {
+  const fetchPlayer = async () => {
     try {
-      const response = await axios.get<UserDto>('/api/user');
+      const response = await axios.get<PlayerDto>('/api/player');
 
       setAppState({
         nickname: response.data.nickname,
-        userId: response.data.uuid,
+        playerId: response.data.uuid,
         gameCode: response.data.game.code,
         gameType: response.data.game.type,
         gameId: response.data.game.uuid
@@ -41,7 +41,7 @@ export const AppContextProvider = ({ children }: AppContextProviderProps) => {
   };
 
   useEffect(() => {
-    fetchUser();
+    fetchPlayer();
   }, []);
 
   return (

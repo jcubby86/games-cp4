@@ -19,7 +19,7 @@ const Names = (): JSX.Element => {
       const response = await axios.get<NamesResBody>('/api/names');
       setState((prev) => ({
         phase: response.data.phase,
-        users: response.data.users,
+        players: response.data.players,
         names: response.data.names,
         isHost: response.data.isHost,
         placeholder: prev.placeholder || response.data.placeholder
@@ -120,7 +120,7 @@ const Names = (): JSX.Element => {
       setState((prev) => ({
         ...prev,
         phase: JOIN,
-        users: [appState.nickname],
+        players: [appState.nickname],
         isHost: false
       }));
     };
@@ -139,7 +139,7 @@ const Names = (): JSX.Element => {
     return (
       <div className="w-100">
         <h3 className="text-center w-100">Waiting for other players...</h3>
-        {state.phase === WAIT && <List items={state.users}></List>}
+        {state.phase === WAIT && <List items={state.players}></List>}
       </div>
     );
   };
@@ -147,7 +147,7 @@ const Names = (): JSX.Element => {
   if (state.phase === JOIN) {
     return (
       <StartGame
-        users={state.users}
+        players={state.players}
         isHost={state.isHost}
         title={NameVariant.title}
         setPhase={() => setState((prev) => ({ ...prev, phase: '' }))}

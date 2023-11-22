@@ -5,7 +5,7 @@ import { useAppState } from '../contexts/AppContext';
 import axios, { AxiosError } from '../utils/axiosWrapper';
 import { gameVariants } from '../utils/gameVariants';
 import generateNickname from '../utils/nicknameGeneration';
-import { GameDto, JoinGameReqBody, UserDto } from '../utils/types';
+import { GameDto, JoinGameReqBody, PlayerDto } from '../utils/types';
 import { eqIgnoreCase as eq } from '../utils/utils';
 
 interface JoinState {
@@ -34,14 +34,17 @@ const Join = (): JSX.Element => {
         return;
       }
 
-      const response = await axios.post<JoinGameReqBody, UserDto>('/api/user', {
-        nickname: state.nickname || suggestionRef.current,
-        uuid: state.gameId ?? ''
-      });
+      const response = await axios.post<JoinGameReqBody, PlayerDto>(
+        '/api/player',
+        {
+          nickname: state.nickname || suggestionRef.current,
+          uuid: state.gameId ?? ''
+        }
+      );
 
       setAppState({
         nickname: response.data.nickname,
-        userId: response.data.uuid,
+        playerId: response.data.uuid,
         gameCode: response.data.game.code,
         gameType: response.data.game.type,
         gameId: response.data.game.uuid
