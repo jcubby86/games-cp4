@@ -8,7 +8,7 @@ export type AxiosError<Res = never> = Err<Res, never>;
 type NoInfer<T> = T extends infer U ? U : never;
 
 interface AxiosWrapper {
-  get: <Res extends ResBody | never = never>(
+  get: <Res extends ResBody | ResBody[] | never = never>(
     path: string
   ) => Promise<AxiosResponse<Res>>;
   post: <
@@ -52,7 +52,7 @@ const wrapper: AxiosWrapper = {
   },
   patch: <Req, Res>(path: string, data: Req) => {
     return axios.patch<Res, AxiosResponse<Res>, Req>(path, data);
-  },
+  }
 };
 
 export default wrapper;
