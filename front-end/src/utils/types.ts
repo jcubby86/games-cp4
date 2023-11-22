@@ -74,7 +74,8 @@ export interface LoginReqBody extends ReqBody {
   username: string;
   password: string;
 }
-export interface AdminResBody extends ResBody {
+export interface UserResBody extends ResBody {
   username: string;
   uuid: string;
+  permissions: string[];
 }

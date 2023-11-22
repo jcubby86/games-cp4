@@ -96,11 +96,12 @@ model Suggestion {
   @@unique([category, value])
 }
 
-model Admin {
-  id       Int    @id @default(autoincrement())
-  uuid     String @unique @default(uuid())
-  username String @unique
-  password String
+model User {
+  id          Int      @id @default(autoincrement())
+  uuid        String   @unique @default(uuid())
+  username    String   @unique
+  password    String
+  permissions String[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

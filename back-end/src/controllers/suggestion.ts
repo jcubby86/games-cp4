@@ -1,7 +1,6 @@
 import { Router } from 'express';
 
 import InvalidRequestError from '../errors/InvalidRequestError';
-import { adminMiddleware } from '../middleware';
 import {
   addSuggestion,
   addSuggestions,
@@ -11,6 +10,7 @@ import {
 } from '../models/suggestion';
 import { ReqBody, SuggestionDto, SuggestionReqBody } from '../types/domain';
 import { ReqHandler as Handler } from '../types/express.js';
+import { SUGGESTIONS_PERM } from '../utils/constants';
 
 const getAllHandler: Handler<ReqBody, SuggestionDto[]> = async (
   req,
@@ -93,7 +93,15 @@ const updateSuggestionHandler: Handler<
 };
 
 const router = Router();
-router.use(adminMiddleware);
+router.use((req, res, next) => {
+  if (
+    !req.session?.userId ||
+    !req.session.permissions?.includes(SUGGESTIONS_PERM)
+  ) {
+    return res.sendStatus(403);
+  }
+  return next();
+});
 router.get('/', getAllHandler);
 router.post('/', addSuggestionHandler);
 router.delete('/:uuid', deleteSuggestionHandler);
