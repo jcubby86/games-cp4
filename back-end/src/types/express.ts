@@ -19,9 +19,10 @@ declare global {
 }
 
 export interface Session {
-  adminID?: string;
+  userId?: string;
   playerId?: string;
   nowInMinutes?: number;
+  permissions?: string[];
 }
 
 export type Params = { [key: string]: string };

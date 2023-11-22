@@ -2,21 +2,18 @@ import { useEffect, useRef, useState } from 'react';
 
 import Suggestion from '../components/Suggestion';
 import axios from '../utils/axiosWrapper';
-import { AdminResBody, LoginReqBody } from '../utils/types';
+import { LoginReqBody, UserResBody } from '../utils/types';
 
 const Admin = (): JSX.Element => {
-  const [state, setState] = useState<AdminResBody | null>(null);
+  const [state, setState] = useState<UserResBody | null>(null);
   const usernameRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
 
   const fetchAdmin = async () => {
     try {
-      const response = await axios.get<AdminResBody>('/api/admin');
+      const response = await axios.get<UserResBody>('/api/user');
 
-      setState({
-        uuid: response.data.uuid,
-        username: response.data.username
-      });
+      setState({ ...response.data });
     } catch (err: unknown) {
       setState(null);
     }
@@ -27,18 +24,15 @@ const Admin = (): JSX.Element => {
       e.preventDefault();
       if (!usernameRef.current || !passwordRef.current) return;
 
-      const response = await axios.post<LoginReqBody, AdminResBody>(
-        '/api/admin',
+      const response = await axios.post<LoginReqBody, UserResBody>(
+        '/api/user',
         {
           username: usernameRef.current.value,
           password: passwordRef.current.value
         }
       );
 
-      setState({
-        uuid: response.data.uuid,
-        username: response.data.username
-      });
+      setState({ ...response.data });
     } catch (err: unknown) {
       return;
     }

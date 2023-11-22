@@ -7,7 +7,7 @@ const agent = requestAgent(app);
 
 beforeAll(async () => {
   await agent
-    .post('/api/admin')
+    .post('/api/user')
     .send({ username: 'username', password: 'password' });
 });
 

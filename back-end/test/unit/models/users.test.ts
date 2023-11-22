@@ -4,10 +4,10 @@ import { describe, expect, jest, test } from '@jest/globals';
 import AuthenticationError from '../../../src/errors/AuthenticationError';
 import {
   compareHash,
-  createAdmin,
+  createUser,
   hash,
   login
-} from '../../../src/models/admin';
+} from '../../../src/models/users';
 import prisma from '../../../src/prisma';
 
 jest.mock('../../../src/prisma');
@@ -44,28 +44,28 @@ describe('hashing', () => {
 
 describe('createUser', () => {
   test('validation', () => {
-    expect(createAdmin('', '')).rejects.toThrow(
-      new AuthenticationError('Admin credentials not provided')
+    expect(createUser('', '')).rejects.toThrow(
+      new AuthenticationError('User credentials not provided')
     );
-    expect(createAdmin('asdfa', '')).rejects.toThrow(
-      new AuthenticationError('Admin credentials not provided')
+    expect(createUser('asdfa', '')).rejects.toThrow(
+      new AuthenticationError('User credentials not provided')
     );
-    expect(createAdmin('', 'asdfasdf')).rejects.toThrow(
-      new AuthenticationError('Admin credentials not provided')
+    expect(createUser('', 'asdfasdf')).rejects.toThrow(
+      new AuthenticationError('User credentials not provided')
     );
   });
 
   test('successful creation', async () => {
-    prismaMock.admin.create.mockResolvedValue({
+    prismaMock.user.create.mockResolvedValue({
       uuid: '1'
     } as any);
 
-    const result = await createAdmin('username', 'password');
-    expect(result).toMatchObject({"username": "username", "uuid": "1"});
+    const result = await createUser('username', 'password');
+    expect(result).toMatchObject({ username: 'username', uuid: '1' });
   });
 
   test('failed creation', async () => {
-    prismaMock.admin.findUniqueOrThrow.mockImplementation(() => {
+    prismaMock.user.findUniqueOrThrow.mockImplementation(() => {
       throw new Error();
     });
 
@@ -76,7 +76,7 @@ describe('createUser', () => {
 describe('login', () => {
   test('successful login', async () => {
     const hashed = await hash('password');
-    prismaMock.admin.findUniqueOrThrow.mockResolvedValue({
+    prismaMock.user.findUniqueOrThrow.mockResolvedValue({
       id: 1,
       uuid: '1',
       password: hashed,
@@ -84,12 +84,12 @@ describe('login', () => {
     } as any);
 
     const result = await login('username', 'password');
-    expect(result).toMatchObject({"username": "username", "uuid": "1"});
+    expect(result).toMatchObject({ username: 'username', uuid: '1' });
   });
 
   test('failed login', async () => {
     const hashed = await hash('password');
-    prismaMock.admin.findUniqueOrThrow.mockResolvedValue({
+    prismaMock.user.findUniqueOrThrow.mockResolvedValue({
       id: 1,
       uuid: '1',
       password: hashed,

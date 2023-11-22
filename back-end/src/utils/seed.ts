@@ -1,5 +1,6 @@
+import { SUGGESTIONS_PERM } from './constants';
 import { Category } from '../.generated/prisma';
-import { hash } from '../models/admin';
+import { hash } from '../models/users';
 import prisma from '../prisma';
 
 const actions_past = [
@@ -157,8 +158,12 @@ const statements = [
 export const main = async (env?: string) => {
   if (env === 'dev') {
     const hashed = await hash('password');
-    await prisma.admin.create({
-      data: { username: 'username', password: hashed }
+    await prisma.user.create({
+      data: {
+        username: 'username',
+        password: hashed,
+        permissions: [SUGGESTIONS_PERM]
+      }
     });
   }
 

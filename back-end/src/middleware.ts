@@ -46,8 +46,3 @@ export const loadStory: Handler = async (req, res, next) => {
   if (req.game.type !== GameType.STORY) return res.sendStatus(400);
   return next();
 };
-
-export const adminMiddleware: Handler = async (req, res, next) => {
-  if (!req.session?.adminID) return res.sendStatus(403);
-  return next();
-};
