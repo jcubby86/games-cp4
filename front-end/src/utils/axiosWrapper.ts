@@ -28,6 +28,13 @@ interface AxiosWrapper {
   delete: <Res extends ResBody | never = never>(
     path: string
   ) => Promise<AxiosResponse<Res>>;
+  patch: <
+    Req extends ReqBody | never = never,
+    Res extends ResBody | never = never
+  >(
+    path: string,
+    data: NoInfer<Req>
+  ) => Promise<AxiosResponse<Res>>;
 }
 
 const wrapper: AxiosWrapper = {
@@ -42,7 +49,10 @@ const wrapper: AxiosWrapper = {
   },
   delete: <Res>(path: string) => {
     return axios.delete<Res, AxiosResponse<Res>, never>(path);
-  }
+  },
+  patch: <Req, Res>(path: string, data: Req) => {
+    return axios.patch<Res, AxiosResponse<Res>, Req>(path, data);
+  },
 };
 
 export default wrapper;

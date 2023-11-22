@@ -75,6 +75,9 @@ const Layout = (): JSX.Element => {
         >
           <Icon icon="nf-mdi-email_variant"></Icon>
         </a>
+        <Link to='/admin' className="text-dark text-decoration-none link-success">
+          <Icon icon='nf-fa-gear'/>
+        </Link>
       </footer>
     </>
   );

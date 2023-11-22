@@ -9,13 +9,9 @@ import { END, JOIN, PLAY, READ, WAIT } from '../utils/constants';
 import { NameVariant } from '../utils/gameVariants';
 import { EntryReqBody, NamesResBody, UpdateGameReqBody } from '../utils/types';
 
-const initialState = {
-  phase: ''
-};
-
 const Names = (): JSX.Element => {
   const { appState } = useAppState();
-  const [state, setState] = useState<NamesResBody>(initialState);
+  const [state, setState] = useState<NamesResBody>({ phase: '' });
   const entryRef = useRef<HTMLInputElement>(null);
 
   const pollStatus = async () => {
