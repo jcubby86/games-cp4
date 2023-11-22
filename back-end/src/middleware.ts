@@ -4,13 +4,6 @@ import { getUser } from './models/users';
 import { GameStatusResBody, ReqBody } from './types/domain.js';
 import { ReqHandler as Handler } from './types/express.js';
 
-/**
- * Middleware for loading in a user from the session.
- * @param req
- * @param res
- * @param next
- * @returns
- */
 export const loadUser: Handler = async (req, res, next) => {
   try {
     if (!req.session?.userID) return next();
@@ -27,14 +20,6 @@ export const loadUser: Handler = async (req, res, next) => {
   }
 };
 
-/**
- * Middleware for handling a game if it's in the join phase.
- * Used by Story and Names types.
- * @param req
- * @param res
- * @param next
- * @returns
- */
 export const joinPhaseHandler: Handler<ReqBody, GameStatusResBody> = async (
   req,
   res,
@@ -50,28 +35,19 @@ export const joinPhaseHandler: Handler<ReqBody, GameStatusResBody> = async (
   }
 };
 
-/**
- * Middleware for loading in the Names Document.
- * @param req
- * @param res
- * @param next
- * @returns
- */
 export const loadNames: Handler = async (req, res, next) => {
   if (!req.user || !req.game) return res.sendStatus(403);
   if (req.game.type !== GameType.NAME) return res.sendStatus(400);
   return next();
 };
 
-/**
- * Middleware for loading in the Story Document.
- * @param req
- * @param res
- * @param next
- * @returns
- */
 export const loadStory: Handler = async (req, res, next) => {
   if (!req.user || !req.game) return res.sendStatus(403);
   if (req.game.type !== GameType.STORY) return res.sendStatus(400);
+  return next();
+};
+
+export const adminMiddleware: Handler = async (req, res, next) => {
+  if (!req.session?.adminID) return res.sendStatus(403);
   return next();
 };

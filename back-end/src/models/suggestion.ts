@@ -8,3 +8,8 @@ export async function getSuggestion(category: Category): Promise<string> {
   });
   return randomElement(suggestions.map((x) => x.value));
 }
+
+export async function getAll() {
+  const suggestions: Suggestion[] = await prisma.suggestion.findMany();
+  return suggestions;
+}
