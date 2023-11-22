@@ -95,7 +95,7 @@ describe('multiple users', () => {
     await agent2
       .post('/api/user')
       .send({ uuid: context.game.uuid, nickname: 'test' })
-      .expect(403);
+      .expect(400);
   });
 });
 
