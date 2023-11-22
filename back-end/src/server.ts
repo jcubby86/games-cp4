@@ -3,6 +3,7 @@ import cookieSession from 'cookie-session';
 import express from 'express';
 import 'dotenv/config';
 
+import adminController from './controllers/admin.js';
 import gameController from './controllers/games.js';
 import namesController from './controllers/names.js';
 import storyController from './controllers/story.js';
@@ -33,6 +34,7 @@ app.use('/api/game', gameController);
 app.use('/api/user', userController);
 app.use('/api/story', storyController);
 app.use('/api/names', namesController);
+app.use('/api/admin', adminController);
 
 app.get('/health', async (req, res) => {
   res.sendStatus(200);

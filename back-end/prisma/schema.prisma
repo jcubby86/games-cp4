@@ -92,6 +92,16 @@ model Suggestion {
   @@unique([category, value])
 }
 
+model Admin {
+  id       Int    @id @default(autoincrement())
+  uuid      String    @unique @default(uuid())
+  username String @unique
+  password String
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 enum GamePhase {
   JOIN
   PLAY
