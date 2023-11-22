@@ -1,6 +1,6 @@
 import { useAppState } from '../contexts/AppContext';
 import axios from '../utils/axiosWrapper';
-import { GameDto, JoinGameReqBody, ReqBody, UserDto } from '../utils/types';
+import { GameDto, JoinGameReqBody, PlayerDto, ReqBody } from '../utils/types';
 
 interface RecreateProps {
   reset: () => void;
@@ -16,8 +16,8 @@ const RecreateButton = ({ reset, className }: RecreateProps): JSX.Element => {
       const gameResponse = await axios.post<ReqBody, GameDto>(
         `/api/game/${appState.gameId}/recreate`
       );
-      const userResponse = await axios.post<JoinGameReqBody, UserDto>(
-        '/api/user',
+      const playerResponse = await axios.post<JoinGameReqBody, PlayerDto>(
+        '/api/player',
         {
           nickname: appState.nickname,
           uuid: gameResponse.data.uuid
@@ -25,8 +25,8 @@ const RecreateButton = ({ reset, className }: RecreateProps): JSX.Element => {
       );
 
       setAppState({
-        nickname: userResponse.data.nickname,
-        userId: userResponse.data.uuid,
+        nickname: playerResponse.data.nickname,
+        playerId: playerResponse.data.uuid,
         gameCode: gameResponse.data.code,
         gameType: gameResponse.data.type,
         gameId: gameResponse.data.uuid

@@ -130,7 +130,7 @@ const Story = (): JSX.Element => {
       setState((prev) => ({
         ...prev,
         phase: JOIN,
-        users: [appState.nickname],
+        players: [appState.nickname],
         isHost: false
       }));
     };
@@ -149,7 +149,7 @@ const Story = (): JSX.Element => {
             </Link>
             <ShareButton
               className="btn col-2"
-              path={`/story/${appState.gameId}/${appState.userId}`}
+              path={`/story/${appState.gameId}/${appState.playerId}`}
               title={'Games: ' + StoryVariant.title}
               text="Read my hilarious story!"
             ></ShareButton>
@@ -163,7 +163,7 @@ const Story = (): JSX.Element => {
     return (
       <div className="w-100">
         <h3 className="text-center w-100">Waiting for other players...</h3>
-        {state.phase === WAIT && <List items={state.users}></List>}
+        {state.phase === WAIT && <List items={state.players}></List>}
       </div>
     );
   };
@@ -171,7 +171,7 @@ const Story = (): JSX.Element => {
   if (state.phase === JOIN) {
     return (
       <StartGame
-        users={state.users}
+        players={state.players}
         isHost={state.isHost}
         title={StoryVariant.title}
         setPhase={() => setState((prev) => ({ ...prev, phase: '' }))}

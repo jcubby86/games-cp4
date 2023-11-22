@@ -7,14 +7,14 @@ import { UpdateGameReqBody } from '../utils/types';
 interface StartGameProps {
   setPhase: () => void;
   title: string;
-  users?: string[];
+  players?: string[];
   isHost?: boolean;
 }
 
 const StartGame = ({
   setPhase,
   title,
-  users,
+  players,
   isHost
 }: StartGameProps): JSX.Element => {
   const { appState } = useAppState();
@@ -63,7 +63,7 @@ const StartGame = ({
             <input
               className="form-control"
               type="text"
-              value={users?.length ?? 0}
+              value={players?.length ?? 0}
               aria-label="player count"
               readOnly
               id="playerCount"
@@ -78,7 +78,7 @@ const StartGame = ({
           )}
         </form>
         <h3 className="text-center mt-5">Players:</h3>
-        <List items={users}></List>
+        <List items={players}></List>
       </div>
     </>
   );

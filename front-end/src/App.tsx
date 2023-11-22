@@ -24,7 +24,7 @@ function App(): JSX.Element {
             <Route path="create" element={<Create />} />
             <Route path={STORY} element={<Story />} />
             <Route
-              path={`${STORY}/:gameId/:userId?`}
+              path={`${STORY}/:gameId/:playerId?`}
               element={<StoryArchive />}
             />
             <Route path={NAMES} element={<Names />} />

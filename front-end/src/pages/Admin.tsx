@@ -27,10 +27,13 @@ const Admin = (): JSX.Element => {
       e.preventDefault();
       if (!usernameRef.current || !passwordRef.current) return;
 
-      const response = await axios.post<LoginReqBody, AdminResBody>('/api/admin', {
-        username: usernameRef.current.value,
-        password: passwordRef.current.value
-      });
+      const response = await axios.post<LoginReqBody, AdminResBody>(
+        '/api/admin',
+        {
+          username: usernameRef.current.value,
+          password: passwordRef.current.value
+        }
+      );
 
       setState({
         uuid: response.data.uuid,
@@ -46,12 +49,10 @@ const Admin = (): JSX.Element => {
   }, []);
 
   if (state?.uuid) {
-    return (
-      <Suggestion/>
-    );
+    return <Suggestion />;
   } else {
     return (
-      <form className='container-fluid' onSubmit={login}>
+      <form className="container-fluid" onSubmit={login}>
         <div className="mb-3">
           <label htmlFor="usernameInput" className="form-label">
             Admin Username

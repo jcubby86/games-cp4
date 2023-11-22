@@ -14,7 +14,7 @@ export interface GameDto extends ResBody {
   uuid: string;
 }
 
-export interface UserDto extends ResBody {
+export interface PlayerDto extends ResBody {
   game: GameDto;
   nickname: string;
   uuid: string;
@@ -36,7 +36,7 @@ export interface EntryReqBody extends ReqBody {
 
 export interface GameStatusResBody extends ResBody {
   phase: string;
-  users?: string[];
+  players?: string[];
   code?: string;
   nickname?: string;
   isHost?: boolean;
@@ -55,7 +55,7 @@ export interface StoryResBody extends GameStatusResBody {
 }
 export interface StoryArchive {
   value: string;
-  user: { nickname: string; id: string };
+  player: { nickname: string; id: string };
 }
 export interface StoryArchiveResBody extends ResBody {
   stories: StoryArchive[];

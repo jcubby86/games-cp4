@@ -9,7 +9,7 @@ import {
   CreateGameReqBody as CreateGameReq,
   GameDto as Game,
   JoinGameReqBody as JoinGameReq,
-  UserDto as User
+  PlayerDto
 } from '../utils/types';
 
 interface CreateState {
@@ -37,14 +37,17 @@ const Create = (): JSX.Element => {
       const gameResponse = await axios.post<CreateGameReq, Game>('/api/game', {
         type: state.selected
       });
-      const userResponse = await axios.post<JoinGameReq, User>('/api/user', {
-        nickname: state.nickname || suggestionRef.current,
-        uuid: gameResponse.data.uuid
-      });
+      const playerResponse = await axios.post<JoinGameReq, PlayerDto>(
+        '/api/player',
+        {
+          nickname: state.nickname || suggestionRef.current,
+          uuid: gameResponse.data.uuid
+        }
+      );
 
       setAppState({
-        nickname: userResponse.data.nickname,
-        userId: userResponse.data.uuid,
+        nickname: playerResponse.data.nickname,
+        playerId: playerResponse.data.uuid,
         gameCode: gameResponse.data.code,
         gameType: gameResponse.data.type,
         gameId: gameResponse.data.uuid

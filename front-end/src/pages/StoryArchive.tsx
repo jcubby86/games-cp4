@@ -15,7 +15,7 @@ interface StoryArchiveState extends ArchiveResBody {
 }
 
 export default function StoryArchive(): JSX.Element {
-  const { gameId, userId } = useParams();
+  const { gameId, playerId } = useParams();
   const [{ stories, showAll }, setState] = useState<StoryArchiveState>({
     stories: [],
     showAll: false
@@ -35,10 +35,10 @@ export default function StoryArchive(): JSX.Element {
     pollStatus();
   }, []);
 
-  const userItem = stories?.find((story) => userId === story.user.id);
+  const playerEntry = stories?.find((story) => playerId === story.player.id);
   const Items = (): JSX.Element => {
-    if (userItem && !showAll) {
-      return <ListItem item={userItem} index={0} />;
+    if (playerEntry && !showAll) {
+      return <ListItem item={playerEntry} index={0} />;
     } else {
       return (
         <>
@@ -56,7 +56,7 @@ export default function StoryArchive(): JSX.Element {
       setState((prev) => ({ ...prev, showAll: !prev.showAll }));
     };
 
-    if (userItem && stories?.length > 1) {
+    if (playerEntry && stories?.length > 1) {
       return (
         <button className="btn btn-success col" onClick={toggleAll}>
           {showAll ? 'hide' : 'show all'}
@@ -71,14 +71,14 @@ export default function StoryArchive(): JSX.Element {
     return (
       <li key={props.index} className="list-group-item bg-light">
         <div className="ms-2 me-auto">
-          <p className="fw-bold mb-1">{props.item.user.nickname}</p>
+          <p className="fw-bold mb-1">{props.item.player.nickname}</p>
           <p>{props.item.value}</p>
         </div>
       </li>
     );
   };
 
-  const getPath = () => `/story/${gameId}` + (userId ? `/${userId}` : '');
+  const getPath = () => `/story/${gameId}` + (playerId ? `/${playerId}` : '');
 
   return (
     <div className="d-flex flex-column w-100">

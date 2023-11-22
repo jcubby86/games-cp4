@@ -13,7 +13,7 @@ const Layout = (): JSX.Element => {
     try {
       e.preventDefault();
 
-      await axios.delete('/api/user');
+      await axios.delete('/api/player');
       setAppState((state: AppState): AppState => {
         return { ...state, gameCode: '', gameType: '', gameId: '' };
       });
@@ -75,8 +75,11 @@ const Layout = (): JSX.Element => {
         >
           <Icon icon="nf-mdi-email_variant"></Icon>
         </a>
-        <Link to='/admin' className="text-dark text-decoration-none link-success">
-          <Icon icon='nf-fa-gear'/>
+        <Link
+          to="/admin"
+          className="text-dark text-decoration-none link-success"
+        >
+          <Icon icon="nf-fa-gear" />
         </Link>
       </footer>
     </>
