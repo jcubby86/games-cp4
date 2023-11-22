@@ -21,12 +21,12 @@ describe('checkRoundCompletion', () => {
     await expect(
       checkCompletion({ id: 1, phase: GamePhase.END } as any)
     ).resolves.toEqual([]);
-    expect(prismaMock.user.findMany).not.toBeCalled();
+    expect(prismaMock.player.findMany).not.toBeCalled();
     expect(prisma.game.update).not.toBeCalled();
   });
 
   test('not complete', async () => {
-    prismaMock.user.findMany.mockResolvedValue([
+    prismaMock.player.findMany.mockResolvedValue([
       { nameEntries: [], nickname: 'test' }
     ] as any);
 
@@ -38,7 +38,7 @@ describe('checkRoundCompletion', () => {
   });
 
   test('complete', async () => {
-    prismaMock.user.findMany.mockResolvedValue([
+    prismaMock.player.findMany.mockResolvedValue([
       {
         nameEntries: [{ id: 1, name: '1' }],
         nickname: 'test1'
@@ -61,7 +61,7 @@ describe('checkRoundCompletion', () => {
 
 describe('getNameStatus', () => {
   test('play', async () => {
-    prismaMock.user.findMany.mockResolvedValue([
+    prismaMock.player.findMany.mockResolvedValue([
       { nameEntries: [], nickname: 'test' }
     ] as any);
     prismaMock.nameEntry.findUnique.mockResolvedValue(null);
@@ -80,7 +80,7 @@ describe('getNameStatus', () => {
   });
 
   test('play wait', async () => {
-    prismaMock.user.findMany.mockResolvedValue([
+    prismaMock.player.findMany.mockResolvedValue([
       { nameEntries: [], nickname: 'test' }
     ] as any);
     prismaMock.nameEntry.findUnique.mockResolvedValue({} as any);
@@ -94,7 +94,7 @@ describe('getNameStatus', () => {
 
     expect(result).toMatchObject({
       phase: WAIT,
-      users: ['test']
+      players: ['test']
     });
   });
 

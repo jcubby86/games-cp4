@@ -6,12 +6,12 @@ import {
   Response
 } from 'express';
 
-import { GameDto, ReqBody, ResBody, UserDto } from './domain';
+import { GameDto, PlayerDto, ReqBody, ResBody } from './domain';
 
 declare global {
   namespace Express {
     interface Request {
-      user?: UserDto;
+      player?: PlayerDto;
       game?: GameDto;
       session?: Session;
     }
@@ -20,7 +20,7 @@ declare global {
 
 export interface Session {
   adminID?: string;
-  userID?: string;
+  playerId?: string;
   nowInMinutes?: number;
 }
 

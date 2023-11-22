@@ -1,9 +1,9 @@
 import {
   Game,
   NameEntry,
+  Player,
   StoryEntry,
-  Suggestion,
-  User
+  Suggestion
 } from '../.generated/prisma';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
@@ -14,7 +14,7 @@ export interface ResBody {
 
 export interface GameDto extends Game, ResBody {}
 
-export interface UserDto extends User, ResBody {
+export interface PlayerDto extends Player, ResBody {
   game?: GameDto | null;
   storyEntries?: StoryEntry[];
   nameEntries?: NameEntry[];
@@ -36,7 +36,7 @@ export interface EntryReqBody extends ReqBody {
 
 export interface GameStatusResBody extends ResBody {
   phase: string;
-  users?: string[];
+  players?: string[];
   code?: string;
   nickname?: string;
   isHost?: boolean;
@@ -55,7 +55,7 @@ export interface StoryResBody extends GameStatusResBody {
 }
 export interface StoryArchive {
   value: string;
-  user: { nickname: string; id: string };
+  player: { nickname: string; id: string };
 }
 export interface StoryArchiveResBody extends ResBody {
   stories: StoryArchive[];

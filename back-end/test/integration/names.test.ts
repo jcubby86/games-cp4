@@ -6,13 +6,13 @@ import { GamePhase } from '../../src/.generated/prisma';
 import app from '../../src/server';
 import { WAIT } from '../../src/utils/constants';
 
-describe('single user', () => {
+describe('single player', () => {
   const agent = requestAgent(app);
   const context: any = {};
   beforeAll(async () => {
     const createResponse = await agent.post('/api/game').send({ type: 'name' });
     await agent
-      .post('/api/user')
+      .post('/api/player')
       .send({ uuid: createResponse.body.uuid, nickname: 'nametest' });
 
     context.game = createResponse.body;
@@ -22,7 +22,7 @@ describe('single user', () => {
     const response = await agent.get('/api/names').expect(200);
     expect(response.body).toMatchObject({
       phase: GamePhase.JOIN,
-      users: ['nametest'],
+      players: ['nametest'],
       isHost: true
     });
   });
@@ -34,7 +34,7 @@ describe('single user', () => {
     const response = await agent.get('/api/names').expect(200);
     expect(response.body).toMatchObject({
       phase: GamePhase.PLAY,
-      users: ['nametest']
+      players: ['nametest']
     });
   });
 
@@ -59,7 +59,7 @@ describe('single user', () => {
   });
 });
 
-describe('multiple users', () => {
+describe('multiple players', () => {
   const agent1 = requestAgent(app);
   const agent2 = requestAgent(app);
   const context: any = {};
@@ -68,10 +68,10 @@ describe('multiple users', () => {
       .post('/api/game')
       .send({ type: 'name' });
     await agent1
-      .post('/api/user')
+      .post('/api/player')
       .send({ uuid: createResponse.body.uuid, nickname: 'nametest1' });
     await agent2
-      .post('/api/user')
+      .post('/api/player')
       .send({ uuid: createResponse.body.uuid, nickname: 'nametest2' });
 
     context.game = createResponse.body;
@@ -86,7 +86,7 @@ describe('multiple users', () => {
           phase: GamePhase.JOIN,
           isHost: true
         });
-        expect(response.body.users).toEqual(
+        expect(response.body.players).toEqual(
           expect.arrayContaining(['nametest1', 'nametest2'])
         );
       });
@@ -98,7 +98,7 @@ describe('multiple users', () => {
           phase: GamePhase.JOIN,
           isHost: false
         });
-        expect(response.body.users).toEqual(
+        expect(response.body.players).toEqual(
           expect.arrayContaining(['nametest1', 'nametest2'])
         );
       });
@@ -172,7 +172,7 @@ describe('multiple users', () => {
   });
 });
 
-describe('multiple users - leaving partway through', () => {
+describe('multiple players - leaving partway through', () => {
   const agent1 = requestAgent(app);
   const agent2 = requestAgent(app);
   const context: any = {};
@@ -181,10 +181,10 @@ describe('multiple users - leaving partway through', () => {
       .post('/api/game')
       .send({ type: 'name' });
     await agent1
-      .post('/api/user')
+      .post('/api/player')
       .send({ uuid: createResponse.body.uuid, nickname: 'nametest1' });
     await agent2
-      .post('/api/user')
+      .post('/api/player')
       .send({ uuid: createResponse.body.uuid, nickname: 'nametest2' });
 
     context.game = createResponse.body;
@@ -199,7 +199,7 @@ describe('multiple users - leaving partway through', () => {
           phase: GamePhase.JOIN,
           isHost: true
         });
-        expect(response.body.users).toEqual(
+        expect(response.body.players).toEqual(
           expect.arrayContaining(['nametest1', 'nametest2'])
         );
       });
@@ -211,7 +211,7 @@ describe('multiple users - leaving partway through', () => {
           phase: GamePhase.JOIN,
           isHost: false
         });
-        expect(response.body.users).toEqual(
+        expect(response.body.players).toEqual(
           expect.arrayContaining(['nametest1', 'nametest2'])
         );
       });
@@ -256,8 +256,8 @@ describe('multiple users - leaving partway through', () => {
       });
   });
 
-  test('second user leaves', async () => {
-    await agent2.delete(`/api/user`);
+  test('second player leaves', async () => {
+    await agent2.delete(`/api/player`);
 
     await agent1
       .get('/api/names')

@@ -6,9 +6,9 @@ import 'dotenv/config';
 import adminController from './controllers/admin.js';
 import gameController from './controllers/games.js';
 import namesController from './controllers/names.js';
+import playerController from './controllers/players.js';
 import storyController from './controllers/story.js';
 import suggestionController from './controllers/suggestion.js';
-import userController from './controllers/users.js';
 import {
   prismaErrorHandler,
   serverErrorHandler
@@ -32,7 +32,7 @@ if (process.env.NODE_ENV != TEST_ENV) {
 }
 
 app.use('/api/game', gameController);
-app.use('/api/user', userController);
+app.use('/api/player', playerController);
 app.use('/api/story', storyController);
 app.use('/api/names', namesController);
 app.use('/api/admin', adminController);

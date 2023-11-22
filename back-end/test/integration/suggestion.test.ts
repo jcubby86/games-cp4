@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { beforeAll, describe, expect, test } from '@jest/globals';
 import request, { agent as requestAgent } from 'supertest';
 

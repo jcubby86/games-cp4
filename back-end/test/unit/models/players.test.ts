@@ -3,7 +3,7 @@ import { describe, expect, jest, test } from '@jest/globals';
 
 import { GamePhase } from '../../../src/.generated/prisma';
 import CannotJoinGameError from '../../../src/errors/CannotJoinGameError';
-import { leaveGame, upsertUser } from '../../../src/models/users';
+import { leaveGame, upsertPlayer } from '../../../src/models/players';
 import prisma from '../../../src/prisma';
 
 jest.mock('../../../src/prisma');
@@ -12,7 +12,7 @@ const prismaMock = prisma as jest.Mocked<typeof prisma>;
 
 describe('joinGame', () => {
   test('game not found', async () => {
-    await expect(upsertUser({} as any, 'uuid', 'nick')).rejects.toThrow(
+    await expect(upsertPlayer({} as any, 'uuid', 'nick')).rejects.toThrow(
       new CannotJoinGameError("Game with uuid 'uuid' does not exist.")
     );
   });
@@ -23,110 +23,110 @@ describe('joinGame', () => {
       id: 1
     } as any);
 
-    await expect(upsertUser({} as any, 'uuid', 'nick')).rejects.toThrow(
+    await expect(upsertPlayer({} as any, 'uuid', 'nick')).rejects.toThrow(
       new CannotJoinGameError("Game with uuid 'uuid' can no longer be joined.")
     );
   });
 
-  test('user not in game', async () => {
+  test('player not in game', async () => {
     prismaMock.game.findUnique.mockResolvedValue({
       phase: GamePhase.PLAY,
       id: 1
     } as any);
 
     await expect(
-      upsertUser({ gameId: 2 } as any, 'uuid', 'nick')
+      upsertPlayer({ gameId: 2 } as any, 'uuid', 'nick')
     ).rejects.toThrow(
       new CannotJoinGameError("Game with uuid 'uuid' can no longer be joined.")
     );
 
-    await expect(upsertUser(undefined, 'uuid', 'nick')).rejects.toThrow(
+    await expect(upsertPlayer(undefined, 'uuid', 'nick')).rejects.toThrow(
       new CannotJoinGameError("Game with uuid 'uuid' can no longer be joined.")
     );
   });
 
-  test('join successfully updating user', async () => {
+  test('join successfully updating player', async () => {
     prismaMock.game.findUnique.mockResolvedValue({
       id: 1,
       phase: GamePhase.JOIN
     } as any);
-    prismaMock.user.update.mockResolvedValue({
+    prismaMock.player.update.mockResolvedValue({
       id: 1,
       nickname: 'nickname',
       gameId: 1
     } as any);
 
-    const user = await upsertUser({ id: 1 } as any, '', '');
+    const player = await upsertPlayer({ id: 1 } as any, '', '');
 
-    expect(prisma.user.update).toBeCalled();
-    expect(prisma.user.create).not.toBeCalled();
+    expect(prisma.player.update).toBeCalled();
+    expect(prisma.player.create).not.toBeCalled();
     expect(prisma.game.update).toBeCalled();
 
-    expect(user).toMatchObject({ game: { id: 1 } });
+    expect(player).toMatchObject({ game: { id: 1 } });
   });
 
-  test('join successfully creating user', async () => {
+  test('join successfully creating player', async () => {
     prismaMock.game.findUnique.mockResolvedValue({
       id: 1,
       phase: GamePhase.JOIN,
       hostId: 2
     } as any);
-    prismaMock.user.create.mockResolvedValue({
+    prismaMock.player.create.mockResolvedValue({
       id: 1,
       nickname: 'nickname',
       gameId: 1
     } as any);
 
-    const user = await upsertUser(undefined, '', '');
+    const player = await upsertPlayer(undefined, '', '');
 
-    expect(prisma.user.update).not.toBeCalled();
-    expect(prisma.user.create).toBeCalled();
+    expect(prisma.player.update).not.toBeCalled();
+    expect(prisma.player.create).toBeCalled();
     expect(prisma.game.update).not.toBeCalled();
 
-    expect(user).toMatchObject({ game: { id: 1 } });
+    expect(player).toMatchObject({ game: { id: 1 } });
   });
 });
 
 describe('leaveGame', () => {
-  test('no user', async () => {
+  test('no player', async () => {
     await leaveGame(undefined);
-    expect(prisma.user.update).not.toBeCalled();
-    expect(prisma.user.findMany).not.toBeCalled();
+    expect(prisma.player.update).not.toBeCalled();
+    expect(prisma.player.findMany).not.toBeCalled();
     expect(prisma.game.update).not.toBeCalled();
   });
 
   test('no game', async () => {
     await leaveGame({ id: 1 } as any);
-    expect(prisma.user.update).toBeCalled();
-    expect(prisma.user.findMany).not.toBeCalled();
+    expect(prisma.player.update).toBeCalled();
+    expect(prisma.player.findMany).not.toBeCalled();
     expect(prisma.game.update).not.toBeCalled();
   });
 
   test('not host', async () => {
     await leaveGame({ id: 1, game: { id: 1, hostId: 2 } } as any);
-    expect(prisma.user.update).toBeCalled();
-    expect(prisma.user.findMany).not.toBeCalled();
+    expect(prisma.player.update).toBeCalled();
+    expect(prisma.player.findMany).not.toBeCalled();
     expect(prisma.game.update).not.toBeCalled();
   });
 
-  test('is host, with other users', async () => {
-    prismaMock.user.findMany.mockResolvedValue([{ id: 3 }] as any);
+  test('is host, with other players', async () => {
+    prismaMock.player.findMany.mockResolvedValue([{ id: 3 }] as any);
 
     await leaveGame({ id: 1, game: { id: 1, hostId: 1 } } as any);
-    expect(prisma.user.update).toBeCalled();
-    expect(prisma.user.findMany).toBeCalled();
+    expect(prisma.player.update).toBeCalled();
+    expect(prisma.player.findMany).toBeCalled();
     expect(prisma.game.update).toBeCalledWith({
       where: { id: 1 },
       data: { hostId: 3 }
     });
   });
 
-  test('is host, no other users', async () => {
-    prismaMock.user.findMany.mockResolvedValue([]);
+  test('is host, no other players', async () => {
+    prismaMock.player.findMany.mockResolvedValue([]);
 
     await leaveGame({ id: 1, game: { id: 1, hostId: 1 } } as any);
-    expect(prisma.user.update).toBeCalled();
-    expect(prisma.user.findMany).toBeCalled();
+    expect(prisma.player.update).toBeCalled();
+    expect(prisma.player.findMany).toBeCalled();
     expect(prisma.game.update).toBeCalledWith({
       where: { id: 1 },
       data: { host: { disconnect: true } }

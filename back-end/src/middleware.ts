@@ -1,19 +1,19 @@
 import { GameType } from './.generated/prisma';
 import { joinPhase } from './models/games';
-import { getUser } from './models/users';
+import { getPlayer } from './models/players';
 import { GameStatusResBody, ReqBody } from './types/domain.js';
 import { ReqHandler as Handler } from './types/express.js';
 
-export const loadUser: Handler = async (req, res, next) => {
+export const loadPlayer: Handler = async (req, res, next) => {
   try {
-    if (!req.session?.userID) return next();
+    if (!req.session?.playerId) return next();
 
-    const user = await getUser(req.session.userID);
+    const player = await getPlayer(req.session.playerId);
 
-    if (!user) return next();
+    if (!player) return next();
 
-    req.user = user;
-    req.game = user.game ?? undefined;
+    req.player = player;
+    req.game = player.game ?? undefined;
     return next();
   } catch (err: unknown) {
     return next(err);
@@ -26,8 +26,8 @@ export const joinPhaseHandler: Handler<ReqBody, GameStatusResBody> = async (
   next
 ) => {
   try {
-    if (!req.user || !req.game) return res.sendStatus(403);
-    const response = await joinPhase(req.user, req.game);
+    if (!req.player || !req.game) return res.sendStatus(403);
+    const response = await joinPhase(req.player, req.game);
     if (response) return res.send(response);
     return next();
   } catch (err: unknown) {
@@ -36,13 +36,13 @@ export const joinPhaseHandler: Handler<ReqBody, GameStatusResBody> = async (
 };
 
 export const loadNames: Handler = async (req, res, next) => {
-  if (!req.user || !req.game) return res.sendStatus(403);
+  if (!req.player || !req.game) return res.sendStatus(403);
   if (req.game.type !== GameType.NAME) return res.sendStatus(400);
   return next();
 };
 
 export const loadStory: Handler = async (req, res, next) => {
-  if (!req.user || !req.game) return res.sendStatus(403);
+  if (!req.player || !req.game) return res.sendStatus(403);
   if (req.game.type !== GameType.STORY) return res.sendStatus(400);
   return next();
 };
