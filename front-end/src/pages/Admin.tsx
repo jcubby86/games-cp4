@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
+import Suggestion from '../components/Suggestion';
 import axios from '../utils/axiosWrapper';
 import { AdminResBody, LoginReqBody } from '../utils/types';
 
@@ -46,9 +47,7 @@ const Admin = (): JSX.Element => {
 
   if (state?.uuid) {
     return (
-      <div>
-        <p>logged in</p>
-      </div>
+      <Suggestion/>
     );
   } else {
     return (
