@@ -59,10 +59,25 @@ CREATE TABLE "StoryEntry" (
 -- CreateTable
 CREATE TABLE "Suggestion" (
     "id" SERIAL NOT NULL,
+    "uuid" TEXT NOT NULL,
     "category" "Category" NOT NULL,
     "value" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Suggestion_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Admin" (
+    "id" SERIAL NOT NULL,
+    "uuid" TEXT NOT NULL,
+    "username" TEXT NOT NULL,
+    "password" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Admin_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -70,9 +85,6 @@ CREATE UNIQUE INDEX "Game_uuid_key" ON "Game"("uuid");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Game_code_key" ON "Game"("code");
-
--- CreateIndex
-CREATE UNIQUE INDEX "Game_hostId_key" ON "Game"("hostId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Game_successorId_key" ON "Game"("successorId");
@@ -102,7 +114,16 @@ CREATE UNIQUE INDEX "NameEntry_gameId_userId_key" ON "NameEntry"("gameId", "user
 CREATE UNIQUE INDEX "StoryEntry_gameId_userId_key" ON "StoryEntry"("gameId", "userId");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Suggestion_uuid_key" ON "Suggestion"("uuid");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Suggestion_category_value_key" ON "Suggestion"("category", "value");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Admin_uuid_key" ON "Admin"("uuid");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Admin_username_key" ON "Admin"("username");
 
 -- AddForeignKey
 ALTER TABLE "Game" ADD CONSTRAINT "Game_hostId_fkey" FOREIGN KEY ("hostId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
