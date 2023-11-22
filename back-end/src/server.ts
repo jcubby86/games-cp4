@@ -7,6 +7,7 @@ import adminController from './controllers/admin.js';
 import gameController from './controllers/games.js';
 import namesController from './controllers/names.js';
 import storyController from './controllers/story.js';
+import suggestionController from './controllers/suggestion.js';
 import userController from './controllers/users.js';
 import {
   prismaErrorHandler,
@@ -35,6 +36,7 @@ app.use('/api/user', userController);
 app.use('/api/story', storyController);
 app.use('/api/names', namesController);
 app.use('/api/admin', adminController);
+app.use('/api/suggestion', suggestionController);
 
 app.get('/health', async (req, res) => {
   res.sendStatus(200);
