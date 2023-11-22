@@ -1,4 +1,10 @@
-import { Game, NameEntry, StoryEntry, Suggestion, User } from '../.generated/prisma';
+import {
+  Game,
+  NameEntry,
+  StoryEntry,
+  Suggestion,
+  User
+} from '../.generated/prisma';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface ReqBody {}
@@ -56,3 +62,12 @@ export interface StoryArchiveResBody extends ResBody {
 }
 
 export interface SuggestionDto extends Suggestion, ResBody {}
+export interface SuggestionReqBody extends ReqBody {
+  value: string;
+  category: string;
+}
+
+export interface LoginReqBody extends ReqBody {
+  username: string;
+  password: string;
+}

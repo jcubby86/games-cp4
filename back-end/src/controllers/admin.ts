@@ -2,9 +2,10 @@ import { Router } from 'express';
 
 import { Prisma } from '../.generated/prisma';
 import { createAdmin, login } from '../models/admin.js';
+import { LoginReqBody } from '../types/domain';
 import { ReqHandler } from '../types/express.js';
 
-const loginHandler: ReqHandler<{ username: string; password: string }> = async (
+const loginHandler: ReqHandler<LoginReqBody> = async (
   req,
   res
 ) => {
