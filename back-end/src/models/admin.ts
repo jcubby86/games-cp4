@@ -19,7 +19,7 @@ export const login = async (username: string, password: string) => {
   if (!success) {
     throw new AuthenticationError();
   } else {
-    return admin.uuid;
+    return { uuid: admin.uuid, username: admin.username };
   }
 };
 
@@ -35,4 +35,12 @@ export const createAdmin = async (username: string, password: string) => {
     }
   });
   return admin.uuid;
+};
+
+export const get = async (uuid: string) => {
+  const admin = await prisma.admin.findUniqueOrThrow({
+    where: { uuid },
+    select: { uuid: true, username: true }
+  });
+  return admin;
 };

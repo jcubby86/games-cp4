@@ -1,6 +1,7 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
 import { AppContextProvider } from './contexts/AppContext';
+import Admin from './pages/Admin';
 import Create from './pages/Create';
 import Home from './pages/Home';
 import Join from './pages/Join';
@@ -27,6 +28,7 @@ function App(): JSX.Element {
               element={<StoryArchive />}
             />
             <Route path={NAMES} element={<Names />} />
+            <Route path="/admin" element={<Admin />} />
             <Route path="*" element={<Home />} />
           </Route>
         </Routes>

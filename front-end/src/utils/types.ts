@@ -60,3 +60,21 @@ export interface StoryArchive {
 export interface StoryArchiveResBody extends ResBody {
   stories: StoryArchive[];
 }
+export interface SuggestionDto extends ResBody {
+  value: string;
+  category: string;
+  uuid: string;
+}
+export interface SuggestionReqBody extends ReqBody {
+  value: string;
+  category: string;
+}
+
+export interface LoginReqBody extends ReqBody {
+  username: string;
+  password: string;
+}
+export interface AdminResBody extends ResBody {
+  username: string;
+  uuid: string;
+}
