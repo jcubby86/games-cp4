@@ -86,18 +86,22 @@ model StoryEntry {
 
 model Suggestion {
   id       Int      @id @default(autoincrement())
+  uuid     String   @unique @default(uuid())
   category Category
   value    String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([category, value])
 }
 
 model Admin {
   id       Int    @id @default(autoincrement())
-  uuid      String    @unique @default(uuid())
+  uuid     String @unique @default(uuid())
   username String @unique
   password String
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
