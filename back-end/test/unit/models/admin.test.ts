@@ -61,7 +61,7 @@ describe('createUser', () => {
     } as any);
 
     const result = await createAdmin('username', 'password');
-    expect(result).toEqual('1');
+    expect(result).toMatchObject({"username": "username", "uuid": "1"});
   });
 
   test('failed creation', async () => {
@@ -84,7 +84,7 @@ describe('login', () => {
     } as any);
 
     const result = await login('username', 'password');
-    expect(result).toEqual('1');
+    expect(result).toMatchObject({"username": "username", "uuid": "1"});
   });
 
   test('failed login', async () => {

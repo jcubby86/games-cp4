@@ -55,15 +55,15 @@ describe('checkRoundCompletion', () => {
   test('end phase', async () => {
     await expect(
       checkRoundCompletion({ id: 1, phase: GamePhase.END } as any)
-    ).resolves.toMatchObject({ round: 0, waitingOnUsers: [] });
-    expect(prismaMock.user.findMany).not.toBeCalled();
+    ).resolves.toMatchObject({ round: 0, waitingOnPlayers: [] });
+    expect(prismaMock.player.findMany).not.toBeCalled();
     expect(prismaMock.$transaction).not.toBeCalled();
     expect(prismaMock.storyEntry.update).not.toBeCalled();
     expect(prisma.game.update).not.toBeCalled();
   });
 
-  test('users behind, round 0', async () => {
-    prismaMock.user.findMany.mockResolvedValue([
+  test('players behind, round 0', async () => {
+    prismaMock.player.findMany.mockResolvedValue([
       { storyEntries: [], nickname: 'test' }
     ] as any);
 
@@ -71,7 +71,7 @@ describe('checkRoundCompletion', () => {
       checkRoundCompletion({ id: 1, phase: GamePhase.PLAY } as any)
     ).resolves.toMatchObject({
       round: 0,
-      waitingOnUsers: ['test']
+      waitingOnPlayers: ['test']
     });
     expect(prismaMock.$transaction).not.toBeCalled();
     expect(prismaMock.storyEntry.update).not.toBeCalled();
@@ -79,7 +79,7 @@ describe('checkRoundCompletion', () => {
   });
 
   test('round 6', async () => {
-    prismaMock.user.findMany.mockResolvedValue([
+    prismaMock.player.findMany.mockResolvedValue([
       {
         storyEntries: [{ id: 1, values: ['11', '12', '13', '14', '15', '16'] }],
         nickname: 'test1'
@@ -117,7 +117,7 @@ describe('checkRoundCompletion', () => {
 
 describe('getStoryStatus', () => {
   test('play', async () => {
-    prismaMock.user.findMany.mockResolvedValue([
+    prismaMock.player.findMany.mockResolvedValue([
       { storyEntries: [], nickname: 'test' }
     ] as any);
     prismaMock.storyEntry.findUnique.mockResolvedValue({
@@ -140,7 +140,7 @@ describe('getStoryStatus', () => {
   });
 
   test('play wait', async () => {
-    prismaMock.user.findMany.mockResolvedValue([
+    prismaMock.player.findMany.mockResolvedValue([
       { storyEntries: [], nickname: 'test' }
     ] as any);
     prismaMock.storyEntry.findUnique.mockResolvedValue({
@@ -190,7 +190,7 @@ describe('saveStoryEntry', () => {
   });
 
   test('has never submitted', async () => {
-    prismaMock.user.findMany.mockResolvedValue([
+    prismaMock.player.findMany.mockResolvedValue([
       { storyEntries: [], nickname: 'test' }
     ] as any);
 
@@ -201,7 +201,7 @@ describe('saveStoryEntry', () => {
   });
 
   test('has submitted in previous round', async () => {
-    prismaMock.user.findMany.mockResolvedValue([
+    prismaMock.player.findMany.mockResolvedValue([
       { storyEntries: [''], nickname: 'test' }
     ] as any);
     prismaMock.storyEntry.findUnique.mockResolvedValue({ values: [] } as any);
@@ -213,7 +213,7 @@ describe('saveStoryEntry', () => {
   });
 
   test('has submitted in current round', async () => {
-    prismaMock.user.findMany.mockResolvedValue([
+    prismaMock.player.findMany.mockResolvedValue([
       { storyEntries: [], nickname: 'test' }
     ] as any);
     prismaMock.storyEntry.findUnique.mockResolvedValue({ values: [''] } as any);
@@ -221,7 +221,7 @@ describe('saveStoryEntry', () => {
     await expect(
       saveStoryEntry({} as any, { phase: GamePhase.PLAY } as any, 'entry')
     ).rejects.toThrow(
-      new SaveEntryError('User has already submitted this round')
+      new SaveEntryError('Player has already submitted this round')
     );
 
     expect(prisma.storyEntry.create).not.toBeCalled();

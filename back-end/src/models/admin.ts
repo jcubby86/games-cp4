@@ -1,5 +1,6 @@
 import * as bcrypt from 'bcrypt';
 
+import { Admin } from '../.generated/prisma';
 import AuthenticationError from '../errors/AuthenticationError';
 import prisma from '../prisma';
 
@@ -28,13 +29,13 @@ export const createAdmin = async (username: string, password: string) => {
     throw new AuthenticationError('Admin credentials not provided');
   }
   const hashed = await hash(password);
-  const admin = await prisma.admin.create({
+  const admin: Admin = await prisma.admin.create({
     data: {
       username: username,
       password: hashed
     }
   });
-  return admin.uuid;
+  return { uuid: admin.uuid, username: username };
 };
 
 export const get = async (uuid: string) => {

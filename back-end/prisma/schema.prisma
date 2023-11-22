@@ -21,7 +21,7 @@ model Game {
   updatedAt DateTime  @updatedAt
 
   hostId Int?
-  host   User? @relation("GameHost", fields: [hostId], references: [id])
+  host   Player? @relation("GameHost", fields: [hostId], references: [id])
 
   successorId Int?  @unique
   successor   Game? @relation("RecreateHistory", fields: [successorId], references: [id])
@@ -30,13 +30,13 @@ model Game {
   nameEntries  NameEntry[]
   storyEntries StoryEntry[]
 
-  users User[] @relation("GameUsers")
+  players Player[] @relation("GamePlayers")
 
   @@index([code])
   @@index([uuid])
 }
 
-model User {
+model Player {
   id        Int      @id @default(autoincrement())
   uuid      String   @unique @default(uuid())
   nickname  String
@@ -44,7 +44,7 @@ model User {
   updatedAt DateTime @updatedAt
 
   gameId Int?
-  game   Game? @relation("GameUsers", fields: [gameId], references: [id])
+  game   Game? @relation("GamePlayers", fields: [gameId], references: [id])
 
   hosting Game[] @relation("GameHost")
 
@@ -63,11 +63,11 @@ model NameEntry {
   gameId Int
   game   Game @relation(fields: [gameId], references: [id])
 
-  userId Int
-  user   User @relation(fields: [userId], references: [id])
+  playerId Int
+  player   Player @relation(fields: [playerId], references: [id])
 
   @@unique([gameId, normalized])
-  @@unique([gameId, userId])
+  @@unique([gameId, playerId])
 }
 
 model StoryEntry {
@@ -78,10 +78,10 @@ model StoryEntry {
   gameId Int
   game   Game @relation(fields: [gameId], references: [id])
 
-  userId Int
-  user   User @relation(fields: [userId], references: [id])
+  playerId Int
+  player   Player @relation(fields: [playerId], references: [id])
 
-  @@unique([gameId, userId])
+  @@unique([gameId, playerId])
 }
 
 model Suggestion {

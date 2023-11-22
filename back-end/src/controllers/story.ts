@@ -1,7 +1,7 @@
 import { Router } from 'express';
 
 import SaveEntryError from '../errors/SaveEntryError';
-import { joinPhaseHandler, loadStory, loadUser } from '../middleware.js';
+import { joinPhaseHandler, loadPlayer, loadStory } from '../middleware.js';
 import {
   getStoryArchive,
   getStoryStatus,
@@ -21,8 +21,8 @@ const getGameHandler: Handler<ReqBody, StoryResBody> = async (
   next
 ) => {
   try {
-    if (!req.game || !req.user) return res.sendStatus(403);
-    const response = await getStoryStatus(req.user, req.game);
+    if (!req.game || !req.player) return res.sendStatus(403);
+    const response = await getStoryStatus(req.player, req.game);
     return res.send(response);
   } catch (err: unknown) {
     return next(err);
@@ -31,8 +31,8 @@ const getGameHandler: Handler<ReqBody, StoryResBody> = async (
 
 const saveEntryHandler: Handler<EntryReqBody> = async (req, res, next) => {
   try {
-    if (!req.game || !req.user) return res.sendStatus(403);
-    await saveStoryEntry(req.user, req.game, req.body.value);
+    if (!req.game || !req.player) return res.sendStatus(403);
+    await saveStoryEntry(req.player, req.game, req.body.value);
     return res.sendStatus(200);
   } catch (err: unknown) {
     if (err instanceof SaveEntryError) {
@@ -55,7 +55,7 @@ const getArchiveHandler: Handler<ReqBody, StoryArchiveResBody> = async (
     return res.send({
       stories: entries.map((entry) => ({
         value: entry.finalValue,
-        user: { nickname: entry.user.nickname, id: entry.user.uuid }
+        player: { nickname: entry.player.nickname, id: entry.player.uuid }
       }))
     });
   } catch (err: unknown) {
@@ -65,7 +65,7 @@ const getArchiveHandler: Handler<ReqBody, StoryArchiveResBody> = async (
 
 const router = Router();
 router.get('/:uuid', getArchiveHandler);
-router.use(loadUser, loadStory);
+router.use(loadPlayer, loadStory);
 router.get('/', joinPhaseHandler, getGameHandler);
 router.put('/', saveEntryHandler);
 export default router;

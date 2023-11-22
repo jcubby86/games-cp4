@@ -2,7 +2,7 @@ import { getSuggestion } from './suggestion';
 import { Category, Game, GamePhase, StoryEntry } from '../.generated/prisma';
 import SaveEntryError from '../errors/SaveEntryError';
 import prisma from '../prisma';
-import { GameDto, StoryResBody, UserDto } from '../types/domain.js';
+import { GameDto, PlayerDto, StoryResBody } from '../types/domain.js';
 import { WAIT, punctRegex, quoteRegex } from '../utils/constants.js';
 import { lowerFirst, randomNumber, upperFirst } from '../utils/utils.js';
 
@@ -42,14 +42,14 @@ export function isBehind(round: number, entry: { values?: string[] } | null) {
  * Once all rounds are complete, marks the game as complete.
  *
  * @param {Game} game
- * @return {Promise<{ round: number; waitingOnUsers: string[] }>}
+ * @return {Promise<{ round: number; waitingOnPlayers: string[] }>}
  */
 export async function checkRoundCompletion(
   game: Game
-): Promise<{ round: number; waitingOnUsers: string[] }> {
-  if (game.phase !== GamePhase.PLAY) return { round: 0, waitingOnUsers: [] };
+): Promise<{ round: number; waitingOnPlayers: string[] }> {
+  if (game.phase !== GamePhase.PLAY) return { round: 0, waitingOnPlayers: [] };
 
-  const users = await prisma.user.findMany({
+  const players = await prisma.player.findMany({
     where: { gameId: game.id },
     include: {
       storyEntries: {
@@ -57,18 +57,18 @@ export async function checkRoundCompletion(
       }
     }
   });
-  const entries = users.map((u) => ({
+  const entries = players.map((u) => ({
     ...u.storyEntries.at(0),
     nickname: u.nickname
   }));
 
   const round = getRoundNumber(entries);
-  const waitingOnUsers = entries
+  const waitingOnPlayers = entries
     .filter((e) => isBehind(round, e))
     .map((e) => e.nickname);
 
-  if (waitingOnUsers.length > 0 && round < fillers.length) {
-    return { round, waitingOnUsers };
+  if (waitingOnPlayers.length > 0 && round < fillers.length) {
+    return { round, waitingOnPlayers: waitingOnPlayers };
   }
 
   if (round >= fillers.length) {
@@ -89,7 +89,7 @@ export async function checkRoundCompletion(
     );
   }
 
-  return { round, waitingOnUsers };
+  return { round, waitingOnPlayers: waitingOnPlayers };
 }
 
 function getFinalEntries(entries: StoryEntry[]): StoryEntry[] {
@@ -119,15 +119,15 @@ export function processValue(entry: string, round: number) {
 }
 
 export const getStoryStatus = async (
-  user: UserDto,
+  player: PlayerDto,
   game: GameDto
 ): Promise<StoryResBody> => {
-  const { round, waitingOnUsers } = await checkRoundCompletion(game);
+  const { round, waitingOnPlayers } = await checkRoundCompletion(game);
   const entry = await prisma.storyEntry.findUnique({
     where: {
-      gameId_userId: {
+      gameId_playerId: {
         gameId: game.id,
-        userId: user.id
+        playerId: player.id
       }
     }
   });
@@ -142,19 +142,19 @@ export const getStoryStatus = async (
       prefix: prefixes[round],
       suffix: suffixes[round],
       placeholder: suggestion,
-      users: waitingOnUsers
+      players: waitingOnPlayers
     };
   } else {
     return {
       phase: GamePhase.READ,
       story: entry?.finalValue,
-      isHost: game.hostId === user.id
+      isHost: game.hostId === player.id
     };
   }
 };
 
 export const saveStoryEntry = async (
-  user: UserDto,
+  player: PlayerDto,
   game: GameDto,
   value: string
 ) => {
@@ -168,9 +168,9 @@ export const saveStoryEntry = async (
   const { round } = await checkRoundCompletion(game);
   const entry = await prisma.storyEntry.findUnique({
     where: {
-      gameId_userId: {
+      gameId_playerId: {
         gameId: game.id,
-        userId: user.id
+        playerId: player.id
       }
     }
   });
@@ -178,7 +178,7 @@ export const saveStoryEntry = async (
   if (!entry) {
     await prisma.storyEntry.create({
       data: {
-        user: { connect: { id: user.id } },
+        player: { connect: { id: player.id } },
         game: { connect: { id: game.id } },
         values: [processValue(value, round)],
         finalValue: ''
@@ -192,7 +192,7 @@ export const saveStoryEntry = async (
       }
     });
   } else {
-    throw new SaveEntryError('User has already submitted this round');
+    throw new SaveEntryError('Player has already submitted this round');
   }
 };
 
@@ -201,7 +201,7 @@ export const getStoryArchive = async (gameUuid: string) => {
     where: {
       game: { uuid: gameUuid }
     },
-    include: { user: true }
+    include: { player: true }
   });
 
   return entries;

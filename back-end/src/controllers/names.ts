@@ -1,7 +1,7 @@
 import { Router } from 'express';
 
 import SaveEntryError from '../errors/SaveEntryError';
-import { joinPhaseHandler, loadNames, loadUser } from '../middleware.js';
+import { joinPhaseHandler, loadNames, loadPlayer } from '../middleware.js';
 import { getNameStatus, saveNameEntry } from '../models/names';
 import { EntryReqBody, NamesResBody, ReqBody } from '../types/domain.js';
 import { ReqHandler } from '../types/express.js';
@@ -12,8 +12,8 @@ const getGameHandler: ReqHandler<ReqBody, NamesResBody> = async (
   next
 ) => {
   try {
-    if (!req.game || !req.user) return res.sendStatus(403);
-    const response = await getNameStatus(req.user, req.game);
+    if (!req.game || !req.player) return res.sendStatus(403);
+    const response = await getNameStatus(req.player, req.game);
     return res.send(response);
   } catch (err: unknown) {
     return next(err);
@@ -22,8 +22,8 @@ const getGameHandler: ReqHandler<ReqBody, NamesResBody> = async (
 
 const saveEntryHandler: ReqHandler<EntryReqBody> = async (req, res, next) => {
   try {
-    if (!req.user || !req.game) return res.sendStatus(403);
-    await saveNameEntry(req.user, req.game, req.body.value);
+    if (!req.player || !req.game) return res.sendStatus(403);
+    await saveNameEntry(req.player, req.game, req.body.value);
     return res.sendStatus(200);
   } catch (err: unknown) {
     if (err instanceof SaveEntryError) {
@@ -34,7 +34,7 @@ const saveEntryHandler: ReqHandler<EntryReqBody> = async (req, res, next) => {
 };
 
 const router = Router();
-router.use(loadUser, loadNames);
+router.use(loadPlayer, loadNames);
 router.get('/', joinPhaseHandler, getGameHandler);
 router.put('/', saveEntryHandler);
 export default router;

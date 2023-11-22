@@ -7,13 +7,13 @@ import {
   recreateGame,
   updateGamePhase
 } from '../models/games';
-import { getUsersByGameUuid } from '../models/users.js';
+import { getPlayersByGameUuid } from '../models/players.js';
 import {
   CreateGameReqBody as CreateReq,
   GameDto as Game,
+  PlayerDto,
   ReqBody,
-  UpdateGameReqBody as UpdateReq,
-  UserDto
+  UpdateGameReqBody as UpdateReq
 } from '../types/domain.js';
 import { ReqHandler as Handler } from '../types/express.js';
 
@@ -55,10 +55,14 @@ const updatePhaseHandler: Handler<UpdateReq, Game> = async (req, res, next) => {
   }
 };
 
-const getUsersHandler: Handler<ReqBody, UserDto[]> = async (req, res, next) => {
+const getPlayersHandler: Handler<ReqBody, PlayerDto[]> = async (
+  req,
+  res,
+  next
+) => {
   try {
-    const users = await getUsersByGameUuid(req.params.uuid);
-    return res.send(users);
+    const players = await getPlayersByGameUuid(req.params.uuid);
+    return res.send(players);
   } catch (err: unknown) {
     return next(err);
   }
@@ -77,6 +81,6 @@ const router = Router();
 router.post('/', createGameHandler);
 router.get('/:code', getGameHandler);
 router.put('/:uuid', updatePhaseHandler);
-router.get('/:uuid/users', getUsersHandler);
+router.get('/:uuid/players', getPlayersHandler);
 router.post('/:uuid/recreate', recreateGameHandler);
 export default router;

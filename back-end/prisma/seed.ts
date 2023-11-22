@@ -3,7 +3,6 @@ import { parseArgs } from 'node:util';
 import { Prisma } from '../src/.generated/prisma';
 import { main } from '../src/utils/seed';
 
-
 const {
   values: { env }
 } = parseArgs({

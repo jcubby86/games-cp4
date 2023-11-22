@@ -25,10 +25,11 @@ const getAllHandler: Handler<ReqBody, SuggestionDto[]> = async (
   }
 };
 
-const addSuggestionHandler: Handler<
-  SuggestionReqBody,
-  SuggestionDto
-> = async (req, res, next) => {
+const addSuggestionHandler: Handler<SuggestionReqBody, SuggestionDto> = async (
+  req,
+  res,
+  next
+) => {
   try {
     const suggestion = await addSuggestion(req.body.value, req.body.category);
     return res.status(201).send(suggestion);
