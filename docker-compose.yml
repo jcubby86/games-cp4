@@ -16,6 +16,8 @@ services:
     environment:
       - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@db:5432/prisma?schema=public
       - NODE_PORT=${NODE_PORT:-3000}
+      - ADMIN_USERNAME=${ADMIN_USERNAME}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
     restart: unless-stopped
     healthcheck:
       test:  wget --spider --tries=1 --no-verbose http://localhost:${NODE_PORT:-3000}/health
