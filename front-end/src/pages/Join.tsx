@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { useAppState } from '../contexts/AppContext';
-import axios, { AxiosError } from '../utils/axiosWrapper';
+import axios from '../utils/axiosWrapper';
 import { gameVariants } from '../utils/gameVariants';
 import generateNickname from '../utils/nicknameGeneration';
 import { GameDto, JoinGameReqBody, PlayerDto } from '../utils/types';
@@ -30,7 +30,6 @@ const Join = (): JSX.Element => {
     try {
       e.preventDefault();
       if (state.gameCode?.length !== 4) {
-        alert('Please enter a code.');
         return;
       }
 
@@ -51,13 +50,8 @@ const Join = (): JSX.Element => {
       });
 
       navigate('/' + response.data.game.type);
-    } catch (e: unknown) {
-      const err = e as AxiosError;
-      if (err?.response?.status === 400) {
-        alert(JSON.stringify(err.response.data));
-      } else {
-        alert('Error joining game');
-      }
+    } catch (err: unknown) {
+      alert('Error joining game');
     }
   };
 
