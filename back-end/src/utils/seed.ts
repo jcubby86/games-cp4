@@ -155,17 +155,15 @@ const statements = [
   "I'm not as think as you drunk I am, ocifer"
 ];
 
-export const main = async (env?: string) => {
-  if (env === 'dev') {
-    const hashed = await hash('password');
-    await prisma.user.create({
-      data: {
-        username: 'username',
-        password: hashed,
-        permissions: [SUGGESTIONS_PERM]
-      }
-    });
-  }
+export const main = async () => {
+  const hashed = await hash('password');
+  await prisma.user.create({
+    data: {
+      username: 'username',
+      password: hashed,
+      permissions: [SUGGESTIONS_PERM]
+    }
+  });
 
   const all: { category: Category; value: string }[] = [
     ...actions_past.map((s) => ({
