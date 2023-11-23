@@ -1,6 +1,6 @@
 {
   "name": "games-backend",
-  "version": "2.4.0",
+  "version": "2.5.0",
   "description": "Back end for a website to play some simple games",
   "main": "server.js",
   "prisma": {
@@ -14,7 +14,8 @@
     "lint": "eslint . --ext ts,js --report-unused-disable-directives --max-warnings 0",
     "format": "prettier --config .prettierrc --end-of-line lf --write .",
     "prod:deploy": "prisma migrate deploy && node server.js",
-    "studio": "prisma studio"
+    "studio": "prisma studio",
+    "docker:build": "docker build -t ghcr.io/jcubby86/games-backend ."
   },
   "author": "",
   "license": "ISC",
