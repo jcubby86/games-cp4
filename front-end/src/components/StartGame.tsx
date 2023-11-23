@@ -1,3 +1,5 @@
+import { useRef } from 'react';
+
 import List from './List';
 import { useAppState } from '../contexts/AppContext';
 import axios from '../utils/axiosWrapper';
@@ -18,6 +20,8 @@ const StartGame = ({
   isHost
 }: StartGameProps): JSX.Element => {
   const { appState } = useAppState();
+  const codeRef = useRef<HTMLInputElement>(null);
+
   const startGame = async (e: React.FormEvent) => {
     try {
       e.preventDefault();
@@ -49,10 +53,10 @@ const StartGame = ({
               readOnly
               id="gameCode"
               style={{ minWidth: '100px' }}
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              onClick={(e: any) => {
+              ref={codeRef}
+              onClick={(e) => {
                 e.preventDefault();
-                e.target.select();
+                codeRef.current?.select();
               }}
             />
           </div>
