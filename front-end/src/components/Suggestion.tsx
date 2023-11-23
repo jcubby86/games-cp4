@@ -141,10 +141,7 @@ const Suggestion = (): JSX.Element => {
         <td className="text-wrap">{suggestion.value}</td>
         <td className="text-nowrap">{formatCategory(suggestion.category)}</td>
         <td>
-          <Button
-            size="sm"
-            variant="outline-secondary"
-          >
+          <Button size="sm" variant="outline-secondary">
             <Icon icon="nf-oct-pencil"></Icon>
           </Button>
         </td>
