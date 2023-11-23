@@ -48,10 +48,14 @@ const createAdminHandler: ReqHandler = async (req, res) => {
 };
 
 const getHandler: ReqHandler<ReqBody, UserResBody> = async (req, res) => {
-  if (!req.session?.userId) return res.sendStatus(404);
+  try {
+    if (!req.session?.userId) return res.sendStatus(404);
 
-  const user = await get(req.session.userId);
-  return res.status(200).send(user);
+    const user = await get(req.session.userId);
+    return res.status(200).send(user);
+  } catch (err) {
+    return res.sendStatus(401);
+  }
 };
 
 const router = Router();
