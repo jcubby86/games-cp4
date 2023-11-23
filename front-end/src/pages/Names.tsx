@@ -57,6 +57,7 @@ const Names = (): JSX.Element => {
           placeholder: ''
         }));
       } catch (err: unknown) {
+        //TODO: improve error handling
         alert('An error has occurred');
       }
     };

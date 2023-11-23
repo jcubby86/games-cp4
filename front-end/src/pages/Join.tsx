@@ -51,6 +51,7 @@ const Join = (): JSX.Element => {
 
       navigate('/' + response.data.game.type);
     } catch (err: unknown) {
+      //TODO: improve error handling
       alert('Error joining game');
     }
   };

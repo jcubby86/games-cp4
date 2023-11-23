@@ -10,7 +10,6 @@
     "preview": "vite preview",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "format": "prettier --config .prettierrc --write .",
-    "docker:build": "docker build -t ghcr.io/jcubby86/games-app .",
     "docker:dev": "docker run -it --rm -v ./:/app -p 5173:5173 -w /app -u 1000 node:alpine npx vite --host"
   },
   "dependencies": {

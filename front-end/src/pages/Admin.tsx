@@ -82,11 +82,15 @@ const Admin = (): JSX.Element => {
           </button>
         </form>
 
-        <ToastContainer position='bottom-center' className='p-5'>
-          <Toast onClose={() => setShowToast(false)} show={showToast} delay={3000} autohide bg='danger'>
-            <Toast.Body className='text-light'>
-              Invalid Login
-            </Toast.Body>
+        <ToastContainer position="bottom-center" className="p-5">
+          <Toast
+            onClose={() => setShowToast(false)}
+            show={showToast}
+            delay={3000}
+            autohide
+            bg="danger"
+          >
+            <Toast.Body className="text-light">Invalid Login</Toast.Body>
           </Toast>
         </ToastContainer>
       </>
