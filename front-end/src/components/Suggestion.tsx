@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { useEffect, useRef, useState } from 'react';
-import { Button, ButtonGroup, Container, Form, Table } from 'react-bootstrap';
+import { Button, Container, Form, Modal, Table } from 'react-bootstrap';
 
 import Icon from './Icon';
 import axios from '../utils/axiosWrapper';
@@ -15,12 +15,14 @@ const formatCategory = (category: string) => {
 
 interface State {
   adding?: boolean;
-  editing?: string;
+  editing?: SuggestionDto;
   suggestions: SuggestionDto[];
 }
 
 const Suggestion = (): JSX.Element => {
   const [state, setState] = useState<State>({ suggestions: [] });
+  const [showModal, setShowModal] = useState(false);
+  const [validated, setValidated] = useState(false);
   const valueRef = useRef<HTMLTextAreaElement>(null);
   const categoryRef = useRef<HTMLSelectElement>(null);
 
@@ -36,22 +38,30 @@ const Suggestion = (): JSX.Element => {
 
   const addSuggestion = () => {
     setState((prev) => ({ ...prev, adding: !prev.adding, editing: undefined }));
+    setShowModal(true);
+    setValidated(false);
   };
 
   const edit = (suggestion: SuggestionDto) => {
-    setState((prev) => ({ ...prev, editing: suggestion.uuid, adding: false }));
+    setState((prev) => ({ ...prev, editing: suggestion, adding: false }));
+    setShowModal(true);
+    setValidated(false);
   };
 
   const cancelEdit = () => {
     setState((prev) => ({ ...prev, editing: undefined, adding: false }));
+    setShowModal(false);
   };
 
   const save = async () => {
     try {
-      if (!valueRef.current?.value || !categoryRef.current?.value) return;
+      if (!valueRef.current?.value || !categoryRef.current?.value) {
+        setValidated(true);
+        return;
+      }
       if (state.editing) {
         const response = await axios.patch<SuggestionReqBody, SuggestionDto>(
-          '/api/suggestion/' + state.editing,
+          '/api/suggestion/' + state.editing.uuid,
           {
             value: valueRef.current.value,
             category: categoryRef.current.value
@@ -86,18 +96,22 @@ const Suggestion = (): JSX.Element => {
           };
         });
       }
+      setShowModal(false);
     } catch (err) {
       return;
     }
   };
 
-  const deleteSuggestion = async (suggestion: SuggestionDto) => {
+  const deleteSuggestion = async () => {
     try {
-      await axios.delete('/api/suggestion/' + suggestion.uuid);
+      if (!state.editing) return;
+      await axios.delete('/api/suggestion/' + state.editing.uuid);
 
       setState((prev) => {
         const suggestions = prev.suggestions;
-        const index = suggestions.findIndex((s) => s.uuid === suggestion.uuid);
+        const index = suggestions.findIndex(
+          (s) => s.uuid === state.editing?.uuid
+        );
         if (index > -1) {
           suggestions.splice(index, 1);
         }
@@ -107,142 +121,122 @@ const Suggestion = (): JSX.Element => {
           editing: undefined
         };
       });
+      setShowModal(false);
     } catch (err) {
       return;
     }
-  };
-
-  const textAreaSize = (text?: string) => {
-    if (!text) return 1;
-    return Math.floor(text.length / 25) + 1;
   };
 
   useEffect(() => {
     fetchSuggestions();
   }, []);
 
-  const EditRow = ({
-    suggestion
-  }: {
-    suggestion?: SuggestionDto;
-  }): JSX.Element => {
-    return (
-      <tr>
-        <td>
-          <Form.Control
-            size="sm"
-            as="textarea"
-            rows={textAreaSize(suggestion?.value)}
-            ref={valueRef}
-            defaultValue={suggestion?.value}
-          />
-        </td>
-        <td>
-          <Form.Select
-            aria-label="select category"
-            ref={categoryRef}
-            defaultValue={suggestion?.category}
-            size="sm"
-          >
-            <option value="">...</option>
-            <option value="MALE_NAME">Male Name</option>
-            <option value="FEMALE_NAME">Female Name</option>
-            <option value="STATEMENT">Statement</option>
-            <option value="PAST_ACTION">Past Action</option>
-            <option value="PRESENT_ACTION">Present Action</option>
-          </Form.Select>
-        </td>
-        <td>
-          <ButtonGroup>
-            <Button
-              size="sm"
-              variant="outline-success"
-              onClick={(_e) => save()}
-            >
-              <Icon icon="nf-fa-save"></Icon>
-            </Button>
-            <Button
-              size="sm"
-              variant="outline-warning"
-              onClick={(_e) => cancelEdit()}
-            >
-              <Icon icon="nf-fa-ban"></Icon>
-            </Button>
-          </ButtonGroup>
-        </td>
-      </tr>
-    );
-  };
-
   const SuggestionRow = ({
     suggestion
   }: {
     suggestion: SuggestionDto;
   }): JSX.Element => {
-    if (state.editing === suggestion.uuid) {
-      return <EditRow suggestion={suggestion} />;
-    } else {
-      return (
-        <tr>
-          <td className="text-wrap">{suggestion.value}</td>
-          <td className="text-nowrap">{formatCategory(suggestion.category)}</td>
-          <td>
-            <ButtonGroup>
-              <Button
-                size="sm"
-                variant="outline-secondary"
-                onClick={(_e) => edit(suggestion)}
-              >
-                <Icon icon="nf-fa-edit"></Icon>
-              </Button>
-              <Button
-                size="sm"
-                variant="outline-danger"
-                onClick={(_e) => deleteSuggestion(suggestion)}
-              >
-                <Icon icon="nf-fa-trash" />
-              </Button>
-            </ButtonGroup>
-          </td>
-        </tr>
-      );
-    }
+    return (
+      <tr onClick={(_e) => edit(suggestion)}>
+        <td className="text-wrap">{suggestion.value}</td>
+        <td className="text-nowrap">{formatCategory(suggestion.category)}</td>
+        <td>
+          <Button
+            size="sm"
+            variant="outline-secondary"
+          >
+            <Icon icon="nf-oct-pencil"></Icon>
+          </Button>
+        </td>
+      </tr>
+    );
   };
 
   return (
-    <Container fluid>
-      <h3>Suggestions</h3>
-      <Table variant="light" size="sm" hover>
-        <thead>
-          <tr>
-            <th scope="col">Value</th>
-            <th scope="col">Category</th>
-            <th scope="col" className="d-flex">
-              <Button
-                size="sm"
-                variant="outline-primary"
-                className="ms-auto"
-                onClick={(_e) => addSuggestion()}
+    <>
+      <Container fluid>
+        <h3>Suggestions</h3>
+        <Table variant="light" size="sm" hover>
+          <thead>
+            <tr>
+              <th scope="col">Value</th>
+              <th scope="col">Category</th>
+              <th scope="col">
+                <Button
+                  size="sm"
+                  variant="outline-primary"
+                  onClick={(_e) => addSuggestion()}
+                >
+                  <Icon icon="nf-oct-plus" />
+                </Button>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {state.suggestions
+              .sort(
+                (a, b) =>
+                  a.category.localeCompare(b.category) * 1000 +
+                  a.value.localeCompare(b.value)
+              )
+              .map((item: SuggestionDto, index: number) => (
+                <SuggestionRow key={index} suggestion={item} />
+              ))}
+          </tbody>
+        </Table>
+      </Container>
+
+      <Modal show={showModal} onHide={() => cancelEdit()}>
+        <Modal.Header closeButton>
+          <Modal.Title>
+            {state.adding ? 'Add Suggestion' : 'Edit Suggestion'}
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form noValidate validated={validated}>
+            <Form.Group className="mb-3" controlId="editForm.Value">
+              <Form.Label>Value</Form.Label>
+              <Form.Control
+                as="textarea"
+                rows={5}
+                ref={valueRef}
+                defaultValue={state.editing?.value}
+                required
+              />
+            </Form.Group>
+            <Form.Group className="mb-3" controlId="editForm.Category">
+              <Form.Label>Category</Form.Label>
+              <Form.Select
+                aria-label="select category"
+                ref={categoryRef}
+                defaultValue={state.editing?.category}
+                required
               >
-                <Icon icon="nf-fa-plus" />
-              </Button>
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {state.adding && <EditRow />}
-          {state.suggestions
-            .sort(
-              (a, b) =>
-                a.category.localeCompare(b.category) * 1000 +
-                a.value.localeCompare(b.value)
-            )
-            .map((item: SuggestionDto, index: number) => (
-              <SuggestionRow key={index} suggestion={item} />
-            ))}
-        </tbody>
-      </Table>
-    </Container>
+                <option value="">...</option>
+                <option value="MALE_NAME">Male Name</option>
+                <option value="FEMALE_NAME">Female Name</option>
+                <option value="STATEMENT">Statement</option>
+                <option value="PAST_ACTION">Past Action</option>
+                <option value="PRESENT_ACTION">Present Action</option>
+              </Form.Select>
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          {state.editing && (
+            <Button
+              variant="outline-danger"
+              onClick={(_e) => deleteSuggestion()}
+            >
+              Delete
+            </Button>
+          )}
+          <Button variant="outline-success" onClick={(_e) => save()}>
+            Save
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    </>
   );
 };
 
