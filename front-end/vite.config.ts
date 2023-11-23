@@ -8,7 +8,7 @@ export default defineConfig({
   server: {
     proxy: {
       // string shorthand: http://localhost:5173/foo -> http://localhost:4567/foo
-      '/api': process.env.BACKEND_ADDRESS
+      '/api': process.env.NGINX_BACKEND_ADDRESS
     }
   }
 });
