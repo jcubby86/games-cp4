@@ -7,7 +7,7 @@ export default defineConfig({
   server: {
     proxy: {
       // string shorthand: http://localhost:5173/foo -> http://localhost:4567/foo
-      '/api': 'http://localhost:3001'
+      '/api': 'http://192.168.1.11:3001'
     }
   }
 });
