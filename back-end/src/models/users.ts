@@ -16,7 +16,9 @@ export const compareHash = async (password: string, hash: string) => {
 };
 
 export const login = async (username: string, password: string) => {
-  const user = await prisma.user.findUniqueOrThrow({ where: { username } });
+  const user = await prisma.user.findUniqueOrThrow({
+    where: { username: username.toLowerCase() }
+  });
   const success = await compareHash(password, user.password);
   if (!success) {
     throw new AuthenticationError();
@@ -36,7 +38,7 @@ export const createUser = async (username: string, password: string) => {
   const hashed = await hash(password);
   const user: User = await prisma.user.create({
     data: {
-      username: username,
+      username: username.toLowerCase(),
       password: hashed,
       permissions: [SUGGESTIONS_PERM]
     }
