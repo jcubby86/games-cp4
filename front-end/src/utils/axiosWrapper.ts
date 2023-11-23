@@ -1,9 +1,9 @@
-import axios, { AxiosResponse as AxiosRes, AxiosError as Err } from 'axios';
+import axios, { AxiosResponse as AxiosRes } from 'axios';
 
 import { ReqBody, ResBody } from './types';
 
 export type AxiosResponse<Res = never> = AxiosRes<Res, never>;
-export type AxiosError<Res = never> = Err<Res, never>;
+export { AxiosError } from 'axios';
 
 type NoInfer<T> = T extends infer U ? U : never;
 

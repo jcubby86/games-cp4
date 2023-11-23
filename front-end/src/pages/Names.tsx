@@ -4,7 +4,7 @@ import List from '../components/List';
 import RecreateButton from '../components/RecreateButton';
 import StartGame from '../components/StartGame';
 import { useAppState } from '../contexts/AppContext';
-import axios, { AxiosError } from '../utils/axiosWrapper';
+import axios from '../utils/axiosWrapper';
 import { END, JOIN, PLAY, READ, WAIT } from '../utils/constants';
 import { NameVariant } from '../utils/gameVariants';
 import { EntryReqBody, NamesResBody, UpdateGameReqBody } from '../utils/types';
@@ -56,13 +56,8 @@ const Names = (): JSX.Element => {
           phase: '',
           placeholder: ''
         }));
-      } catch (e: unknown) {
-        const err = e as AxiosError;
-        if (err?.response?.status === 400) {
-          alert(err.response.data);
-        } else {
-          alert('An error has occurred');
-        }
+      } catch (err: unknown) {
+        alert('An error has occurred');
       }
     };
 
