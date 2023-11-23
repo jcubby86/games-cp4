@@ -47,21 +47,59 @@ const Suggestion = (): JSX.Element => {
   };
 
   const save = async () => {
-    if (!valueRef.current?.value || !categoryRef.current?.value) return;
-    if (state.editing) {
-      const response = await axios.patch<SuggestionReqBody, SuggestionDto>(
-        '/api/suggestion/' + state.editing,
-        {
-          value: valueRef.current.value,
-          category: categoryRef.current.value
-        }
-      );
+    try {
+      if (!valueRef.current?.value || !categoryRef.current?.value) return;
+      if (state.editing) {
+        const response = await axios.patch<SuggestionReqBody, SuggestionDto>(
+          '/api/suggestion/' + state.editing,
+          {
+            value: valueRef.current.value,
+            category: categoryRef.current.value
+          }
+        );
+        setState((prev) => {
+          const suggestions = prev.suggestions;
+          const edited = suggestions.find((s) => s.uuid === response.data.uuid);
+          if (edited) {
+            edited.value = response.data.value;
+            edited.category = response.data.category;
+          }
+          return {
+            suggestions: [...suggestions],
+            adding: false,
+            editing: undefined
+          };
+        });
+      } else {
+        const response = await axios.post<SuggestionReqBody, SuggestionDto>(
+          '/api/suggestion',
+          {
+            value: valueRef.current.value,
+            category: categoryRef.current.value
+          }
+        );
+        setState((prev) => {
+          return {
+            suggestions: [...prev.suggestions, response.data],
+            adding: false,
+            editing: undefined
+          };
+        });
+      }
+    } catch (err) {
+      return;
+    }
+  };
+
+  const deleteSuggestion = async (suggestion: SuggestionDto) => {
+    try {
+      await axios.delete('/api/suggestion/' + suggestion.uuid);
+
       setState((prev) => {
         const suggestions = prev.suggestions;
-        const edited = suggestions.find((s) => s.uuid === response.data.uuid);
-        if (edited) {
-          edited.value = response.data.value;
-          edited.category = response.data.category;
+        const index = suggestions.findIndex((s) => s.uuid === suggestion.uuid);
+        if (index > -1) {
+          suggestions.splice(index, 1);
         }
         return {
           suggestions: [...suggestions],
@@ -69,39 +107,9 @@ const Suggestion = (): JSX.Element => {
           editing: undefined
         };
       });
-    } else {
-      const response = await axios.post<SuggestionReqBody, SuggestionDto>(
-        '/api/suggestion',
-        {
-          value: valueRef.current.value,
-          category: categoryRef.current.value
-        }
-      );
-      setState((prev) => {
-        return {
-          suggestions: [...prev.suggestions, response.data],
-          adding: false,
-          editing: undefined
-        };
-      });
+    } catch (err) {
+      return;
     }
-  };
-
-  const deleteSuggestion = async (suggestion: SuggestionDto) => {
-    await axios.delete('/api/suggestion/' + suggestion.uuid);
-
-    setState((prev) => {
-      const suggestions = prev.suggestions;
-      const index = suggestions.findIndex((s) => s.uuid === suggestion.uuid);
-      if (index > -1) {
-        suggestions.splice(index, 1);
-      }
-      return {
-        suggestions: [...suggestions],
-        adding: false,
-        editing: undefined
-      };
-    });
   };
 
   const textAreaSize = (text?: string) => {
