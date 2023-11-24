@@ -6,13 +6,6 @@ import Icon from './Icon';
 import axios from '../utils/axiosWrapper';
 import { SuggestionDto, SuggestionReqBody } from '../utils/types';
 
-const formatCategory = (category: string) => {
-  const words = category.split('_');
-  return words
-    .map((s) => s[0].toUpperCase() + s.substring(1).toLowerCase())
-    .join(' ');
-};
-
 interface State {
   adding?: boolean;
   editing?: SuggestionDto;
@@ -139,7 +132,9 @@ const Suggestion = (): JSX.Element => {
     return (
       <tr onClick={(_e) => edit(suggestion)}>
         <td className="text-wrap">{suggestion.value}</td>
-        <td className="text-nowrap">{formatCategory(suggestion.category)}</td>
+        <td className="text-nowrap text-capitalize">
+          {suggestion.category.replace(/[_-]/g, ' ').toLowerCase()}
+        </td>
         <td>
           <Button size="sm" variant="outline-secondary">
             <Icon icon="nf-oct-pencil"></Icon>
@@ -183,7 +178,7 @@ const Suggestion = (): JSX.Element => {
         </Table>
       </Container>
 
-      <Modal show={showModal} onHide={() => cancelEdit()} className='mt-5'>
+      <Modal show={showModal} onHide={() => cancelEdit()} className="mt-5">
         <Modal.Header closeButton>
           <Modal.Title>
             {state.adding ? 'Add Suggestion' : 'Edit Suggestion'}
