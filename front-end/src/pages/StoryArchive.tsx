@@ -69,7 +69,7 @@ export default function StoryArchive(): JSX.Element {
 
   const ListItem = (props: { item: Story; index: number }): JSX.Element => {
     return (
-      <li key={props.index} className="list-group-item bg-light">
+      <li key={props.index} className="list-group-item bg-light text-break">
         <div className="ms-2 me-auto">
           <p className="fw-bold mb-1">{props.item.player.nickname}</p>
           <p>{props.item.value}</p>
