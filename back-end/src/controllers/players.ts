@@ -11,7 +11,7 @@ import { ReqHandler } from '../types/express.js';
  * If the player already has a session, we update the session/player
  * rather than creating a new one.
  */
-const upsetPlayerHandler: ReqHandler<JoinGameReqBody, PlayerDto> = async (
+const upsertPlayerHandler: ReqHandler<JoinGameReqBody, PlayerDto> = async (
   req,
   res,
   next
@@ -25,8 +25,7 @@ const upsetPlayerHandler: ReqHandler<JoinGameReqBody, PlayerDto> = async (
 
     req.session = {
       ...req.session,
-      playerId: req.player.uuid,
-      nowInMinutes: Math.floor(Date.now() / 60e3) //refresh cookie so it won't expire for another 2 hours
+      playerId: req.player.uuid
     };
 
     res.send({ ...req.player });
@@ -65,7 +64,7 @@ const leaveGameHandler: ReqHandler = async (req, res, next) => {
 
 const router = Router();
 router.use(loadPlayer);
-router.post('/', upsetPlayerHandler);
+router.post('/', upsertPlayerHandler);
 router.get('/', getPlayerHandler);
 router.delete('/', leaveGameHandler);
 export default router;

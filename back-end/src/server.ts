@@ -22,9 +22,15 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(
   cookieSession({
     name: 'session',
-    keys: ['secretValue'],
+    keys: [process.env.COOKIE_SECRET ?? 'secretValue'],
     maxAge: 2 * 60 * 60 * 1000 // 2 hours
-  })
+  }),
+  (req, res, next) => {
+    if (req.session) {
+      req.session.nowInMinutes = Math.floor(Date.now() / 60e3);
+    }
+    next();
+  }
 );
 
 if (process.env.NODE_ENV != TEST_ENV) {

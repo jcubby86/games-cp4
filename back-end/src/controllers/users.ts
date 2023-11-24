@@ -16,8 +16,7 @@ const loginHandler: ReqHandler<LoginReqBody, UserResBody> = async (
     req.session = {
       ...req.session,
       userId: user.uuid,
-      permissions: user.permissions,
-      nowInMinutes: Math.floor(Date.now() / 60e3) //refresh cookie
+      permissions: user.permissions
     };
     return res.status(200).send(user);
   } catch (err) {
