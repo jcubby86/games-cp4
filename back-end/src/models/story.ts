@@ -141,7 +141,7 @@ export const getStoryStatus = async (
       prompt: prompts[round],
       prefix: prefixes[round],
       suffix: suffixes[round],
-      placeholder: suggestion,
+      suggestion: suggestion,
       players: waitingOnPlayers
     };
   } else {

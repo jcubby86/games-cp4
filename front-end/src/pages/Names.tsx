@@ -17,13 +17,7 @@ const Names = (): JSX.Element => {
   const pollStatus = async () => {
     try {
       const response = await axios.get<NamesResBody>('/api/names');
-      setState((prev) => ({
-        phase: response.data.phase,
-        players: response.data.players,
-        names: response.data.names,
-        isHost: response.data.isHost,
-        placeholder: prev.placeholder || response.data.placeholder
-      }));
+      setState({ ...response.data });
     } catch (err: unknown) {
       alert('An error has occurred');
     }
@@ -51,11 +45,7 @@ const Names = (): JSX.Element => {
         await axios.put<EntryReqBody>('/api/names', {
           value: entryRef.current.value
         });
-        setState((prev) => ({
-          ...prev,
-          phase: '',
-          placeholder: ''
-        }));
+        setState((prev) => ({ ...prev, phase: '' }));
       } catch (err: unknown) {
         //TODO: improve error handling
         alert('An error has occurred');
@@ -66,7 +56,7 @@ const Names = (): JSX.Element => {
       <form className="w-100" onSubmit={sendEntry}>
         <h3 className="text-center w-100">Enter a name:</h3>
         <input
-          placeholder={state.placeholder}
+          placeholder={state.suggestion?.value}
           ref={entryRef}
           className="form-control"
         />

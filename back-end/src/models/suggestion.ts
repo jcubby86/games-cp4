@@ -1,14 +1,15 @@
 import { Category, Suggestion } from '../.generated/prisma';
 import InvalidRequestError from '../errors/InvalidRequestError';
 import prisma from '../prisma';
-import { SuggestionReqBody } from '../types/domain';
+import { SuggestionDto, SuggestionReqBody } from '../types/domain';
 import { randomElement } from '../utils/utils';
 
-export async function getSuggestion(category: Category): Promise<string> {
-  const suggestions: Suggestion[] = await prisma.suggestion.findMany({
-    where: { category }
+export async function getSuggestion(category: Category): Promise<SuggestionDto> {
+  const suggestions: SuggestionDto[] = await prisma.suggestion.findMany({
+    where: { category },
+    select: { uuid: true, category: true, value: true }
   });
-  return randomElement(suggestions.map((x) => x.value));
+  return randomElement(suggestions);
 }
 
 export async function getAll() {

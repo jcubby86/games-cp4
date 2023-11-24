@@ -135,7 +135,7 @@ describe('getStoryStatus', () => {
       phase: GamePhase.PLAY,
       round: 0,
       prompt: "Man's name:",
-      placeholder: 'suggestion'
+      suggestion: { value: 'suggestion' }
     });
   });
 
@@ -158,7 +158,7 @@ describe('getStoryStatus', () => {
       phase: WAIT,
       round: 0,
       prompt: "Man's name:",
-      placeholder: 'suggestion'
+      suggestion: { value: 'suggestion' }
     });
   });
 

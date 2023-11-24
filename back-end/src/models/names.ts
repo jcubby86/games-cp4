@@ -67,7 +67,7 @@ export const getNameStatus = async (
     return {
       phase: !entry ? GamePhase.PLAY : WAIT,
       players: waitingOnPlayers,
-      placeholder: suggestion
+      suggestion: suggestion
     };
   } else if (game.phase === GamePhase.READ) {
     const entries = await prisma.nameEntry.findMany({

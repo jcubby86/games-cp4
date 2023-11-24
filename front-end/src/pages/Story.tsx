@@ -22,17 +22,10 @@ const Story = (): JSX.Element => {
   const [state, setState] = useState<StoryResBody>(initialState);
   const entryRef = useRef<HTMLTextAreaElement>(null);
 
-  const pollStatus = async (resetPlaceholder = false) => {
+  const pollStatus = async () => {
     try {
       const response = await axios.get<StoryResBody>('/api/story');
-      setState((prev) => ({
-        ...response.data,
-        placeholder: getPlaceholder(
-          resetPlaceholder,
-          prev.placeholder,
-          response.data.placeholder
-        )
-      }));
+      setState({ ...response.data });
     } catch (err: unknown) {
       alert('An error has occurred');
     }
@@ -46,12 +39,6 @@ const Story = (): JSX.Element => {
 
     return () => clearInterval(timer);
   });
-
-  const getPlaceholder = (
-    reset: boolean,
-    old?: string,
-    new_?: string
-  ): string | undefined => (reset || !old ? new_ : old);
 
   const Play = (): JSX.Element => {
     const submit = async (e: React.FormEvent) => {
@@ -67,9 +54,9 @@ const Story = (): JSX.Element => {
         }
 
         await axios.put<EntryReqBody>('/api/story', {
-          value: (entryRef.current?.value || state.placeholder) ?? ''
+          value: (entryRef.current?.value || state.suggestion?.value) ?? ''
         });
-        setState((prev) => ({ ...prev, phase: '', placeholder: '' }));
+        setState((prev) => ({ ...prev, phase: '' }));
 
         if (entryRef.current) {
           entryRef.current.value = '';
@@ -80,12 +67,8 @@ const Story = (): JSX.Element => {
     };
 
     const resetPlaceholder = async (e: React.MouseEvent) => {
-      try {
-        e.preventDefault();
-        pollStatus(true);
-      } catch (err: unknown) {
-        console.error(err);
-      }
+      e.preventDefault();
+      pollStatus();
     };
 
     return (
@@ -95,7 +78,7 @@ const Story = (): JSX.Element => {
           {state.filler} {state.prefix}
         </p>
         <textarea
-          placeholder={state.placeholder}
+          placeholder={state.suggestion?.value}
           ref={entryRef}
           className="form-control"
           rows={3}
@@ -109,7 +92,6 @@ const Story = (): JSX.Element => {
               className="btn btn-success col-9"
             />
             <button
-              type="button"
               className="btn btn-outline-secondary col"
               onClick={resetPlaceholder}
               data-tooltip-id="my-tooltip"
