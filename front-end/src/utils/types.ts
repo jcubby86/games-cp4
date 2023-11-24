@@ -40,7 +40,7 @@ export interface GameStatusResBody extends ResBody {
   code?: string;
   nickname?: string;
   isHost?: boolean;
-  placeholder?: string;
+  suggestion?: SuggestionDto;
 }
 export interface NamesResBody extends GameStatusResBody {
   names?: string[];

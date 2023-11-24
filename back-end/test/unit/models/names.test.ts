@@ -75,7 +75,7 @@ describe('getNameStatus', () => {
 
     expect(result).toMatchObject({
       phase: GamePhase.PLAY,
-      placeholder: 'suggestion'
+      suggestion: { value: 'suggestion' }
     });
   });
 

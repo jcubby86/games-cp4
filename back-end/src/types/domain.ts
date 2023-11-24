@@ -1,10 +1,4 @@
-import {
-  Game,
-  NameEntry,
-  Player,
-  StoryEntry,
-  Suggestion
-} from '../.generated/prisma';
+import { Game, NameEntry, Player, StoryEntry } from '../.generated/prisma';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface ReqBody {}
@@ -40,7 +34,7 @@ export interface GameStatusResBody extends ResBody {
   code?: string;
   nickname?: string;
   isHost?: boolean;
-  placeholder?: string;
+  suggestion?: SuggestionDto;
 }
 export interface NamesResBody extends GameStatusResBody {
   names?: string[];
@@ -61,7 +55,11 @@ export interface StoryArchiveResBody extends ResBody {
   stories: StoryArchive[];
 }
 
-export interface SuggestionDto extends Suggestion, ResBody {}
+export interface SuggestionDto extends ResBody {
+  value: string;
+  category: string;
+  uuid: string;
+}
 export interface SuggestionReqBody extends ReqBody {
   value: string;
   category: string;

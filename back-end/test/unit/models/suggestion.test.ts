@@ -14,7 +14,7 @@ test('oneOption', async () => {
   prismaMock.suggestion.findMany.mockResolvedValue([{ value: 'test' } as any]);
 
   const suggestion = await getSuggestion(Category.STATEMENT);
-  expect(suggestion).toEqual('test');
+  expect(suggestion).toMatchObject({"value": "test"});
 });
 
 test('multipleOptions', async () => {
@@ -25,5 +25,5 @@ test('multipleOptions', async () => {
   ] as any);
 
   const suggestion = await getSuggestion(Category.STATEMENT);
-  expect(suggestion).toEqual('test1');
+  expect(suggestion).toMatchObject({"value": "test1"});
 });
