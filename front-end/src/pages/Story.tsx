@@ -119,7 +119,7 @@ const Story = (): JSX.Element => {
 
     return (
       <div className="w-100">
-        <p className="lh-lg fs-5 px-2 w-100">{state.story}</p>
+        <p className="lh-lg fs-5 px-2 w-100 text-break">{state.story}</p>
         <div className="container-fluid">
           <div className="row gap-4">
             <RecreateButton reset={reset} className="col btn btn-success" />
