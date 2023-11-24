@@ -62,7 +62,7 @@ describe('single player', () => {
     expect(response.body).toMatchObject({
       phase: GamePhase.READ,
       story:
-        'Round 1 and Round 2 were round 3. He said, "Round 4." She said, "Round 5." So they round 6. '
+        'Round 1 and Round 2 were round 3. He said, "Round 4." She said, "Round 5." So they round 6.'
     });
   });
 
@@ -73,7 +73,7 @@ describe('single player', () => {
       .then((response) => {
         expect(response.body.stories[0]).toMatchObject({
           value:
-            'Round 1 and Round 2 were round 3. He said, "Round 4." She said, "Round 5." So they round 6. '
+            'Round 1 and Round 2 were round 3. He said, "Round 4." She said, "Round 5." So they round 6.'
         });
       });
   });
@@ -202,8 +202,8 @@ describe('multiple players', () => {
 
     expect([response1.body.story, response2.body.story]).toEqual(
       expect.arrayContaining([
-        'R1 u1 and R2 u2 were r3 u1. He said, "R4 u2." She said, "R5 u1." So they r6 u2. ',
-        'R1 u2 and R2 u1 were r3 u2. He said, "R4 u1." She said, "R5 u2." So they r6 u1. '
+        'R1 u1 and R2 u2 were r3 u1. He said, "R4 u2." She said, "R5 u1." So they r6 u2.',
+        'R1 u2 and R2 u1 were r3 u2. He said, "R4 u1." She said, "R5 u2." So they r6 u1.'
       ])
     );
   });
@@ -215,8 +215,8 @@ describe('multiple players', () => {
       .then((response) => {
         expect(response.body.stories.map((s: any) => s.value)).toEqual(
           expect.arrayContaining([
-            'R1 u1 and R2 u2 were r3 u1. He said, "R4 u2." She said, "R5 u1." So they r6 u2. ',
-            'R1 u2 and R2 u1 were r3 u2. He said, "R4 u1." She said, "R5 u2." So they r6 u1. '
+            'R1 u1 and R2 u2 were r3 u1. He said, "R4 u2." She said, "R5 u1." So they r6 u2.',
+            'R1 u2 and R2 u1 were r3 u2. He said, "R4 u1." She said, "R5 u2." So they r6 u1.'
           ])
         );
       });

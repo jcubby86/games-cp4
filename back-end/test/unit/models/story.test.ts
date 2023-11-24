@@ -102,13 +102,13 @@ describe('checkRoundCompletion', () => {
     expect(prismaMock.storyEntry.update).toBeCalledTimes(2);
     expect(prismaMock.storyEntry.update).toHaveBeenNthCalledWith(1, {
       data: {
-        finalValue: '11 and 22 were 13 He said, "24" She said, "15" So they 26 '
+        finalValue: '11 and 22 were 13 He said, "24" She said, "15" So they 26'
       },
       where: { id: 1 }
     });
     expect(prismaMock.storyEntry.update).toHaveBeenNthCalledWith(2, {
       data: {
-        finalValue: '21 and 12 were 23 He said, "14" She said, "25" So they 16 '
+        finalValue: '21 and 12 were 23 He said, "14" She said, "25" So they 16'
       },
       where: { id: 2 }
     });
