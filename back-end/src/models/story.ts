@@ -8,7 +8,7 @@ import { lowerFirst, randomNumber, upperFirst } from '../utils/utils.js';
 
 const fillers = ['', '(Man) ', '(Man) and (Woman) ', '', '', ''];
 const prefixes = ['', 'and ', 'were ', 'He said, "', 'She said, "', 'So they '];
-const suffixes = [' ', ' ', ' ', '" ', '" ', ' '];
+const suffixes = [' ', ' ', ' ', '" ', '" ', ''];
 const prompts = [
   "Man's name:",
   "Woman's name:",
