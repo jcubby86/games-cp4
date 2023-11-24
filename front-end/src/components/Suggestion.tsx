@@ -183,7 +183,7 @@ const Suggestion = (): JSX.Element => {
         </Table>
       </Container>
 
-      <Modal show={showModal} onHide={() => cancelEdit()}>
+      <Modal show={showModal} onHide={() => cancelEdit()} className='mt-5'>
         <Modal.Header closeButton>
           <Modal.Title>
             {state.adding ? 'Add Suggestion' : 'Edit Suggestion'}
