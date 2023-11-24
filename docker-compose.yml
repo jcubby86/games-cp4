@@ -22,6 +22,7 @@ services:
       - NODE_PORT=${NODE_PORT:-3000}
       - ADMIN_USERNAME=${ADMIN_USERNAME}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - COOKIE_SECRET=${COOKIE_SECRET}
     restart: unless-stopped
     healthcheck:
       test:  wget --spider --tries=1 --no-verbose http://localhost:${NODE_PORT:-3000}/health
