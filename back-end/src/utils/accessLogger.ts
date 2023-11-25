@@ -9,7 +9,7 @@ import { ReqHandler as Handler } from '../types/express.js';
 export const accessLogger: Handler = async (req, res, next) => {
   res.on('finish', () => {
     if (req.originalUrl.endsWith('/health')) return;
-    console.log(
+    console.info(
       `${new Date().toISOString()} ${req.method} ${req.originalUrl} ${
         res.statusCode
       }`
