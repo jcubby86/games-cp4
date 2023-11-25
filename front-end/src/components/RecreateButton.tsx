@@ -1,5 +1,6 @@
 import { useAppState } from '../contexts/AppContext';
 import axios from '../utils/axiosWrapper';
+import handleError from '../utils/errorHandler';
 import { GameDto, JoinGameReqBody, PlayerDto, ReqBody } from '../utils/types';
 
 interface RecreateProps {
@@ -33,7 +34,10 @@ const RecreateButton = ({ reset, className }: RecreateProps): JSX.Element => {
       });
       reset();
     } catch (err: unknown) {
-      alert('Unable to create game. Please try again in a little bit.');
+      handleError(
+        'Unable to create game. Please try again in a little bit.',
+        err
+      );
     }
   };
 

@@ -36,7 +36,7 @@ export const AppContextProvider = ({ children }: AppContextProviderProps) => {
         gameId: response.data.game.uuid
       });
     } catch (err: unknown) {
-      return;
+      console.error(err);
     }
   };
 

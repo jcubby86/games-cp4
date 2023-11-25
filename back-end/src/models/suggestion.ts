@@ -4,7 +4,9 @@ import prisma from '../prisma';
 import { SuggestionDto, SuggestionReqBody } from '../types/domain';
 import { randomElement } from '../utils/utils';
 
-export async function getSuggestion(category: Category): Promise<SuggestionDto> {
+export async function getSuggestion(
+  category: Category
+): Promise<SuggestionDto> {
   const suggestions: SuggestionDto[] = await prisma.suggestion.findMany({
     where: { category },
     select: { uuid: true, category: true, value: true }
