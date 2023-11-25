@@ -1,4 +1,4 @@
-import { GamePhase } from '../.generated/prisma/index.js';
+import { GamePhase, Prisma } from '../.generated/prisma';
 import CannotJoinGameError from '../errors/CannotJoinGameError.js';
 import prisma from '../prisma.js';
 import { PlayerDto } from '../types/domain.js';
@@ -13,51 +13,60 @@ export const upsertPlayer = async (
   gameUuid: string,
   nickname: string
 ): Promise<PlayerDto> => {
-  const game = await prisma.game.findUnique({
-    where: { uuid: gameUuid }
-  });
-  if (!game) {
-    throw new CannotJoinGameError(
-      `Game with uuid '${gameUuid}' does not exist.`
-    );
-  } else if (game.phase !== GamePhase.JOIN && player?.gameId !== game.id) {
-    throw new CannotJoinGameError(
-      `Game with uuid '${gameUuid}' can no longer be joined.`
-    );
-  }
+  try {
+    const game = await prisma.game.findUnique({
+      where: { uuid: gameUuid }
+    });
+    if (!game) {
+      throw new CannotJoinGameError(
+        `Game with uuid '${gameUuid}' does not exist.`
+      );
+    } else if (game.phase !== GamePhase.JOIN && player?.gameId !== game.id) {
+      throw new CannotJoinGameError(
+        `Game with uuid '${gameUuid}' can no longer be joined.`
+      );
+    }
 
-  if (!player) {
-    player = await prisma.player.create({
-      data: {
-        nickname: nickname,
-        game: {
-          connect: { id: game.id }
+    if (!player) {
+      player = await prisma.player.create({
+        data: {
+          nickname: nickname,
+          game: {
+            connect: { id: game.id }
+          }
         }
-      }
-    });
-  } else {
-    player = await prisma.player.update({
-      where: { id: player.id },
-      data: {
-        nickname: nickname,
-        game: {
-          connect: { id: game.id }
+      });
+    } else {
+      player = await prisma.player.update({
+        where: { id: player.id },
+        data: {
+          nickname: nickname,
+          game: {
+            connect: { id: game.id }
+          }
         }
+      });
+    }
+
+    if (!game.hostId) {
+      await prisma.game.update({
+        where: { id: game.id },
+        data: { host: { connect: { id: player.id } } }
+      });
+      game.hostId = player.id;
+    }
+
+    player.game = game;
+
+    return player;
+  } catch (err) {
+    if (err instanceof Prisma.PrismaClientKnownRequestError) {
+      if (err.code === 'P2002') {
+        throw new CannotJoinGameError('Nickname is already taken.');
       }
-    });
+    }
+    throw err;
   }
-
-  if (!game.hostId) {
-    await prisma.game.update({
-      where: { id: game.id },
-      data: { host: { connect: { id: player.id } } }
-    });
-    game.hostId = player.id;
-  }
-
-  player.game = game;
-
-  return player;
 };
 
 export const leaveGame = async (player?: PlayerDto) => {

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { useAppState } from '../contexts/AppContext';
 import axios from '../utils/axiosWrapper';
+import handleError from '../utils/errorHandler';
 import { gameVariants } from '../utils/gameVariants';
 import generateNickname from '../utils/nicknameGeneration';
 import { GameDto, JoinGameReqBody, PlayerDto } from '../utils/types';
@@ -51,8 +52,7 @@ const Join = (): JSX.Element => {
 
       navigate('/' + response.data.game.type);
     } catch (err: unknown) {
-      //TODO: improve error handling
-      alert('Error joining game');
+      handleError('Error joining game', err);
     }
   };
 
@@ -70,7 +70,7 @@ const Join = (): JSX.Element => {
         return;
       }
     } catch (err: unknown) {
-      console.error('Game not found');
+      console.error(err);
     }
     setState((prev) => ({
       ...prev,

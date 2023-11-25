@@ -17,6 +17,7 @@ const Admin = (): JSX.Element => {
 
       setState({ ...response.data });
     } catch (err: unknown) {
+      console.error(err);
       setState(null);
     }
   };
@@ -36,6 +37,7 @@ const Admin = (): JSX.Element => {
 
       setState({ ...response.data });
     } catch (err: unknown) {
+      console.error(err);
       setShowToast(true);
       return;
     }

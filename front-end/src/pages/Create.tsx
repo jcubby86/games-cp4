@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { useAppState } from '../contexts/AppContext';
 import axios from '../utils/axiosWrapper';
+import handleError from '../utils/errorHandler';
 import { gameVariants } from '../utils/gameVariants';
 import generateNickname from '../utils/nicknameGeneration';
 import {
@@ -54,7 +55,10 @@ const Create = (): JSX.Element => {
       });
       navigate('/' + gameResponse.data.type);
     } catch (err: unknown) {
-      alert('Unable to create game. Please try again in a little bit.');
+      handleError(
+        'Unable to create game. Please try again in a little bit.',
+        err
+      );
     }
   };
 

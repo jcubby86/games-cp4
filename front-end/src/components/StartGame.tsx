@@ -4,6 +4,7 @@ import List from './List';
 import { useAppState } from '../contexts/AppContext';
 import axios from '../utils/axiosWrapper';
 import { PLAY } from '../utils/constants';
+import handleError from '../utils/errorHandler';
 import { UpdateGameReqBody } from '../utils/types';
 
 interface StartGameProps {
@@ -30,7 +31,7 @@ const StartGame = ({
       });
       setPhase();
     } catch (err: unknown) {
-      console.error(err);
+      handleError('Unable to start game. Please try again', err);
     }
   };
 

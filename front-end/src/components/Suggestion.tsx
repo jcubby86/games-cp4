@@ -4,6 +4,7 @@ import { Button, Container, Form, Modal, Table } from 'react-bootstrap';
 
 import Icon from './Icon';
 import axios from '../utils/axiosWrapper';
+import handleError from '../utils/errorHandler';
 import { SuggestionDto, SuggestionReqBody } from '../utils/types';
 
 interface State {
@@ -25,6 +26,7 @@ const Suggestion = (): JSX.Element => {
 
       setState({ suggestions: response.data });
     } catch (err: unknown) {
+      console.error(err);
       setState({ suggestions: [] });
     }
   };
@@ -91,7 +93,7 @@ const Suggestion = (): JSX.Element => {
       }
       setShowModal(false);
     } catch (err) {
-      return;
+      handleError('Error saving suggestion', err);
     }
   };
 
@@ -116,7 +118,7 @@ const Suggestion = (): JSX.Element => {
       });
       setShowModal(false);
     } catch (err) {
-      return;
+      handleError('Error deleting suggestion', err);
     }
   };
 

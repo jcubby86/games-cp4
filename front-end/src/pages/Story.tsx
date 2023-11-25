@@ -10,6 +10,7 @@ import StartGame from '../components/StartGame';
 import { useAppState } from '../contexts/AppContext';
 import axios from '../utils/axiosWrapper';
 import { JOIN, PLAY, READ, WAIT } from '../utils/constants';
+import handleError from '../utils/errorHandler';
 import { StoryVariant } from '../utils/gameVariants';
 import { EntryReqBody, StoryResBody } from '../utils/types';
 
@@ -27,7 +28,7 @@ const Story = (): JSX.Element => {
       const response = await axios.get<StoryResBody>('/api/story');
       setState({ ...response.data });
     } catch (err: unknown) {
-      alert('An error has occurred');
+      console.error(err);
     }
   };
 
@@ -62,7 +63,7 @@ const Story = (): JSX.Element => {
           entryRef.current.value = '';
         }
       } catch (err: unknown) {
-        alert('An error has occurred');
+        handleError('An error has occurred', err);
       }
     };
 
