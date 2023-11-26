@@ -15,6 +15,7 @@ import {
 } from './errors/errorHandlers.js';
 import { accessLogger } from './utils/accessLogger.js';
 import { TEST_ENV } from './utils/constants.js';
+import seed from './utils/seed.js';
 
 const app = express();
 app.use(bodyParser.json());
@@ -43,6 +44,11 @@ app.use('/api/story', storyController);
 app.use('/api/names', namesController);
 app.use('/api/user', userController);
 app.use('/api/suggestion', suggestionController);
+
+app.post('/api/seed', async (req, res) => {
+  await seed();
+  res.sendStatus(200);
+});
 
 app.get('/health', async (req, res) => {
   res.sendStatus(200);

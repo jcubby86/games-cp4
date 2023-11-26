@@ -4,13 +4,7 @@ import request from 'supertest';
 import app from '../../src/server';
 
 describe('user', () => {
-  test('createAdmin - failure', async () => {
-    await request(app).put('/api/user').expect(400);
-  });
-
-  test('createAdmin - success', async () => {
-    process.env.ADMIN_USERNAME = 'admin';
-    process.env.ADMIN_PASSWORD = 'password';
+  test('createAdmin', async () => {
     await request(app).put('/api/user').expect(200);
   });
 

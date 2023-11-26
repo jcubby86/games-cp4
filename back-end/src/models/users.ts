@@ -1,6 +1,6 @@
 import * as bcrypt from 'bcrypt';
 
-import { User } from '../.generated/prisma';
+import { Prisma, User } from '../.generated/prisma';
 import AuthenticationError from '../errors/AuthenticationError';
 import prisma from '../prisma';
 import { SUGGESTIONS_PERM } from '../utils/constants';
@@ -31,19 +31,36 @@ export const login = async (username: string, password: string) => {
   }
 };
 
-export const createUser = async (username: string, password: string) => {
+export const createUser = async (username?: string, password?: string) => {
   if (!username || !password) {
     throw new AuthenticationError('User credentials not provided');
   }
-  const hashed = await hash(password);
-  const user: User = await prisma.user.create({
-    data: {
-      username: username.toLowerCase(),
-      password: hashed,
-      permissions: [SUGGESTIONS_PERM]
+  try {
+    const hashed = await hash(password);
+    const user: User = await prisma.user.create({
+      data: {
+        username: username.toLowerCase(),
+        password: hashed,
+        permissions: [SUGGESTIONS_PERM]
+      }
+    });
+    return {
+      uuid: user.uuid,
+      username: username,
+      permissions: user.permissions
+    };
+  } catch (err) {
+    if (err instanceof Prisma.PrismaClientKnownRequestError) {
+      if (err.code === 'P2002') {
+        return;
+      }
     }
-  });
-  return { uuid: user.uuid, username: username, permissions: user.permissions };
+    throw err;
+  }
+};
+
+export const createAdminUser = async () => {
+  await createUser(process.env.ADMIN_USERNAME, process.env.ADMIN_PASSWORD);
 };
 
 export const get = async (uuid: string) => {

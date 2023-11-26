@@ -6,9 +6,10 @@ import app from '../../src/server';
 const agent = requestAgent(app);
 
 beforeAll(async () => {
+  await request(app).put('/api/user').expect(200);
   await agent
     .post('/api/user')
-    .send({ username: 'username', password: 'password' });
+    .send({ username: 'admin', password: 'password' });
 });
 
 describe('getSuggestions', () => {

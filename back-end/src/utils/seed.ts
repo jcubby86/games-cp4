@@ -1,7 +1,7 @@
-import { SUGGESTIONS_PERM } from './constants';
 import { Category } from '../.generated/prisma';
-import { hash } from '../models/users';
-import prisma from '../prisma';
+import { addSuggestions } from '../models/suggestion';
+import { createAdminUser } from '../models/users';
+import 'dotenv/config';
 
 const actions_past = [
   'So they threw coins off the top of the space needle trying to hit people. But soon upgraded to water balloons',
@@ -155,40 +155,38 @@ const statements = [
   "I'm not as think as you drunk I am, ocifer"
 ];
 
-export const main = async () => {
-  const hashed = await hash('password');
-  await prisma.user.create({
-    data: {
-      username: 'username',
-      password: hashed,
-      permissions: [SUGGESTIONS_PERM]
-    }
-  });
+const seed = async () => {
+  try {
+    await createAdminUser();
 
-  const all: { category: Category; value: string }[] = [
-    ...actions_past.map((s) => ({
-      category: Category.PAST_ACTION,
-      value: s
-    })),
-    ...actions_present.map((s) => ({
-      category: Category.PRESENT_ACTION,
-      value: s
-    })),
-    ...statements.map((s) => ({
-      category: Category.STATEMENT,
-      value: s
-    })),
-    ...male_names.map((s) => ({
-      category: Category.MALE_NAME,
-      value: s
-    })),
-    ...female_names.map((s) => ({
-      category: Category.FEMALE_NAME,
-      value: s
-    }))
-  ];
+    const all: { category: Category; value: string }[] = [
+      ...actions_past.map((s) => ({
+        category: Category.PAST_ACTION,
+        value: s
+      })),
+      ...actions_present.map((s) => ({
+        category: Category.PRESENT_ACTION,
+        value: s
+      })),
+      ...statements.map((s) => ({
+        category: Category.STATEMENT,
+        value: s
+      })),
+      ...male_names.map((s) => ({
+        category: Category.MALE_NAME,
+        value: s
+      })),
+      ...female_names.map((s) => ({
+        category: Category.FEMALE_NAME,
+        value: s
+      }))
+    ];
 
-  await prisma.suggestion.createMany({
-    data: all
-  });
+    await addSuggestions(all);
+  } catch (err) {
+    console.error(err);
+    return;
+  }
 };
+
+export default seed;
