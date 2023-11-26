@@ -1,8 +1,7 @@
 import { Router } from 'express';
 
-import { Prisma } from '../.generated/prisma/index.js';
 import AuthenticationError from '../errors/AuthenticationError.js';
-import { createUser, get, login } from '../models/users.js';
+import { createAdminUser, get, login } from '../models/users.js';
 import { LoginReqBody, ReqBody, UserResBody } from '../types/domain.js';
 import { ReqHandler } from '../types/express.js';
 
@@ -26,17 +25,9 @@ const loginHandler: ReqHandler<LoginReqBody, UserResBody> = async (
 
 const createAdminHandler: ReqHandler = async (req, res) => {
   try {
-    if (!process.env.ADMIN_USERNAME || !process.env.ADMIN_PASSWORD) {
-      return res.sendStatus(400);
-    }
-    await createUser(process.env.ADMIN_USERNAME, process.env.ADMIN_PASSWORD);
+    await createAdminUser();
     return res.sendStatus(200);
   } catch (err) {
-    if (err instanceof Prisma.PrismaClientKnownRequestError) {
-      if (err.code === 'P2002') {
-        return res.sendStatus(200);
-      }
-    }
     if (err instanceof AuthenticationError) {
       return res
         .status(401)

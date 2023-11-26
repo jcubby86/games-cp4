@@ -1,5 +1,5 @@
 import { Prisma } from '../src/.generated/prisma';
-import { main } from '../src/utils/seed';
+import main from '../src/utils/seed';
 
 main().catch((err) => {
   if (err instanceof Prisma.PrismaClientKnownRequestError) {
