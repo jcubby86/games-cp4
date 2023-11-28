@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { useEffect, useReducer, useRef, useState } from 'react';
+import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { Button, Container, Form, Modal, Table } from 'react-bootstrap';
 
 import Icon from './Icon';
@@ -34,8 +34,20 @@ const suggestionReducer = (
   }
 };
 
+const sortSuggestions = (suggestions: SuggestionDto[]) => {
+  return suggestions.sort(
+    (a, b) =>
+      a.category.localeCompare(b.category) * 1000 +
+      a.value.localeCompare(b.value)
+  );
+};
+
 const Suggestion = (): JSX.Element => {
   const [suggestions, dispatch] = useReducer(suggestionReducer, []);
+  const sortedSuggestions = useMemo(
+    () => sortSuggestions(suggestions),
+    [suggestions]
+  );
   const [editing, setEditing] = useState<SuggestionDto | undefined>(undefined);
   const [showModal, setShowModal] = useState(false);
   const [validated, setValidated] = useState(false);
@@ -150,15 +162,9 @@ const Suggestion = (): JSX.Element => {
             </tr>
           </thead>
           <tbody>
-            {suggestions
-              .sort(
-                (a, b) =>
-                  a.category.localeCompare(b.category) * 1000 +
-                  a.value.localeCompare(b.value)
-              )
-              .map((item: SuggestionDto, index: number) => (
-                <SuggestionRow key={index} suggestion={item} />
-              ))}
+            {sortedSuggestions.map((item: SuggestionDto, index: number) => (
+              <SuggestionRow key={index} suggestion={item} />
+            ))}
           </tbody>
         </Table>
       </Container>
