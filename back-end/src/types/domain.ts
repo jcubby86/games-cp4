@@ -1,6 +1,5 @@
 import { Game, NameEntry, Player, StoryEntry } from '../.generated/prisma';
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface ReqBody {}
 export interface ResBody {
   error?: string;
