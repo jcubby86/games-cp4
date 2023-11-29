@@ -1,21 +1,56 @@
-import { createContext, useContext, useEffect, useState } from 'react';
-
 import {
-  AppContextProps,
-  AppContextProviderProps,
-  AppState
-} from './AppContextTypes';
+  Dispatch,
+  createContext,
+  useContext,
+  useEffect,
+  useReducer
+} from 'react';
+
 import axios from '../utils/axiosWrapper';
 import { logError } from '../utils/errorHandler';
 import { PlayerDto } from '../utils/types';
 
-export const AppContext = createContext<AppContextProps>({
-  appState: {},
-  setAppState: () => {}
-});
+export interface AppState {
+  nickname?: string;
+  gameCode?: string;
+  gameType?: string;
+  playerId?: string;
+  gameId?: string;
+}
 
-export const AppContextProvider = ({ children }: AppContextProviderProps) => {
-  const [appState, setAppState] = useState<AppState>({});
+type Action = { type: 'leave' } | { type: 'join'; player: PlayerDto };
+
+const reducer = (prev: AppState, action: Action): AppState => {
+  switch (action.type) {
+    case 'leave':
+      return {
+        ...prev,
+        gameCode: undefined,
+        gameType: undefined,
+        gameId: undefined
+      };
+    case 'join': {
+      const player = action.player;
+      return {
+        nickname: player.nickname,
+        playerId: player.uuid,
+        gameCode: player.game.code,
+        gameType: player.game.type,
+        gameId: player.game.uuid
+      };
+    }
+  }
+};
+
+const AppContext = createContext<AppState>({});
+const AppDispatchContext = createContext<Dispatch<Action>>(() => {});
+
+export const AppContextProvider = ({
+  children
+}: {
+  children: React.ReactElement;
+}) => {
+  const [context, dispatch] = useReducer(reducer, {});
 
   useEffect(() => {
     const controller = new AbortController();
@@ -24,13 +59,7 @@ export const AppContextProvider = ({ children }: AppContextProviderProps) => {
       try {
         const response = await axios.get<PlayerDto>('/api/player', controller);
 
-        setAppState({
-          nickname: response.data.nickname,
-          playerId: response.data.uuid,
-          gameCode: response.data.game.code,
-          gameType: response.data.game.type,
-          gameId: response.data.game.uuid
-        });
+        dispatch({ type: 'join', player: response.data });
       } catch (err: unknown) {
         logError(err);
       }
@@ -42,16 +71,17 @@ export const AppContextProvider = ({ children }: AppContextProviderProps) => {
   }, []);
 
   return (
-    <AppContext.Provider value={{ appState, setAppState }}>
-      {children}
+    <AppContext.Provider value={context}>
+      <AppDispatchContext.Provider value={dispatch}>
+        {children}
+      </AppDispatchContext.Provider>
     </AppContext.Provider>
   );
 };
 
-export const useAppState = () => {
-  const context = useContext(AppContext);
-  if (context === undefined) {
-    throw new Error('useAppState must be used within an AppContextProvider');
-  }
-  return context;
+export const useAppContext = () => {
+  return {
+    context: useContext(AppContext),
+    dispatchContext: useContext(AppDispatchContext)
+  };
 };

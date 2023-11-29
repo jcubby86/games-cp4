@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import List from '../components/List';
 import RecreateButton from '../components/RecreateButton';
 import StartGame from '../components/StartGame';
-import { useAppState } from '../contexts/AppContext';
+import { useAppContext } from '../contexts/AppContext';
 import axios from '../utils/axiosWrapper';
 import { END, JOIN, PLAY, READ, WAIT } from '../utils/constants';
 import { alertError, logError } from '../utils/errorHandler';
@@ -11,7 +11,7 @@ import { NameVariant } from '../utils/gameVariants';
 import { EntryReqBody, NamesResBody, UpdateGameReqBody } from '../utils/types';
 
 const Names = (): JSX.Element => {
-  const { appState } = useAppState();
+  const { context } = useAppContext();
   const [state, setState] = useState<NamesResBody>({ phase: '' });
   const entryRef = useRef<HTMLInputElement>(null);
 
@@ -78,7 +78,7 @@ const Names = (): JSX.Element => {
     const endGame = async (e: React.MouseEvent) => {
       try {
         e.preventDefault();
-        await axios.put<UpdateGameReqBody>(`/api/game/${appState.gameId}`, {
+        await axios.put<UpdateGameReqBody>(`/api/game/${context.gameId}`, {
           phase: END
         });
         setState((prev) => ({
@@ -94,7 +94,7 @@ const Names = (): JSX.Element => {
       <div className="w-100 d-flex flex-column">
         <div className="w-100">
           <h3 className="text-center w-100">Names:</h3>
-          <List items={state.names ?? []}></List>
+          <List items={state.names ?? []} />
         </div>
 
         {state.isHost && (
@@ -111,7 +111,7 @@ const Names = (): JSX.Element => {
       setState((prev) => ({
         ...prev,
         phase: JOIN,
-        players: [appState.nickname!],
+        players: [context.nickname!],
         isHost: false
       }));
     };
@@ -130,7 +130,7 @@ const Names = (): JSX.Element => {
     return (
       <div className="w-100">
         <h3 className="text-center w-100">Waiting for other players...</h3>
-        {state.phase === WAIT && <List items={state.players}></List>}
+        {state.phase === WAIT && <List items={state.players} />}
       </div>
     );
   };
@@ -142,7 +142,7 @@ const Names = (): JSX.Element => {
         isHost={state.isHost}
         title={NameVariant.title}
         setPhase={() => setState((prev) => ({ ...prev, phase: '' }))}
-      ></StartGame>
+      />
     );
   } else if (state.phase === PLAY) {
     return <Play />;

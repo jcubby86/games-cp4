@@ -74,12 +74,18 @@ export default function StoryArchive(): JSX.Element {
     }
   };
 
-  const ListItem = (props: { item: Story; index: number }): JSX.Element => {
+  const ListItem = ({
+    item,
+    index
+  }: {
+    item: Story;
+    index: number;
+  }): JSX.Element => {
     return (
-      <li key={props.index} className="list-group-item bg-light text-break">
+      <li key={index} className="list-group-item bg-light text-break">
         <div className="ms-2 me-auto">
-          <p className="fw-bold mb-1">{props.item.player.nickname}</p>
-          <p>{props.item.value}</p>
+          <p className="fw-bold mb-1">{item.player.nickname}</p>
+          <p>{item.value}</p>
         </div>
       </li>
     );
@@ -102,13 +108,13 @@ export default function StoryArchive(): JSX.Element {
           <RecreateButton
             reset={() => navigate('/story')}
             className="btn btn-outline-success col"
-          ></RecreateButton>
+          />
           <ShareButton
             className="btn col-2"
             path={getPath()}
             title={'Games: ' + StoryVariant.title}
             text="Read my hilarious story!"
-          ></ShareButton>
+          />
         </div>
       </div>
     </div>

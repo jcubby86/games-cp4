@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { useAppState } from '../contexts/AppContext';
+import { useAppContext } from '../contexts/AppContext';
 import axios from '../utils/axiosWrapper';
 import { alertError } from '../utils/errorHandler';
 import { gameVariants } from '../utils/gameVariants';
@@ -14,7 +14,7 @@ import {
 } from '../utils/types';
 
 const Create = (): JSX.Element => {
-  const { appState, setAppState } = useAppState();
+  const { context, dispatchContext } = useAppContext();
   const [gameType, setGameType] = useState('');
   const nicknameRef = useRef<HTMLInputElement>(null);
   const suggestionRef = useRef(generateNickname());
@@ -39,12 +39,9 @@ const Create = (): JSX.Element => {
         }
       );
 
-      setAppState({
-        nickname: playerResponse.data.nickname,
-        playerId: playerResponse.data.uuid,
-        gameCode: gameResponse.data.code,
-        gameType: gameResponse.data.type,
-        gameId: gameResponse.data.uuid
+      dispatchContext({
+        type: 'join',
+        player: playerResponse.data
       });
       navigate('/' + gameResponse.data.type);
     } catch (err: unknown) {
@@ -83,7 +80,7 @@ const Create = (): JSX.Element => {
             autoCorrect="off"
             placeholder={suggestionRef.current}
             maxLength={30}
-            defaultValue={appState.nickname}
+            defaultValue={context.nickname}
             ref={nicknameRef}
           />
         </div>

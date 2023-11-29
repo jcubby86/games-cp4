@@ -38,7 +38,7 @@ const ShareButton = ({
   if (navigator['share']) {
     return (
       <button onClick={share} className={className}>
-        <Icon icon="nf-fa-share_square_o"></Icon>
+        <Icon icon="nf-fa-share_square_o" />
       </button>
     );
   } else {

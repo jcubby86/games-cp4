@@ -139,7 +139,7 @@ const Suggestion = (): JSX.Element => {
         </td>
         <td>
           <Button size="sm" variant="outline-secondary">
-            <Icon icon="nf-oct-pencil"></Icon>
+            <Icon icon="nf-oct-pencil" />
           </Button>
         </td>
       </tr>

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { useAppState } from '../contexts/AppContext';
+import { useAppContext } from '../contexts/AppContext';
 import axios from '../utils/axiosWrapper';
 import { alertError, logError } from '../utils/errorHandler';
 import { gameVariants } from '../utils/gameVariants';
@@ -14,8 +14,8 @@ type JoinState =
   | { validity: 'unknown' | 'invalid' };
 
 const Join = (): JSX.Element => {
-  const { appState, setAppState } = useAppState();
-  const [code, setCode] = useState(appState.gameCode ?? '');
+  const { context, dispatchContext } = useAppContext();
+  const [code, setCode] = useState(context.gameCode ?? '');
   const [state, setState] = useState<JoinState>({ validity: 'unknown' });
   const nicknameRef = useRef<HTMLInputElement>(null);
   const suggestionRef = useRef(generateNickname());
@@ -36,12 +36,9 @@ const Join = (): JSX.Element => {
         }
       );
 
-      setAppState({
-        nickname: response.data.nickname,
-        playerId: response.data.uuid,
-        gameCode: response.data.game.code,
-        gameType: response.data.game.type,
-        gameId: response.data.game.uuid
+      dispatchContext({
+        type: 'join',
+        player: response.data
       });
 
       navigate('/' + response.data.game.type);
@@ -51,8 +48,8 @@ const Join = (): JSX.Element => {
   };
 
   useEffect(() => {
-    setCode(appState.gameCode ?? code);
-  }, [appState.gameCode]);
+    setCode(context.gameCode ?? code);
+  }, [context.gameCode]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -118,7 +115,7 @@ const Join = (): JSX.Element => {
             autoCorrect="off"
             placeholder={suggestionRef.current}
             maxLength={30}
-            defaultValue={appState.nickname}
+            defaultValue={context.nickname}
             ref={nicknameRef}
           />
         </div>
@@ -128,7 +125,7 @@ const Join = (): JSX.Element => {
           type="submit"
           className="form-control btn btn-success col-12 mt-3"
           value={
-            state.validity === 'valid' && appState.gameCode === code
+            state.validity === 'valid' && context.gameCode === code
               ? 'Return to Game'
               : 'Join Game'
           }
