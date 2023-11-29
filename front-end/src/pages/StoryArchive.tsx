@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import RecreateButton from '../components/RecreateButton';
 import ShareButton from '../components/ShareButton';
 import axios from '../utils/axiosWrapper';
+import { logError } from '../utils/errorHandler';
 import { StoryVariant } from '../utils/gameVariants';
 import {
   StoryArchiveResBody as ArchiveResBody,
@@ -22,17 +23,23 @@ export default function StoryArchive(): JSX.Element {
   });
   const navigate = useNavigate();
 
-  const pollStatus = async () => {
-    try {
-      const response = await axios.get<ArchiveResBody>(`/api/story/${gameId}`);
-      setState((prev) => ({ ...response.data, showAll: prev.showAll }));
-    } catch (err: unknown) {
-      console.error(err);
-    }
-  };
-
   useEffect(() => {
-    pollStatus();
+    const controller = new AbortController();
+
+    async function fetchStories() {
+      try {
+        const response = await axios.get<ArchiveResBody>(
+          `/api/story/${gameId}`,
+          controller
+        );
+        setState((prev) => ({ ...response.data, showAll: prev.showAll }));
+      } catch (err: unknown) {
+        logError(err);
+      }
+    }
+
+    fetchStories();
+    return () => controller.abort();
   }, []);
 
   const playerEntry = stories?.find((story) => playerId === story.player.id);

@@ -10,7 +10,7 @@ import StartGame from '../components/StartGame';
 import { useAppState } from '../contexts/AppContext';
 import axios from '../utils/axiosWrapper';
 import { JOIN, PLAY, READ, WAIT } from '../utils/constants';
-import handleError from '../utils/errorHandler';
+import { alertError, logError } from '../utils/errorHandler';
 import { StoryVariant } from '../utils/gameVariants';
 import { EntryReqBody, StoryResBody } from '../utils/types';
 
@@ -23,22 +23,27 @@ const Story = (): JSX.Element => {
   const [state, setState] = useState<StoryResBody>(initialState);
   const entryRef = useRef<HTMLTextAreaElement>(null);
 
-  const pollStatus = async () => {
+  const pollStatus = async (controller?: AbortController) => {
     try {
-      const response = await axios.get<StoryResBody>('/api/story');
+      const response = await axios.get<StoryResBody>('/api/story', controller);
       setState({ ...response.data });
     } catch (err: unknown) {
-      console.error(err);
+      logError(err);
     }
   };
 
   useEffect(() => {
-    if (!state.phase) pollStatus();
+    const controller = new AbortController();
+
+    if (!state.phase) pollStatus(controller);
     const timer = setInterval(() => {
-      if (state.phase === JOIN || state.phase === WAIT) pollStatus();
+      if (state.phase === JOIN || state.phase === WAIT) pollStatus(controller);
     }, 3000);
 
-    return () => clearInterval(timer);
+    return () => {
+      controller.abort();
+      clearInterval(timer);
+    };
   });
 
   const Play = (): JSX.Element => {
@@ -63,7 +68,7 @@ const Story = (): JSX.Element => {
           entryRef.current.value = '';
         }
       } catch (err: unknown) {
-        handleError('An error has occurred', err);
+        alertError('An error has occurred', err);
       }
     };
 
@@ -113,7 +118,7 @@ const Story = (): JSX.Element => {
       setState((prev) => ({
         ...prev,
         phase: JOIN,
-        players: [appState.nickname],
+        players: [appState.nickname!],
         isHost: false
       }));
     };

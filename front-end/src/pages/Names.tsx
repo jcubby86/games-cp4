@@ -6,7 +6,7 @@ import StartGame from '../components/StartGame';
 import { useAppState } from '../contexts/AppContext';
 import axios from '../utils/axiosWrapper';
 import { END, JOIN, PLAY, READ, WAIT } from '../utils/constants';
-import handleError from '../utils/errorHandler';
+import { alertError, logError } from '../utils/errorHandler';
 import { NameVariant } from '../utils/gameVariants';
 import { EntryReqBody, NamesResBody, UpdateGameReqBody } from '../utils/types';
 
@@ -15,23 +15,28 @@ const Names = (): JSX.Element => {
   const [state, setState] = useState<NamesResBody>({ phase: '' });
   const entryRef = useRef<HTMLInputElement>(null);
 
-  const pollStatus = async () => {
+  const pollStatus = async (controller?: AbortController) => {
     try {
-      const response = await axios.get<NamesResBody>('/api/names');
+      const response = await axios.get<NamesResBody>('/api/names', controller);
       setState({ ...response.data });
     } catch (err: unknown) {
-      console.error(err);
+      logError(err);
     }
   };
 
   useEffect(() => {
-    if (!state.phase) pollStatus();
+    const controller = new AbortController();
+
+    if (!state.phase) pollStatus(controller);
     const timer = setInterval(() => {
       if (state.phase === JOIN || state.phase === WAIT || state.phase === READ)
-        pollStatus();
+        pollStatus(controller);
     }, 3000);
 
-    return () => clearInterval(timer);
+    return () => {
+      controller.abort();
+      clearInterval(timer);
+    };
   });
 
   const Play = (): JSX.Element => {
@@ -48,7 +53,7 @@ const Names = (): JSX.Element => {
         });
         setState((prev) => ({ ...prev, phase: '' }));
       } catch (err: unknown) {
-        handleError('Error saving entry', err);
+        alertError('Error saving entry', err);
       }
     };
 
@@ -81,7 +86,7 @@ const Names = (): JSX.Element => {
           phase: END
         }));
       } catch (err: unknown) {
-        handleError('Error updating game', err);
+        alertError('Error updating game', err);
       }
     };
 
@@ -106,7 +111,7 @@ const Names = (): JSX.Element => {
       setState((prev) => ({
         ...prev,
         phase: JOIN,
-        players: [appState.nickname],
+        players: [appState.nickname!],
         isHost: false
       }));
     };

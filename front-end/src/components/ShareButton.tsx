@@ -1,4 +1,5 @@
 import Icon from './Icon';
+import { logError } from '../utils/errorHandler';
 
 interface ShareProps {
   path: string;
@@ -24,7 +25,7 @@ const ShareButton = ({
         });
       }
     } catch (err: unknown) {
-      console.error(err);
+      logError(err);
     }
   };
 

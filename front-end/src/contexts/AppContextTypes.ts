@@ -1,9 +1,9 @@
 export interface AppState {
-  nickname: string;
-  gameCode: string;
-  gameType: string;
-  playerId: string;
-  gameId: string;
+  nickname?: string;
+  gameCode?: string;
+  gameType?: string;
+  playerId?: string;
+  gameId?: string;
 }
 export interface AppContextProps {
   appState: AppState;

@@ -1,6 +1,6 @@
 import { useAppState } from '../contexts/AppContext';
 import axios from '../utils/axiosWrapper';
-import handleError from '../utils/errorHandler';
+import { alertError } from '../utils/errorHandler';
 import { GameDto, JoinGameReqBody, PlayerDto, ReqBody } from '../utils/types';
 
 interface RecreateProps {
@@ -20,7 +20,7 @@ const RecreateButton = ({ reset, className }: RecreateProps): JSX.Element => {
       const playerResponse = await axios.post<JoinGameReqBody, PlayerDto>(
         '/api/player',
         {
-          nickname: appState.nickname,
+          nickname: appState.nickname!,
           uuid: gameResponse.data.uuid
         }
       );
@@ -34,7 +34,7 @@ const RecreateButton = ({ reset, className }: RecreateProps): JSX.Element => {
       });
       reset();
     } catch (err: unknown) {
-      handleError(
+      alertError(
         'Unable to create game. Please try again in a little bit.',
         err
       );

@@ -3,42 +3,36 @@ import { useNavigate } from 'react-router-dom';
 
 import { useAppState } from '../contexts/AppContext';
 import axios from '../utils/axiosWrapper';
-import handleError from '../utils/errorHandler';
+import { alertError, logError } from '../utils/errorHandler';
 import { gameVariants } from '../utils/gameVariants';
 import generateNickname from '../utils/nicknameGeneration';
 import { GameDto, JoinGameReqBody, PlayerDto } from '../utils/types';
 import { eqIgnoreCase as eq } from '../utils/utils';
 
-interface JoinState {
-  nickname: string;
-  gameCode: string;
-  gameId?: string;
-  gameType?: string;
-  valid?: boolean;
-}
+type JoinState =
+  | { validity: 'valid'; gameId: string; gameType: string }
+  | { validity: 'unknown' | 'invalid' };
 
 const Join = (): JSX.Element => {
-  const suggestionRef = useRef(generateNickname());
   const { appState, setAppState } = useAppState();
-  const [state, setState] = useState<JoinState>({
-    nickname: appState.nickname,
-    gameCode: appState.gameCode,
-    gameId: appState.gameId
-  });
+  const [code, setCode] = useState(appState.gameCode ?? '');
+  const [state, setState] = useState<JoinState>({ validity: 'unknown' });
+  const nicknameRef = useRef<HTMLInputElement>(null);
+  const suggestionRef = useRef(generateNickname());
   const navigate = useNavigate();
 
   const joinGame = async (e: React.FormEvent) => {
     try {
       e.preventDefault();
-      if (state.gameCode?.length !== 4) {
+      if (state.validity !== 'valid') {
         return;
       }
 
       const response = await axios.post<JoinGameReqBody, PlayerDto>(
         '/api/player',
         {
-          nickname: state.nickname || suggestionRef.current,
-          uuid: state.gameId ?? ''
+          nickname: nicknameRef.current?.value || suggestionRef.current,
+          uuid: state.gameId
         }
       );
 
@@ -52,38 +46,40 @@ const Join = (): JSX.Element => {
 
       navigate('/' + response.data.game.type);
     } catch (err: unknown) {
-      handleError('Error joining game', err);
+      alertError('Error joining game', err);
     }
-  };
-
-  const checkGameType = async (code: string) => {
-    try {
-      if (code.length === 4) {
-        const result = await axios.get<GameDto>(`/api/game/${code}`);
-        setState((prev) => ({
-          ...prev,
-          gameCode: code,
-          gameType: result.data.type,
-          gameId: result.data.uuid,
-          valid: true
-        }));
-        return;
-      }
-    } catch (err: unknown) {
-      console.error(err);
-    }
-    setState((prev) => ({
-      ...prev,
-      gameCode: code,
-      gameId: undefined,
-      valid: code.length === 4 ? false : undefined
-    }));
   };
 
   useEffect(() => {
-    setState((prev) => ({ ...prev, nickname: appState.nickname }));
-    checkGameType(appState.gameCode);
-  }, [appState]);
+    setCode(appState.gameCode ?? code);
+  }, [appState.gameCode]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    async function checkGameType(code: string) {
+      try {
+        if (code.length === 4) {
+          const result = await axios.get<GameDto>(
+            `/api/game/${code}`,
+            controller
+          );
+          setState({
+            gameType: result.data.type,
+            gameId: result.data.uuid,
+            validity: 'valid'
+          });
+        } else {
+          setState({ validity: 'unknown' });
+        }
+      } catch (err: unknown) {
+        logError(err);
+        setState({ validity: 'invalid' });
+      }
+    }
+
+    checkGameType(code);
+    return () => controller.abort();
+  }, [code]);
 
   return (
     <div>
@@ -101,10 +97,10 @@ const Join = (): JSX.Element => {
             autoCorrect="off"
             placeholder="abxy"
             maxLength={4}
-            value={state.gameCode}
+            value={code}
             onChange={(e) => {
               e.preventDefault();
-              checkGameType(e.target.value.toLowerCase());
+              setCode(e.target.value.toLowerCase());
             }}
           />
         </div>
@@ -122,30 +118,29 @@ const Join = (): JSX.Element => {
             autoCorrect="off"
             placeholder={suggestionRef.current}
             maxLength={30}
-            value={state.nickname}
-            onChange={(e) => {
-              e.preventDefault();
-              setState((prev) => ({ ...prev, nickname: e.target.value }));
-            }}
+            defaultValue={appState.nickname}
+            ref={nicknameRef}
           />
         </div>
 
         <input
-          disabled={!state.valid}
+          disabled={state.validity !== 'valid'}
           type="submit"
           className="form-control btn btn-success col-12 mt-3"
           value={
-            state.valid &&
-            appState.gameCode &&
-            appState.gameCode === state.gameCode
+            state.validity === 'valid' && appState.gameCode === code
               ? 'Return to Game'
               : 'Join Game'
           }
         />
-        <div className={state.gameId ? 'text-muted' : 'text-danger'}>
-          {gameVariants.find((v) => eq(v.type, state.gameType))?.title ??
-            (state.valid === false && 'Game not found')}
-        </div>
+        {state.validity === 'valid' && (
+          <div className="text-muted">
+            {gameVariants.find((v) => eq(v.type, state.gameType))?.title}
+          </div>
+        )}
+        {state.validity === 'invalid' && (
+          <div className="text-danger">Game not found</div>
+        )}
       </form>
     </div>
   );

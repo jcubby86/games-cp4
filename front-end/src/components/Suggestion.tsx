@@ -4,7 +4,7 @@ import { Button, Container, Form, Modal, Table } from 'react-bootstrap';
 
 import Icon from './Icon';
 import axios from '../utils/axiosWrapper';
-import handleError from '../utils/errorHandler';
+import { alertError, logError } from '../utils/errorHandler';
 import { SuggestionDto, SuggestionReqBody } from '../utils/types';
 
 type Action =
@@ -54,16 +54,6 @@ const Suggestion = (): JSX.Element => {
   const valueRef = useRef<HTMLTextAreaElement>(null);
   const categoryRef = useRef<HTMLSelectElement>(null);
 
-  const fetchSuggestions = async () => {
-    try {
-      const response = await axios.get<SuggestionDto[]>('/api/suggestion');
-      dispatch({ type: 'init', suggestions: response.data });
-    } catch (err: unknown) {
-      console.error(err);
-      dispatch({ type: 'init', suggestions: [] });
-    }
-  };
-
   const openModal = (suggestion?: SuggestionDto) => {
     setShowModal(true);
     setValidated(false);
@@ -102,7 +92,7 @@ const Suggestion = (): JSX.Element => {
       }
       closeModal();
     } catch (err) {
-      handleError('Error saving suggestion', err);
+      alertError('Error saving suggestion', err);
     }
   };
 
@@ -113,12 +103,27 @@ const Suggestion = (): JSX.Element => {
       dispatch({ type: 'delete', uuid: editing.uuid });
       closeModal();
     } catch (err) {
-      handleError('Error deleting suggestion', err);
+      alertError('Error deleting suggestion', err);
     }
   };
 
   useEffect(() => {
+    const controller = new AbortController();
+    async function fetchSuggestions() {
+      try {
+        const response = await axios.get<SuggestionDto[]>(
+          '/api/suggestion',
+          controller
+        );
+        dispatch({ type: 'init', suggestions: response.data });
+      } catch (err: unknown) {
+        logError(err);
+      }
+    }
+
     fetchSuggestions();
+
+    return () => controller.abort();
   }, []);
 
   const SuggestionRow = ({

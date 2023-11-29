@@ -6,42 +6,39 @@ import {
   AppState
 } from './AppContextTypes';
 import axios from '../utils/axiosWrapper';
+import { logError } from '../utils/errorHandler';
 import { PlayerDto } from '../utils/types';
 
-const initialAppState: AppState = {
-  nickname: '',
-  playerId: '',
-  gameCode: '',
-  gameType: '',
-  gameId: ''
-};
-
 export const AppContext = createContext<AppContextProps>({
-  appState: initialAppState,
+  appState: {},
   setAppState: () => {}
 });
 
 export const AppContextProvider = ({ children }: AppContextProviderProps) => {
-  const [appState, setAppState] = useState<AppState>(initialAppState);
-
-  const fetchPlayer = async () => {
-    try {
-      const response = await axios.get<PlayerDto>('/api/player');
-
-      setAppState({
-        nickname: response.data.nickname,
-        playerId: response.data.uuid,
-        gameCode: response.data.game.code,
-        gameType: response.data.game.type,
-        gameId: response.data.game.uuid
-      });
-    } catch (err: unknown) {
-      console.error(err);
-    }
-  };
+  const [appState, setAppState] = useState<AppState>({});
 
   useEffect(() => {
+    const controller = new AbortController();
+
+    async function fetchPlayer() {
+      try {
+        const response = await axios.get<PlayerDto>('/api/player', controller);
+
+        setAppState({
+          nickname: response.data.nickname,
+          playerId: response.data.uuid,
+          gameCode: response.data.game.code,
+          gameType: response.data.game.type,
+          gameId: response.data.game.uuid
+        });
+      } catch (err: unknown) {
+        logError(err);
+      }
+    }
+
     fetchPlayer();
+
+    return () => controller.abort();
   }, []);
 
   return (

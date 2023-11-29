@@ -3,6 +3,7 @@ import { Toast, ToastContainer } from 'react-bootstrap';
 
 import Suggestion from '../components/Suggestion';
 import axios from '../utils/axiosWrapper';
+import { logError } from '../utils/errorHandler';
 import { LoginReqBody, UserResBody } from '../utils/types';
 
 const Admin = (): JSX.Element => {
@@ -10,17 +11,6 @@ const Admin = (): JSX.Element => {
   const [showToast, setShowToast] = useState(false);
   const usernameRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
-
-  const fetchAdmin = async () => {
-    try {
-      const response = await axios.get<UserResBody>('/api/user');
-
-      setState({ ...response.data });
-    } catch (err: unknown) {
-      console.error(err);
-      setState(null);
-    }
-  };
 
   const login = async (e: React.FormEvent) => {
     try {
@@ -37,14 +27,27 @@ const Admin = (): JSX.Element => {
 
       setState({ ...response.data });
     } catch (err: unknown) {
-      console.error(err);
+      logError(err);
       setShowToast(true);
       return;
     }
   };
 
   useEffect(() => {
-    fetchAdmin();
+    const controller = new AbortController();
+
+    async function fetchUser() {
+      try {
+        const response = await axios.get<UserResBody>('/api/user', controller);
+        setState({ ...response.data });
+      } catch (err: unknown) {
+        logError(err);
+      }
+    }
+
+    fetchUser();
+
+    return () => controller.abort();
   }, []);
 
   if (state?.uuid) {

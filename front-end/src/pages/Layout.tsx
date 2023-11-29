@@ -4,7 +4,7 @@ import Icon from '../components/Icon';
 import { useAppState } from '../contexts/AppContext';
 import { AppState } from '../contexts/AppContextTypes';
 import axios from '../utils/axiosWrapper';
-import handleError from '../utils/errorHandler';
+import { alertError } from '../utils/errorHandler';
 
 const Layout = (): JSX.Element => {
   const navigate = useNavigate();
@@ -20,7 +20,7 @@ const Layout = (): JSX.Element => {
       });
       navigate('/');
     } catch (err: unknown) {
-      handleError('Error leaving game, please try again', err);
+      alertError('Error leaving game, please try again', err);
     }
   };
 

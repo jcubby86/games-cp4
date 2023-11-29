@@ -1,16 +1,23 @@
-import { AxiosError } from 'axios';
+import { AxiosError, CanceledError } from 'axios';
 
-const handleError = (message: string, err: unknown): void => {
-  if (err instanceof AxiosError) {
+export const logError = (err: unknown): void => {
+  if (err instanceof CanceledError) {
+    return;
+  }
+  console.error(err);
+};
+
+export const alertError = (message: string, err: unknown): void => {
+  if (err instanceof CanceledError) {
+    return;
+  } else if (err instanceof AxiosError) {
     if (message && err.response?.data?.error) {
       alert(message + ': ' + err.response.data.error);
       return;
-    } else if (err.response?.data?.error) {
-      alert(err.response.data.error);
+    } else {
+      alert(message + ': ' + err.code);
       return;
     }
   }
   alert(message);
 };
-
-export default handleError;
