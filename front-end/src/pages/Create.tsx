@@ -2,23 +2,20 @@ import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { useAppContext } from '../contexts/AppContext';
+import useJoinGame from '../hooks/useJoinGame';
 import axios from '../utils/axiosWrapper';
 import { alertError } from '../utils/errorHandler';
 import { gameVariants } from '../utils/gameVariants';
 import generateNickname from '../utils/nicknameGeneration';
-import {
-  CreateGameReqBody as CreateGameReq,
-  GameDto as Game,
-  JoinGameReqBody as JoinGameReq,
-  PlayerDto
-} from '../utils/types';
+import { CreateGameReqBody, GameDto } from '../utils/types';
 
 const Create = (): JSX.Element => {
-  const { context, dispatchContext } = useAppContext();
+  const { context } = useAppContext();
   const [gameType, setGameType] = useState('');
   const nicknameRef = useRef<HTMLInputElement>(null);
   const suggestionRef = useRef(generateNickname());
   const navigate = useNavigate();
+  const joinGame = useJoinGame();
 
   const createGame = async (e: React.FormEvent) => {
     try {
@@ -28,21 +25,14 @@ const Create = (): JSX.Element => {
         return;
       }
 
-      const gameResponse = await axios.post<CreateGameReq, Game>('/api/game', {
-        type: gameType
-      });
-      const playerResponse = await axios.post<JoinGameReq, PlayerDto>(
-        '/api/player',
-        {
-          nickname: nicknameRef.current?.value || suggestionRef.current,
-          uuid: gameResponse.data.uuid
-        }
+      const gameResponse = await axios.post<CreateGameReqBody, GameDto>(
+        '/api/game',
+        { type: gameType }
       );
-
-      dispatchContext({
-        type: 'join',
-        player: playerResponse.data
-      });
+      await joinGame(
+        nicknameRef.current?.value || suggestionRef.current,
+        gameResponse.data.uuid
+      );
       navigate('/' + gameResponse.data.type);
     } catch (err: unknown) {
       alertError(

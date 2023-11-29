@@ -40,7 +40,7 @@ export default function StoryArchive(): JSX.Element {
 
     fetchStories();
     return () => controller.abort();
-  }, []);
+  }, [gameId]);
 
   const playerEntry = stories?.find((story) => playerId === story.player.id);
   const Items = (): JSX.Element => {
@@ -50,7 +50,7 @@ export default function StoryArchive(): JSX.Element {
       return (
         <>
           {stories?.map((item, index) => {
-            return <ListItem item={item} index={index} />;
+            return <ListItem item={item} index={index} key={index} />;
           })}
         </>
       );

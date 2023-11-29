@@ -2,11 +2,12 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { useAppContext } from '../contexts/AppContext';
+import useJoinGame from '../hooks/useJoinGame';
 import axios from '../utils/axiosWrapper';
 import { alertError, logError } from '../utils/errorHandler';
 import { gameVariants } from '../utils/gameVariants';
 import generateNickname from '../utils/nicknameGeneration';
-import { GameDto, JoinGameReqBody, PlayerDto } from '../utils/types';
+import { GameDto } from '../utils/types';
 import { eqIgnoreCase as eq } from '../utils/utils';
 
 type JoinState =
@@ -14,41 +15,33 @@ type JoinState =
   | { validity: 'unknown' | 'invalid' };
 
 const Join = (): JSX.Element => {
-  const { context, dispatchContext } = useAppContext();
+  const { context } = useAppContext();
   const [code, setCode] = useState(context.gameCode ?? '');
   const [state, setState] = useState<JoinState>({ validity: 'unknown' });
   const nicknameRef = useRef<HTMLInputElement>(null);
   const suggestionRef = useRef(generateNickname());
   const navigate = useNavigate();
+  const joinGame = useJoinGame();
 
-  const joinGame = async (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     try {
       e.preventDefault();
       if (state.validity !== 'valid') {
         return;
       }
 
-      const response = await axios.post<JoinGameReqBody, PlayerDto>(
-        '/api/player',
-        {
-          nickname: nicknameRef.current?.value || suggestionRef.current,
-          uuid: state.gameId
-        }
+      const player = await joinGame(
+        nicknameRef.current?.value || suggestionRef.current,
+        state.gameId
       );
-
-      dispatchContext({
-        type: 'join',
-        player: response.data
-      });
-
-      navigate('/' + response.data.game.type);
+      navigate('/' + player.game.type);
     } catch (err: unknown) {
       alertError('Error joining game', err);
     }
   };
 
   useEffect(() => {
-    setCode(context.gameCode ?? code);
+    setCode((c) => context.gameCode ?? c);
   }, [context.gameCode]);
 
   useEffect(() => {
@@ -80,7 +73,7 @@ const Join = (): JSX.Element => {
 
   return (
     <div>
-      <form className="row gap-3" onSubmit={joinGame}>
+      <form className="row gap-3" onSubmit={submit}>
         <div className="col p-0">
           <label htmlFor="codeInput" className="form-label">
             Code:
