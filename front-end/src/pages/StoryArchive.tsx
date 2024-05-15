@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import RecreateButton from '../components/RecreateButton';
 import ShareButton from '../components/ShareButton';
 import axios from '../utils/axiosWrapper';
+import { logError } from '../utils/errorHandler';
 import { StoryVariant } from '../utils/gameVariants';
 import {
   StoryArchiveResBody as ArchiveResBody,
@@ -22,18 +23,24 @@ export default function StoryArchive(): JSX.Element {
   });
   const navigate = useNavigate();
 
-  const pollStatus = async () => {
-    try {
-      const response = await axios.get<ArchiveResBody>(`/api/story/${gameId}`);
-      setState((prev) => ({ ...response.data, showAll: prev.showAll }));
-    } catch (err: unknown) {
-      console.error(err);
-    }
-  };
-
   useEffect(() => {
-    pollStatus();
-  }, []);
+    const controller = new AbortController();
+
+    async function fetchStories() {
+      try {
+        const response = await axios.get<ArchiveResBody>(
+          `/api/story/${gameId}`,
+          controller
+        );
+        setState((prev) => ({ ...response.data, showAll: prev.showAll }));
+      } catch (err: unknown) {
+        logError(err);
+      }
+    }
+
+    fetchStories();
+    return () => controller.abort();
+  }, [gameId]);
 
   const playerEntry = stories?.find((story) => playerId === story.player.id);
   const Items = (): JSX.Element => {
@@ -43,7 +50,7 @@ export default function StoryArchive(): JSX.Element {
       return (
         <>
           {stories?.map((item, index) => {
-            return <ListItem item={item} index={index} />;
+            return <ListItem item={item} index={index} key={index} />;
           })}
         </>
       );
@@ -67,12 +74,18 @@ export default function StoryArchive(): JSX.Element {
     }
   };
 
-  const ListItem = (props: { item: Story; index: number }): JSX.Element => {
+  const ListItem = ({
+    item,
+    index
+  }: {
+    item: Story;
+    index: number;
+  }): JSX.Element => {
     return (
-      <li key={props.index} className="list-group-item bg-light text-break">
+      <li key={index} className="list-group-item bg-light text-break">
         <div className="ms-2 me-auto">
-          <p className="fw-bold mb-1">{props.item.player.nickname}</p>
-          <p>{props.item.value}</p>
+          <p className="fw-bold mb-1">{item.player.nickname}</p>
+          <p>{item.value}</p>
         </div>
       </li>
     );
@@ -95,13 +108,13 @@ export default function StoryArchive(): JSX.Element {
           <RecreateButton
             reset={() => navigate('/story')}
             className="btn btn-outline-success col"
-          ></RecreateButton>
+          />
           <ShareButton
             className="btn col-2"
             path={getPath()}
             title={'Games: ' + StoryVariant.title}
             text="Read my hilarious story!"
-          ></ShareButton>
+          />
         </div>
       </div>
     </div>

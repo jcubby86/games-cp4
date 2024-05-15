@@ -1,76 +1,52 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { useAppState } from '../contexts/AppContext';
+import { useAppContext } from '../contexts/AppContext';
+import useJoinGame from '../hooks/useJoinGame';
 import axios from '../utils/axiosWrapper';
-import handleError from '../utils/errorHandler';
+import { alertError } from '../utils/errorHandler';
 import { gameVariants } from '../utils/gameVariants';
 import generateNickname from '../utils/nicknameGeneration';
-import {
-  CreateGameReqBody as CreateGameReq,
-  GameDto as Game,
-  JoinGameReqBody as JoinGameReq,
-  PlayerDto
-} from '../utils/types';
-
-interface CreateState {
-  nickname: string;
-  selected: string;
-}
+import { CreateGameReqBody, GameDto } from '../utils/types';
 
 const Create = (): JSX.Element => {
-  const { appState, setAppState } = useAppState();
+  const { context } = useAppContext();
+  const [gameType, setGameType] = useState('');
+  const nicknameRef = useRef<HTMLInputElement>(null);
   const suggestionRef = useRef(generateNickname());
-  const [state, setState] = useState<CreateState>({
-    nickname: appState.nickname,
-    selected: ''
-  });
   const navigate = useNavigate();
+  const joinGame = useJoinGame();
 
   const createGame = async (e: React.FormEvent) => {
     try {
       e.preventDefault();
-      if (!gameVariants.map((t) => t.type).includes(state.selected)) {
+      if (!gameVariants.map((t) => t.type).includes(gameType)) {
         alert('Please select a game type');
         return;
       }
 
-      const gameResponse = await axios.post<CreateGameReq, Game>('/api/game', {
-        type: state.selected
-      });
-      const playerResponse = await axios.post<JoinGameReq, PlayerDto>(
-        '/api/player',
-        {
-          nickname: state.nickname || suggestionRef.current,
-          uuid: gameResponse.data.uuid
-        }
+      const gameResponse = await axios.post<CreateGameReqBody, GameDto>(
+        '/api/game',
+        { type: gameType }
       );
-
-      setAppState({
-        nickname: playerResponse.data.nickname,
-        playerId: playerResponse.data.uuid,
-        gameCode: gameResponse.data.code,
-        gameType: gameResponse.data.type,
-        gameId: gameResponse.data.uuid
-      });
+      await joinGame(
+        nicknameRef.current?.value || suggestionRef.current,
+        gameResponse.data.uuid
+      );
       navigate('/' + gameResponse.data.type);
     } catch (err: unknown) {
-      handleError(
+      alertError(
         'Unable to create game. Please try again in a little bit.',
         err
       );
     }
   };
 
-  useEffect(() => {
-    setState((prev) => ({ ...prev, nickname: appState.nickname }));
-  }, [appState]);
-
   const Description = (): JSX.Element => {
-    if (state.selected) {
+    if (gameType) {
       return (
         <p className="p-3 text-wrap">
-          {gameVariants.find((v) => v.type === state.selected)?.description}
+          {gameVariants.find((v) => v.type === gameType)?.description}
         </p>
       );
     } else {
@@ -94,11 +70,8 @@ const Create = (): JSX.Element => {
             autoCorrect="off"
             placeholder={suggestionRef.current}
             maxLength={30}
-            value={state.nickname}
-            onChange={(e) => {
-              e.preventDefault();
-              setState((prev) => ({ ...prev, nickname: e.target.value }));
-            }}
+            defaultValue={context.nickname}
+            ref={nicknameRef}
           />
         </div>
         <div
@@ -111,13 +84,13 @@ const Create = (): JSX.Element => {
               <button
                 className={
                   'btn opacity-75 ' +
-                  (state.selected === variant.type
+                  (gameType === variant.type
                     ? 'btn-primary'
                     : 'btn-outline-primary')
                 }
                 onClick={(e) => {
                   e.preventDefault();
-                  setState((prev) => ({ ...prev, selected: variant.type }));
+                  setGameType(variant.type);
                 }}
                 key={variant.type}
               >

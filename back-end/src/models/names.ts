@@ -4,7 +4,7 @@ import SaveEntryError from '../errors/SaveEntryError';
 import prisma from '../prisma';
 import { GameDto, NamesResBody, PlayerDto } from '../types/domain.js';
 import { WAIT, quoteRegex } from '../utils/constants.js';
-import { randomElement, shuffleArray, upperFirst } from '../utils/utils.js';
+import { randomElement, upperFirst } from '../utils/utils.js';
 
 const categories = [Category.MALE_NAME, Category.FEMALE_NAME];
 
@@ -71,9 +71,9 @@ export const getNameStatus = async (
     };
   } else if (game.phase === GamePhase.READ) {
     const entries = await prisma.nameEntry.findMany({
-      where: { gameId: game.id }
+      where: { gameId: game.id },
+      orderBy: { order: 'asc' }
     });
-    shuffleArray(entries);
     return {
       phase: GamePhase.READ,
       names: entries.map((elem) => elem.name),
@@ -118,7 +118,8 @@ export const saveNameEntry = async (
         name,
         normalized,
         playerId: player.id,
-        gameId: game.id
+        gameId: game.id,
+        order: Math.floor(Math.random() * 1000000)
       }
     });
   } catch (err) {

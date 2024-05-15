@@ -1,26 +1,24 @@
 import { Link, Outlet, useNavigate } from 'react-router-dom';
 
 import Icon from '../components/Icon';
-import { useAppState } from '../contexts/AppContext';
-import { AppState } from '../contexts/AppContextTypes';
+import { useAppContext } from '../contexts/AppContext';
 import axios from '../utils/axiosWrapper';
-import handleError from '../utils/errorHandler';
+import { alertError } from '../utils/errorHandler';
 
 const Layout = (): JSX.Element => {
   const navigate = useNavigate();
-  const { appState, setAppState } = useAppState();
+  const { context, dispatchContext } = useAppContext();
 
   const leaveGame = async (e: React.FormEvent) => {
     try {
       e.preventDefault();
 
       await axios.delete('/api/player');
-      setAppState((state: AppState): AppState => {
-        return { ...state, gameCode: '', gameType: '', gameId: '' };
-      });
+      dispatchContext({ type: 'leave' });
+
       navigate('/');
     } catch (err: unknown) {
-      handleError('Error leaving game, please try again', err);
+      alertError('Error leaving game, please try again', err);
     }
   };
 
@@ -33,10 +31,10 @@ const Layout = (): JSX.Element => {
               <i className="nf-fa-home px-3"></i>Games
             </Link>
 
-            {appState.gameCode && (
+            {context.gameCode && (
               <div className="d-flex justify-content-start">
                 <button className="btn btn-outline-danger" onClick={leaveGame}>
-                  <Icon icon="nf-mdi-account_off" className="pe-2"></Icon>
+                  <Icon icon="nf-mdi-account_off" className="pe-2" />
                   Leave Game
                 </button>
               </div>
@@ -58,7 +56,7 @@ const Layout = (): JSX.Element => {
           target="_blank"
           rel="noreferrer"
         >
-          <Icon icon="nf-cod-github_inverted"></Icon>
+          <Icon icon="nf-cod-github_inverted" />
         </a>
         <a
           href="https://www.linkedin.com/in/jacob-bastian-643033206/"
@@ -66,7 +64,7 @@ const Layout = (): JSX.Element => {
           target="_blank"
           rel="noreferrer"
         >
-          <Icon icon="nf-fa-linkedin_square"></Icon>
+          <Icon icon="nf-fa-linkedin_square" />
         </a>
         <a
           href="mailto:games@jmbastian.com?&subject=Hello!&body=I'm reaching out about"
@@ -74,7 +72,7 @@ const Layout = (): JSX.Element => {
           target="_blank"
           rel="noreferrer"
         >
-          <Icon icon="nf-mdi-email_variant"></Icon>
+          <Icon icon="nf-mdi-email_variant" />
         </a>
         <Link
           to="/admin"

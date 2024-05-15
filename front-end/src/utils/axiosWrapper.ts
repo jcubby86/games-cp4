@@ -4,12 +4,14 @@ import { ReqBody, ResBody } from './types';
 
 export type AxiosResponse<Res = never> = AxiosRes<Res, never>;
 export { AxiosError } from 'axios';
+export { CanceledError } from 'axios';
 
 type NoInfer<T> = T extends infer U ? U : never;
 
 interface AxiosWrapper {
   get: <Res extends ResBody | ResBody[] | never = never>(
-    path: string
+    path: string,
+    abortController?: AbortController
   ) => Promise<AxiosResponse<Res>>;
   post: <
     Req extends ReqBody | never = never,
@@ -38,8 +40,10 @@ interface AxiosWrapper {
 }
 
 const wrapper: AxiosWrapper = {
-  get: <Res>(path: string) => {
-    return axios.get<Res, AxiosResponse<Res>, never>(path);
+  get: <Res>(path: string, abortController?: AbortController) => {
+    return axios.get<Res, AxiosResponse<Res>, never>(path, {
+      signal: abortController?.signal
+    });
   },
   post: <Req, Res>(path: string, data: Req) => {
     return axios.post<Res, AxiosResponse<Res>, Req>(path, data);

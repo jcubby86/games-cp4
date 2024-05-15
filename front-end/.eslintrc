@@ -1,12 +1,15 @@
 {
   "root": true,
   "parser": "@typescript-eslint/parser",
-  "plugins": ["@typescript-eslint", "import", "react-hooks", "react-refresh"],
+  "plugins": ["@typescript-eslint", "import"],
   "extends": [
     "eslint:recommended",
     "plugin:@typescript-eslint/recommended",
     "plugin:import/recommended",
-    "plugin:import/typescript"
+    "plugin:import/typescript",
+    "plugin:react/recommended",
+    "plugin:react/jsx-runtime",
+    "plugin:react-hooks/recommended"
   ],
   "rules": {
     "@typescript-eslint/no-unused-vars": "warn",
@@ -15,7 +18,7 @@
       "warn",
       {
         "ignoreCase": false,
-        "ignoreDeclarationSort": true, // don"t want to sort import lines, use eslint-plugin-import instead
+        "ignoreDeclarationSort": true, // don't want to sort import lines, use eslint-plugin-import instead
         "ignoreMemberSort": false,
         "memberSyntaxSortOrder": ["none", "all", "multiple", "single"],
         "allowSeparatedGroups": true
@@ -49,6 +52,9 @@
       "typescript": {
         "project": "./tsconfig.json"
       }
+    },
+    "react": {
+      "version": "detect"
     }
   }
 }

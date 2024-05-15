@@ -1,4 +1,5 @@
 import Icon from './Icon';
+import { logError } from '../utils/errorHandler';
 
 interface ShareProps {
   path: string;
@@ -24,7 +25,7 @@ const ShareButton = ({
         });
       }
     } catch (err: unknown) {
-      console.error(err);
+      logError(err);
     }
   };
 
@@ -37,7 +38,7 @@ const ShareButton = ({
   if (navigator['share']) {
     return (
       <button onClick={share} className={className}>
-        <Icon icon="nf-fa-share_square_o"></Icon>
+        <Icon icon="nf-fa-share_square_o" />
       </button>
     );
   } else {

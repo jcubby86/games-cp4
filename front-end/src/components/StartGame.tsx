@@ -1,10 +1,10 @@
 import { useRef } from 'react';
 
 import List from './List';
-import { useAppState } from '../contexts/AppContext';
+import { useAppContext } from '../contexts/AppContext';
 import axios from '../utils/axiosWrapper';
 import { PLAY } from '../utils/constants';
-import handleError from '../utils/errorHandler';
+import { alertError } from '../utils/errorHandler';
 import { UpdateGameReqBody } from '../utils/types';
 
 interface StartGameProps {
@@ -20,18 +20,18 @@ const StartGame = ({
   players,
   isHost
 }: StartGameProps): JSX.Element => {
-  const { appState } = useAppState();
+  const { context } = useAppContext();
   const codeRef = useRef<HTMLInputElement>(null);
 
   const startGame = async (e: React.FormEvent) => {
     try {
       e.preventDefault();
-      await axios.put<UpdateGameReqBody>(`/api/game/${appState.gameId}`, {
+      await axios.put<UpdateGameReqBody>(`/api/game/${context.gameId}`, {
         phase: PLAY
       });
       setPhase();
     } catch (err: unknown) {
-      handleError('Unable to start game. Please try again', err);
+      alertError('Unable to start game. Please try again', err);
     }
   };
 
@@ -49,7 +49,7 @@ const StartGame = ({
             <input
               className="form-control"
               type="text"
-              value={appState.gameCode}
+              value={context.gameCode}
               aria-label="game code"
               readOnly
               id="gameCode"
@@ -83,7 +83,7 @@ const StartGame = ({
           )}
         </form>
         <h3 className="text-center mt-5">Players:</h3>
-        <List items={players}></List>
+        <List items={players} />
       </div>
     </>
   );

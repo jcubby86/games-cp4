@@ -1,7 +1,8 @@
-import { useAppState } from '../contexts/AppContext';
+import { useAppContext } from '../contexts/AppContext';
+import useJoinGame from '../hooks/useJoinGame';
 import axios from '../utils/axiosWrapper';
-import handleError from '../utils/errorHandler';
-import { GameDto, JoinGameReqBody, PlayerDto, ReqBody } from '../utils/types';
+import { alertError } from '../utils/errorHandler';
+import { GameDto, ReqBody } from '../utils/types';
 
 interface RecreateProps {
   reset: () => void;
@@ -9,39 +10,27 @@ interface RecreateProps {
 }
 
 const RecreateButton = ({ reset, className }: RecreateProps): JSX.Element => {
-  const { appState, setAppState } = useAppState();
+  const { context } = useAppContext();
+  const joinGame = useJoinGame();
 
   const recreateGame = async (e: React.MouseEvent) => {
     try {
       e.preventDefault();
       const gameResponse = await axios.post<ReqBody, GameDto>(
-        `/api/game/${appState.gameId}/recreate`
-      );
-      const playerResponse = await axios.post<JoinGameReqBody, PlayerDto>(
-        '/api/player',
-        {
-          nickname: appState.nickname,
-          uuid: gameResponse.data.uuid
-        }
+        `/api/game/${context.gameId}/recreate`
       );
 
-      setAppState({
-        nickname: playerResponse.data.nickname,
-        playerId: playerResponse.data.uuid,
-        gameCode: gameResponse.data.code,
-        gameType: gameResponse.data.type,
-        gameId: gameResponse.data.uuid
-      });
+      await joinGame(context.nickname!, gameResponse.data.uuid);
       reset();
     } catch (err: unknown) {
-      handleError(
+      alertError(
         'Unable to create game. Please try again in a little bit.',
         err
       );
     }
   };
 
-  if (appState.gameCode) {
+  if (context.gameId) {
     return (
       <button className={className} onClick={recreateGame}>
         Play Again

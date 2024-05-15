@@ -7,10 +7,10 @@ import List from '../components/List';
 import RecreateButton from '../components/RecreateButton';
 import ShareButton from '../components/ShareButton';
 import StartGame from '../components/StartGame';
-import { useAppState } from '../contexts/AppContext';
+import { useAppContext } from '../contexts/AppContext';
 import axios from '../utils/axiosWrapper';
 import { JOIN, PLAY, READ, WAIT } from '../utils/constants';
-import handleError from '../utils/errorHandler';
+import { alertError, logError } from '../utils/errorHandler';
 import { StoryVariant } from '../utils/gameVariants';
 import { EntryReqBody, StoryResBody } from '../utils/types';
 
@@ -19,26 +19,31 @@ const initialState = {
 };
 
 const Story = (): JSX.Element => {
-  const { appState } = useAppState();
+  const { context } = useAppContext();
   const [state, setState] = useState<StoryResBody>(initialState);
   const entryRef = useRef<HTMLTextAreaElement>(null);
 
-  const pollStatus = async () => {
+  const pollStatus = async (controller?: AbortController) => {
     try {
-      const response = await axios.get<StoryResBody>('/api/story');
+      const response = await axios.get<StoryResBody>('/api/story', controller);
       setState({ ...response.data });
     } catch (err: unknown) {
-      console.error(err);
+      logError(err);
     }
   };
 
   useEffect(() => {
-    if (!state.phase) pollStatus();
+    const controller = new AbortController();
+
+    if (!state.phase) pollStatus(controller);
     const timer = setInterval(() => {
-      if (state.phase === JOIN || state.phase === WAIT) pollStatus();
+      if (state.phase === JOIN || state.phase === WAIT) pollStatus(controller);
     }, 3000);
 
-    return () => clearInterval(timer);
+    return () => {
+      controller.abort();
+      clearInterval(timer);
+    };
   });
 
   const Play = (): JSX.Element => {
@@ -63,7 +68,7 @@ const Story = (): JSX.Element => {
           entryRef.current.value = '';
         }
       } catch (err: unknown) {
-        handleError('An error has occurred', err);
+        alertError('An error has occurred', err);
       }
     };
 
@@ -99,7 +104,7 @@ const Story = (): JSX.Element => {
               data-tooltip-content="New Suggestion"
               data-tooltip-place="bottom"
             >
-              <Icon icon="nf-fa-refresh" className="flex-grow-1"></Icon>
+              <Icon icon="nf-fa-refresh" className="flex-grow-1" />
             </button>
           </div>
         </div>
@@ -113,7 +118,7 @@ const Story = (): JSX.Element => {
       setState((prev) => ({
         ...prev,
         phase: JOIN,
-        players: [appState.nickname],
+        players: [context.nickname!],
         isHost: false
       }));
     };
@@ -125,17 +130,17 @@ const Story = (): JSX.Element => {
           <div className="row gap-4">
             <RecreateButton reset={reset} className="col btn btn-success" />
             <Link
-              to={`/story/${appState.gameId}`}
+              to={`/story/${context.gameId}`}
               className="col btn btn-outline-success"
             >
               See all
             </Link>
             <ShareButton
               className="btn col-2"
-              path={`/story/${appState.gameId}/${appState.playerId}`}
+              path={`/story/${context.gameId}/${context.playerId}`}
               title={'Games: ' + StoryVariant.title}
               text="Read my hilarious story!"
-            ></ShareButton>
+            />
           </div>
         </div>
       </div>
@@ -146,7 +151,7 @@ const Story = (): JSX.Element => {
     return (
       <div className="w-100">
         <h3 className="text-center w-100">Waiting for other players...</h3>
-        {state.phase === WAIT && <List items={state.players}></List>}
+        {state.phase === WAIT && <List items={state.players} />}
       </div>
     );
   };
@@ -158,7 +163,7 @@ const Story = (): JSX.Element => {
         isHost={state.isHost}
         title={StoryVariant.title}
         setPhase={() => setState((prev) => ({ ...prev, phase: '' }))}
-      ></StartGame>
+      />
     );
   } else if (state.phase === PLAY) {
     return <Play />;

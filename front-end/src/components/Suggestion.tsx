@@ -1,50 +1,67 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { Button, Container, Form, Modal, Table } from 'react-bootstrap';
 
 import Icon from './Icon';
 import axios from '../utils/axiosWrapper';
-import handleError from '../utils/errorHandler';
+import { alertError, logError } from '../utils/errorHandler';
 import { SuggestionDto, SuggestionReqBody } from '../utils/types';
 
-interface State {
-  adding?: boolean;
-  editing?: SuggestionDto;
-  suggestions: SuggestionDto[];
-}
+type Action =
+  | { type: 'init'; suggestions: SuggestionDto[] }
+  | { type: 'add' | 'update'; suggestion: SuggestionDto }
+  | { type: 'delete'; uuid: string };
+
+const suggestionReducer = (
+  prev: SuggestionDto[],
+  action: Action
+): SuggestionDto[] => {
+  switch (action.type) {
+    case 'init':
+      return action.suggestions;
+    case 'add':
+      return [...prev, action.suggestion];
+    case 'update':
+      return prev.map((old) => {
+        if (old.uuid === action.suggestion.uuid) {
+          return action.suggestion;
+        } else {
+          return old;
+        }
+      });
+    case 'delete':
+      return prev.filter((s) => s.uuid !== action.uuid);
+  }
+};
+
+const sortSuggestions = (suggestions: SuggestionDto[]) => {
+  return suggestions.sort(
+    (a, b) =>
+      a.category.localeCompare(b.category) * 1000 +
+      a.value.localeCompare(b.value)
+  );
+};
 
 const Suggestion = (): JSX.Element => {
-  const [state, setState] = useState<State>({ suggestions: [] });
+  const [suggestions, dispatch] = useReducer(suggestionReducer, []);
+  const sortedSuggestions = useMemo(
+    () => sortSuggestions(suggestions),
+    [suggestions]
+  );
+  const [editing, setEditing] = useState<SuggestionDto | undefined>(undefined);
   const [showModal, setShowModal] = useState(false);
   const [validated, setValidated] = useState(false);
   const valueRef = useRef<HTMLTextAreaElement>(null);
   const categoryRef = useRef<HTMLSelectElement>(null);
 
-  const fetchSuggestions = async () => {
-    try {
-      const response = await axios.get<SuggestionDto[]>('/api/suggestion');
-
-      setState({ suggestions: response.data });
-    } catch (err: unknown) {
-      console.error(err);
-      setState({ suggestions: [] });
-    }
-  };
-
-  const addSuggestion = () => {
-    setState((prev) => ({ ...prev, adding: !prev.adding, editing: undefined }));
+  const openModal = (suggestion?: SuggestionDto) => {
     setShowModal(true);
     setValidated(false);
+    setEditing(suggestion);
   };
 
-  const edit = (suggestion: SuggestionDto) => {
-    setState((prev) => ({ ...prev, editing: suggestion, adding: false }));
-    setShowModal(true);
-    setValidated(false);
-  };
-
-  const cancelEdit = () => {
-    setState((prev) => ({ ...prev, editing: undefined, adding: false }));
+  const closeModal = () => {
+    setEditing(undefined);
     setShowModal(false);
   };
 
@@ -54,28 +71,7 @@ const Suggestion = (): JSX.Element => {
         setValidated(true);
         return;
       }
-      if (state.editing) {
-        const response = await axios.patch<SuggestionReqBody, SuggestionDto>(
-          '/api/suggestion/' + state.editing.uuid,
-          {
-            value: valueRef.current.value,
-            category: categoryRef.current.value
-          }
-        );
-        setState((prev) => {
-          const suggestions = prev.suggestions;
-          const edited = suggestions.find((s) => s.uuid === response.data.uuid);
-          if (edited) {
-            edited.value = response.data.value;
-            edited.category = response.data.category;
-          }
-          return {
-            suggestions: [...suggestions],
-            adding: false,
-            editing: undefined
-          };
-        });
-      } else {
+      if (!editing) {
         const response = await axios.post<SuggestionReqBody, SuggestionDto>(
           '/api/suggestion',
           {
@@ -83,47 +79,51 @@ const Suggestion = (): JSX.Element => {
             category: categoryRef.current.value
           }
         );
-        setState((prev) => {
-          return {
-            suggestions: [...prev.suggestions, response.data],
-            adding: false,
-            editing: undefined
-          };
-        });
+        dispatch({ type: 'add', suggestion: response.data });
+      } else {
+        const response = await axios.patch<SuggestionReqBody, SuggestionDto>(
+          '/api/suggestion/' + editing.uuid,
+          {
+            value: valueRef.current.value,
+            category: categoryRef.current.value
+          }
+        );
+        dispatch({ type: 'update', suggestion: response.data });
       }
-      setShowModal(false);
+      closeModal();
     } catch (err) {
-      handleError('Error saving suggestion', err);
+      alertError('Error saving suggestion', err);
     }
   };
 
   const deleteSuggestion = async () => {
     try {
-      if (!state.editing) return;
-      await axios.delete('/api/suggestion/' + state.editing.uuid);
-
-      setState((prev) => {
-        const suggestions = prev.suggestions;
-        const index = suggestions.findIndex(
-          (s) => s.uuid === state.editing?.uuid
-        );
-        if (index > -1) {
-          suggestions.splice(index, 1);
-        }
-        return {
-          suggestions: [...suggestions],
-          adding: false,
-          editing: undefined
-        };
-      });
-      setShowModal(false);
+      if (!editing) return;
+      await axios.delete('/api/suggestion/' + editing.uuid);
+      dispatch({ type: 'delete', uuid: editing.uuid });
+      closeModal();
     } catch (err) {
-      handleError('Error deleting suggestion', err);
+      alertError('Error deleting suggestion', err);
     }
   };
 
   useEffect(() => {
+    const controller = new AbortController();
+    async function fetchSuggestions() {
+      try {
+        const response = await axios.get<SuggestionDto[]>(
+          '/api/suggestion',
+          controller
+        );
+        dispatch({ type: 'init', suggestions: response.data });
+      } catch (err: unknown) {
+        logError(err);
+      }
+    }
+
     fetchSuggestions();
+
+    return () => controller.abort();
   }, []);
 
   const SuggestionRow = ({
@@ -132,14 +132,14 @@ const Suggestion = (): JSX.Element => {
     suggestion: SuggestionDto;
   }): JSX.Element => {
     return (
-      <tr onClick={(_e) => edit(suggestion)}>
+      <tr onClick={(_e) => openModal(suggestion)}>
         <td className="text-wrap">{suggestion.value}</td>
         <td className="text-nowrap text-capitalize">
           {suggestion.category.replace(/[_-]/g, ' ').toLowerCase()}
         </td>
         <td>
           <Button size="sm" variant="outline-secondary">
-            <Icon icon="nf-oct-pencil"></Icon>
+            <Icon icon="nf-oct-pencil" />
           </Button>
         </td>
       </tr>
@@ -159,7 +159,7 @@ const Suggestion = (): JSX.Element => {
                 <Button
                   size="sm"
                   variant="outline-primary"
-                  onClick={(_e) => addSuggestion()}
+                  onClick={(_e) => openModal()}
                 >
                   <Icon icon="nf-oct-plus" />
                 </Button>
@@ -167,23 +167,17 @@ const Suggestion = (): JSX.Element => {
             </tr>
           </thead>
           <tbody>
-            {state.suggestions
-              .sort(
-                (a, b) =>
-                  a.category.localeCompare(b.category) * 1000 +
-                  a.value.localeCompare(b.value)
-              )
-              .map((item: SuggestionDto, index: number) => (
-                <SuggestionRow key={index} suggestion={item} />
-              ))}
+            {sortedSuggestions.map((item: SuggestionDto, index: number) => (
+              <SuggestionRow key={index} suggestion={item} />
+            ))}
           </tbody>
         </Table>
       </Container>
 
-      <Modal show={showModal} onHide={() => cancelEdit()} className="mt-5">
+      <Modal show={showModal} onHide={() => closeModal()} className="mt-5">
         <Modal.Header closeButton>
           <Modal.Title>
-            {state.adding ? 'Add Suggestion' : 'Edit Suggestion'}
+            {!editing ? 'Add Suggestion' : 'Edit Suggestion'}
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
@@ -194,7 +188,7 @@ const Suggestion = (): JSX.Element => {
                 as="textarea"
                 rows={5}
                 ref={valueRef}
-                defaultValue={state.editing?.value}
+                defaultValue={editing?.value}
                 required
               />
             </Form.Group>
@@ -203,7 +197,7 @@ const Suggestion = (): JSX.Element => {
               <Form.Select
                 aria-label="select category"
                 ref={categoryRef}
-                defaultValue={state.editing?.category}
+                defaultValue={editing?.category}
                 required
               >
                 <option value="">...</option>
@@ -217,7 +211,7 @@ const Suggestion = (): JSX.Element => {
           </Form>
         </Modal.Body>
         <Modal.Footer>
-          {state.editing && (
+          {editing && (
             <Button
               variant="outline-danger"
               onClick={(_e) => deleteSuggestion()}

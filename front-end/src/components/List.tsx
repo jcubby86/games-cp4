@@ -1,8 +1,4 @@
-interface ListProps {
-  items?: string[];
-}
-
-const List = ({ items }: ListProps): JSX.Element => {
+const List = ({ items }: { items?: string[] }): JSX.Element => {
   if (!items || items.length === 0) {
     return <></>;
   }
