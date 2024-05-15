@@ -57,6 +57,7 @@ model Player {
 
 model NameEntry {
   id         Int    @id @default(autoincrement())
+  order      Int    @default(0)
   name       String
   normalized String
 
