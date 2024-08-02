@@ -1,5 +1,5 @@
 <p align="center">
-  A party games web app inspired by jackbox games. This is a new version of the project built with a react front end and a node.js/mongodb back end. See original version of the project <a href="https://github.com/jcubby86/games">here</a>.
+  A party games web app inspired by jackbox games. This is a new version of the project built with a react front end and a node.js/postgresql back end. See original version of the project <a href="https://github.com/jcubby86/games">here</a>.
 </p>
 
 ## Features
@@ -18,48 +18,47 @@
 Using docker compose:
 
 ```yaml
-version: "3"
 services:
   app:
-    image: ghcr.io/jcubby86/games-app:latest
+    build:
+      context: ./front-end
+    image: ghcr.io/jcubby86/games-app:${DOCKER_TAG:-latest}
     ports:
-      - "3020:80"
+      - ${WEB_PORT:-80}:80
     environment:
-      - NGINX_BACKEND_ADDRESS=http://backend:3000
+      - NGINX_BACKEND_ADDRESS=http://backend:${NODE_PORT:-3000}
     restart: unless-stopped
     depends_on: 
       - backend
       - db
 
   backend:
-    image: ghcr.io/jcubby86/games-backend:latest
+    build:
+      context: ./back-end
+    image: ghcr.io/jcubby86/games-backend:${DOCKER_TAG:-latest}
     environment:
-      - MONGO_DB_CONN_STR=mongodb://db/games
-      - NODE_PORT=3000
-    depends_on: 
-      - db
-    healthcheck:
-      test:  wget --spider --tries=1 --no-verbose http://localhost:3000/api/health
-      interval: 5s
-      retries: 5
-      start_period: 5s
-      timeout: 10s
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@db:5432/prisma?schema=public
+      - NODE_ENV=${NODE_ENV}
+      - NODE_PORT=${NODE_PORT:-3000}
+      - ADMIN_USERNAME=${ADMIN_USERNAME}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - COOKIE_SECRET=${COOKIE_SECRET}
     restart: unless-stopped
+    healthcheck:
+      test:  wget --spider --tries=1 --no-verbose http://localhost:${NODE_PORT:-3000}/health
+    depends_on:
+      db:
+        condition: service_healthy
       
   db:
-    image: mongo:latest
-    volumes:
-    - /data/mongo:/data/db
+    image: postgres:latest
     restart: unless-stopped
-    
-  db-seed:
-    image: byrnedo/alpine-curl
-    command: "-X POST --silent http://backend:3000/api/seed"
-    depends_on:
-      backend:
-        condition: service_healthy
-      db:
-        condition: service_started
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - /portainer/postgres/games-${NODE_ENV}:/var/lib/postgresql/data
+    healthcheck:
+      test: /usr/bin/pg_isready
 ```
 
 Environment variables for each container can be configured for each service to run on different ports

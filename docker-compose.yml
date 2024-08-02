@@ -26,10 +26,6 @@ services:
     restart: unless-stopped
     healthcheck:
       test:  wget --spider --tries=1 --no-verbose http://localhost:${NODE_PORT:-3000}/health
-      interval: 5s
-      timeout: 10s
-      retries: 5
-      start_period: 5s
     depends_on:
       db:
         condition: service_healthy
@@ -43,6 +39,3 @@ services:
       - /portainer/postgres/games-${NODE_ENV}:/var/lib/postgresql/data
     healthcheck:
       test: /usr/bin/pg_isready
-      interval: 5s
-      timeout: 10s
-      retries: 120
