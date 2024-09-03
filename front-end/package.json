@@ -13,7 +13,7 @@
     "docker:dev": "docker run -it --rm -v ./:/app -p 5173:5173 -w /app -u 1000 node:alpine npx vite --host"
   },
   "dependencies": {
-    "axios": "^1.6.1",
+    "axios": "^1.7.7",
     "bootstrap": "^5.3.2",
     "dotenv": "^16.3.1",
     "react": "^18.2.0",
