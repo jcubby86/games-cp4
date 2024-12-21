@@ -80,6 +80,7 @@ jobs:
   call-webhook:
     runs-on: ubuntu-latest
     needs: [back-end, front-end]
+    if: ${{ github.event_name != 'pull_request' }}
     steps:
       - name: Call Webhook
         run: |
