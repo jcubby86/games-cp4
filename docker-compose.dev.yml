@@ -1,6 +1,6 @@
 services:
   app:
-    image: node:alpine
+    image: node:lts-alpine
     environment:
       - NGINX_BACKEND_ADDRESS=http://backend:3000
     depends_on: 
@@ -14,7 +14,7 @@ services:
       - 5173:5173
 
   backend:
-    image: node:alpine
+    image: node:lts-alpine
     environment:
       - DATABASE_URL=postgresql://postgres:12345@db:5432/prisma?schema=public
       - NODE_PORT=3000
