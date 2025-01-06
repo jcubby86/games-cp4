@@ -16,5 +16,6 @@ COPY --from=build /app/dist ./
 COPY --from=build /app/src/.generated ./.generated
 COPY --from=build /app/prisma ./prisma
 RUN npm ci --omit=dev
+RUN apt-get update -y && apt-get install -y openssl
 USER 1000
 CMD ["npm", "run", "prod:deploy"]
