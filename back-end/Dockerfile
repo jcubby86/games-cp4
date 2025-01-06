@@ -1,5 +1,5 @@
 # build environment
-FROM node:alpine as build
+FROM node:lts-alpine as build
 WORKDIR /app
 ENV PATH /app/node_modules/.bin:$PATH
 COPY package*.json ./
@@ -9,7 +9,7 @@ RUN npm ci
 RUN npm run build
 
 # production environment
-FROM node:alpine
+FROM node:lts-alpine
 WORKDIR /app
 COPY --from=build /app/package*.json ./
 COPY --from=build /app/dist ./
